@@ -28,7 +28,7 @@ if (toggle && menu) {
 const header = $('[data-header]');
 if (header) {
 	const chiaro = header.classList.contains('mm-header--chiaro');
-	const soglia = () => (chiaro ? 4 : Math.max(80, ($('[data-slider]')?.offsetHeight || 400) - 90));
+	const soglia = () => (chiaro ? 4 : Math.max(80, ($('[data-slider], [data-copertina]')?.offsetHeight || 400) - 90));
 	const aggiornaHeader = () => header.classList.toggle('is-scrolled', window.scrollY > soglia());
 	addEventListener('scroll', aggiornaHeader, { passive: true });
 	aggiornaHeader();
