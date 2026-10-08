@@ -350,8 +350,11 @@ if (visore && typeof visore.showModal === 'function') {
 /* Home: la foto di sfondo arriva fino al fondo delle icone; le icone tornano scure quando restano fisse in alto */
 const sfondo = $('[data-sfondo]');
 const barraIcone = $('[data-chips]');
-if (sfondo && barraIcone) {
-	const misura = () => (sfondo.style.height = `${barraIcone.offsetTop + barraIcone.offsetHeight}px`);
+const zonaCerca = $('.v3-cerca');
+if (sfondo && barraIcone && zonaCerca) {
+	// Altezza = ricerca + icone. Non si usa offsetTop delle icone: quando restano fisse in alto
+	// cambia con lo scroll e su iPhone (barra di Safari che si chiude) la foto copriva la pagina.
+	const misura = () => (sfondo.style.height = `${zonaCerca.offsetTop + zonaCerca.offsetHeight + barraIcone.offsetHeight}px`);
 	const fissa = () =>
 		barraIcone.classList.toggle(
 			'is-fissa',
