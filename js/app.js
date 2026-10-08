@@ -440,12 +440,4 @@ if (contenuto) {
 		daIndirizzo(false);
 	});
 	daIndirizzo(true);
-
-	// In home, "Cerca" nella barra in basso riporta alla ricerca
-	const tabCerca = $('.v3-tab a[aria-current="page"]');
-	tabCerca?.addEventListener('click', (e) => {
-		e.preventDefault();
-		scrollTo({ top: 0, behavior: ridotto ? 'auto' : 'smooth' });
-		input.focus({ preventScroll: true });
-	});
 }
