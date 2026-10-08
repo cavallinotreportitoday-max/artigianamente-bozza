@@ -661,6 +661,33 @@ for (const a of $$('[data-indietro]')) {
 	});
 }
 
+/* Righe con frecce ‹ › (come Airbnb): scorrono di una pagina e si spengono agli estremi. Sul telefono si usa il dito. */
+for (const box of $$('[data-scorri]')) {
+	const riga = $('[data-scorri-riga]', box);
+	const indietro = $('[data-scorri-prec]', box);
+	const avanti = $('[data-scorri-succ]', box);
+	if (!riga || !indietro || !avanti) continue;
+	const lento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const stato = () => {
+		indietro.disabled = riga.scrollLeft <= 2;
+		avanti.disabled = riga.scrollLeft >= riga.scrollWidth - riga.clientWidth - 2;
+	};
+	const vai = (verso) => {
+		const card = riga.firstElementChild;
+		const spazio = parseFloat(getComputedStyle(riga).columnGap) || 0;
+		const larga = card ? card.offsetWidth + spazio : riga.clientWidth;
+		const quante = Math.max(1, Math.floor((riga.clientWidth + spazio) / larga));
+		riga.scrollBy({ left: verso * larga * quante, behavior: lento ? 'auto' : 'smooth' });
+	};
+	indietro.addEventListener('click', () => vai(-1));
+	avanti.addEventListener('click', () => vai(1));
+	riga.addEventListener('scroll', stato, { passive: true });
+	// anche quando la riga diventa visibile (schede della home) o cambia la finestra
+	if ('ResizeObserver' in window) new ResizeObserver(stato).observe(riga);
+	else addEventListener('resize', stato);
+	stato();
+}
+
 /* Pagina di un lavoro: col dito sulla foto di copertina si va al lavoro dopo o prima */
 const copertina = $('[data-copertina]');
 const succ = $('[data-succ]');
