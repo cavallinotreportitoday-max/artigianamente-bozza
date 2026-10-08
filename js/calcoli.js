@@ -81,6 +81,9 @@ export const iva = {
 // Arrotonda a cifre "da listino": 6,6 → 7; 73 → 75; 549 → 550; 3.960 → 4.000
 const bello = (n) => (n < 20 ? Math.round(n) : n < 200 ? Math.round(n / 5) * 5 : n < 2000 ? Math.round(n / 10) * 10 : Math.round(n / 100) * 100);
 
+/** Prezzo "da" IVA inclusa da un netto qualsiasi, es. daEuro(350, '/m²') → "390 €/m²" */
+export const daEuro = (netto, unita = '', aliquota = 0.1) => `${euro(bello(netto * (1 + aliquota)))} €${unita}`;
+
 /** Prezzo "da" IVA inclusa, es. "7 €/m²" */
 export const daTesto = (slug) => {
 	const d = aPartireDa[slug];

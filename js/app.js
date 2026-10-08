@@ -7,6 +7,24 @@ const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const CHECK =
 	'<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" vector-effect="non-scaling-stroke"/></svg>';
 
+/* Trascinare col dito a destra o a sinistra (solo tocco, non il mouse) */
+function scorriColDito(el, fai) {
+	if (!el) return;
+	let x0 = null;
+	let y0 = null;
+	el.addEventListener('touchstart', (e) => {
+		x0 = e.touches[0].clientX;
+		y0 = e.touches[0].clientY;
+	}, { passive: true });
+	el.addEventListener('touchend', (e) => {
+		if (x0 === null) return;
+		const dx = e.changedTouches[0].clientX - x0;
+		const dy = e.changedTouches[0].clientY - y0;
+		x0 = null;
+		if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 2) fai(dx < 0);
+	});
+}
+
 /* Menu a tutto schermo */
 const toggle = $('[data-menu-toggle]');
 const menu = $('[data-menu]');
@@ -501,6 +519,16 @@ if (contenuto) {
 		});
 	}
 
+	// "‹ Tutti i lavori" sopra la scheda
+	for (const b of $$('[data-torna]')) b.addEventListener('click', () => apri('tutto'));
+
+	// Sul telefono: trascinare la foto della scheda porta al lavoro dopo o prima
+	for (const s of schede) {
+		const img = $('.v3-scheda__img', s);
+		const i = slugs.indexOf(s.dataset.scheda);
+		scorriColDito(img, (avanti) => apri(slugs[(i + (avanti ? 1 : -1) + slugs.length) % slugs.length]));
+	}
+
 	// Indirizzo con #lavoro: apre direttamente quella scheda (anche col tasto indietro)
 	const daIndirizzo = (primaVolta) => {
 		const h = decodeURIComponent(location.hash.slice(1));
@@ -560,9 +588,21 @@ if (pv) {
 	for (const b of lavori) b.addEventListener('click', () => scegli(b.dataset.scegli, true));
 
 	// Arrivo da "Calcola il preventivo" (preventivo.html#parquet): lavoro già scelto
+	$('[data-pv-cambia]', pv)?.addEventListener('click', () =>
+		$('.v3-pv__passo', pv).scrollIntoView({ behavior: ridotto ? 'auto' : 'smooth', block: 'start' })
+	);
+
+	// #ristrutturazioni:cucina → ristrutturazioni con "Cucina" già scelta
 	const daIndirizzo = () => {
-		const h = decodeURIComponent(location.hash.slice(1));
-		if (lavori.some((b) => b.dataset.scegli === h)) requestAnimationFrame(() => scegli(h, true));
+		const [h, sub] = decodeURIComponent(location.hash.slice(1)).split(':');
+		if (!lavori.some((b) => b.dataset.scegli === h)) return;
+		requestAnimationFrame(() => {
+			if (sub) {
+				const r = $(`[data-pannello="${h}"] input[name="cosa"][value="${sub}"]`, pv);
+				if (r) r.checked = true;
+			}
+			scegli(h, true);
+		});
 	};
 	addEventListener('hashchange', daIndirizzo);
 	daIndirizzo();
@@ -583,4 +623,51 @@ for (const barra of $$('[data-bagno-barra]')) {
 	if (!box || !('IntersectionObserver' in window)) continue;
 	new IntersectionObserver(([e]) => barra.classList.toggle('is-nascosta', e.isIntersecting), { threshold: 0.15 }).observe(box);
 	barra.addEventListener('click', () => box.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
+
+/* Freccia "indietro": torna alla pagina di prima del sito, altrimenti va alla home */
+for (const a of $$('[data-indietro]')) {
+	a.addEventListener('click', (e) => {
+		let dalSito = false;
+		try {
+			dalSito = Boolean(document.referrer) && new URL(document.referrer).origin === location.origin;
+		} catch {
+			dalSito = false;
+		}
+		if (dalSito && history.length > 1) {
+			e.preventDefault();
+			history.back();
+		}
+	});
+}
+
+/* Pagina di un lavoro: col dito sulla foto di copertina si va al lavoro dopo o prima */
+const copertina = $('[data-copertina]');
+const succ = $('[data-succ]');
+const prec = $('[data-prec]');
+if (copertina && succ && prec) scorriColDito(copertina, (avanti) => (location.href = (avanti ? succ : prec).href));
+
+/* Tipi di ristrutturazione: pulsanti che cambiano la scheda sotto */
+const tipi = $$('[data-tipo]');
+if (tipi.length) {
+	const pannelli = $$('[data-tipo-pannello]');
+	const mostra = (id) => {
+		for (const b of tipi) {
+			const si = b.dataset.tipo === id;
+			b.classList.toggle('is-active', si);
+			b.setAttribute('aria-selected', String(si));
+		}
+		for (const pn of pannelli) pn.hidden = pn.dataset.tipoPannello !== id;
+	};
+	for (const b of tipi) b.addEventListener('click', () => mostra(b.dataset.tipo));
+	// ristrutturazioni.html#tipo-cucina apre subito la cucina
+	const daIndirizzo = () => {
+		const h = decodeURIComponent(location.hash.slice(1));
+		if (h.startsWith('tipo-') && tipi.some((b) => b.dataset.tipo === h.slice(5))) {
+			mostra(h.slice(5));
+			requestAnimationFrame(() => $('#tipi')?.scrollIntoView({ block: 'start' }));
+		}
+	};
+	addEventListener('hashchange', daIndirizzo);
+	daIndirizzo();
 }
