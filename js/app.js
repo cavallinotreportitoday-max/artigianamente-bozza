@@ -46,7 +46,7 @@ if (toggle && menu) {
 const header = $('[data-header]');
 if (header) {
 	const chiaro = header.classList.contains('mm-header--chiaro');
-	const soglia = () => (chiaro ? 4 : Math.max(80, ($('[data-slider], [data-copertina]')?.offsetHeight || 400) - 90));
+	const soglia = () => (chiaro ? 4 : Math.max(80, ($('[data-slider], [data-copertina], [data-sfondo]')?.offsetHeight || 400) - 90));
 	const aggiornaHeader = () => header.classList.toggle('is-scrolled', window.scrollY > soglia());
 	addEventListener('scroll', aggiornaHeader, { passive: true });
 	aggiornaHeader();
@@ -345,6 +345,23 @@ if (visore && typeof visore.showModal === 'function') {
 	visore.addEventListener('click', (e) => {
 		if (e.target === visore || e.target.hasAttribute('data-visore-chiudi-sfondo')) visore.close();
 	});
+}
+
+/* Home: la foto di sfondo arriva fino al fondo delle icone; le icone tornano scure quando restano fisse in alto */
+const sfondo = $('[data-sfondo]');
+const barraIcone = $('[data-chips]');
+if (sfondo && barraIcone) {
+	const misura = () => (sfondo.style.height = `${barraIcone.offsetTop + barraIcone.offsetHeight}px`);
+	const fissa = () =>
+		barraIcone.classList.toggle(
+			'is-fissa',
+			scrollY > 10 && barraIcone.getBoundingClientRect().top <= (header?.offsetHeight || 76) + 1
+		);
+	misura();
+	fissa();
+	addEventListener('resize', misura);
+	addEventListener('load', misura);
+	addEventListener('scroll', fissa, { passive: true });
 }
 
 /* Home: ricerca, pulsanti dei lavori e schede */
