@@ -1,5 +1,5 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro } from './calcoli.js';
+import { calcola, euro, calcolaBagno } from './calcoli.js';
 import { cerca } from './ricerca.js';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -159,7 +159,72 @@ for (const calc of $$('[data-calc]')) {
 	// Nella pagina Preventivo ci sono tutti i lavori: scrive il riepilogo solo quello scelto
 	const attivo = () => riepilogo && !calc.closest('[hidden]');
 
+	// Ristrutturazioni: simulatore del bagno, oppure prezzo dopo il sopralluogo per gli altri lavori
+	const aggiornaRistr = () => {
+		const v = leggi(inputs);
+		const isBagno = v.cosa === 'bagno';
+		for (const g of $$('[data-se]', calc)) g.hidden = g.dataset.se !== (isBagno ? 'bagno' : 'altro');
+		for (const a of $$('[data-ris]', calc)) a.hidden = a.dataset.ris !== (isBagno ? 'bagno' : 'altro');
+		const barra = $('[data-bagno-barra]', calc);
+		if (barra) barra.hidden = !isBagno;
+		if (!isBagno) {
+			if (attivo()) {
+				const cosa = $('input[name="cosa"]:checked', inputs)?.closest('label').textContent.trim();
+				riepilogo.value = riepilogoLibero(`${servizio}: ${cosa}`, $('[data-se="altro"]', calc));
+			}
+			return;
+		}
+		const r = calcolaBagno(v);
+		const cifra = `${euro(r.min)}–${euro(r.max)} €`;
+		const box = $('[data-ris="bagno"]', calc);
+		if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			box.classList.add('sta-cambiando');
+			clearTimeout(box._t);
+			box._t = setTimeout(() => box.classList.remove('sta-cambiando'), 140);
+		}
+		const c = $('[data-b-cifra]', box);
+		c.textContent = cifra + ' ';
+		const iva = document.createElement('span');
+		iva.className = 'risultato__iva';
+		iva.textContent = 'IVA esclusa';
+		c.append(iva);
+		$('[data-b-iva]', box).textContent = `Con IVA al 10%, se è la tua casa: circa ${euro(r.ivaMin)}–${euro(r.ivaMax)} €`;
+		$('[data-b-durata]', box).textContent = r.durata;
+		$('[data-barra-cifra]', calc).textContent = cifra;
+		const ul = $('[data-b-voci]', box);
+		ul.replaceChildren(
+			...r.voci.map((x) => {
+				const li = document.createElement('li');
+				const a = document.createElement('span');
+				const b = document.createElement('span');
+				a.textContent = x.nome;
+				b.textContent = x.daValutare ? 'da valutare' : `${euro(x.min)}–${euro(x.max)} €`;
+				li.append(a, b);
+				return li;
+			})
+		);
+		// Prezzo di ogni livello con le altre scelte di adesso
+		for (const el of $$('[data-prezzo-livello]', calc)) {
+			const x = calcolaBagno({ ...v, livello: el.dataset.prezzoLivello });
+			el.textContent = `${euro(x.min)}–${euro(x.max)} €`;
+		}
+		// "Mandami il riepilogo": il testo che il cliente si tiene
+		const testo = [
+			'Budget indicativo del mio bagno, da ArtigianaMente',
+			r.riepilogo,
+			...r.voci.map((x) => `- ${x.nome}: ${x.daValutare ? 'da valutare' : `${euro(x.min)}–${euro(x.max)} €`}`),
+			`Durata indicativa: ${r.durata}.`,
+			'Stima orientativa non vincolante. Il preventivo scritto arriva dopo il sopralluogo gratuito.',
+			location.href.split('#')[0] + '#ristrutturazioni'
+		].join('\n');
+		$('[data-b-whatsapp]', box).href = 'https://wa.me/?text=' + encodeURIComponent(testo);
+		$('[data-b-email]', box).href =
+			'mailto:?subject=' + encodeURIComponent('Budget del mio bagno – ArtigianaMente') + '&body=' + encodeURIComponent(testo);
+		if (attivo()) riepilogo.value = r.riepilogo;
+	};
+
 	const aggiorna = () => {
+		if (tipo === 'ristrutturazioni') return aggiornaRistr();
 		const v = leggi(inputs);
 		if (!conCalcolo) {
 			if (attivo()) riepilogo.value = riepilogoLibero(servizio, inputs);
@@ -491,4 +556,21 @@ if (pv) {
 	};
 	addEventListener('hashchange', daIndirizzo);
 	daIndirizzo();
+}
+
+/* "PDF": stampa solo il riepilogo del bagno (dal menu di stampa si salva come PDF) */
+for (const b of $$('[data-stampa]')) {
+	b.addEventListener('click', () => {
+		document.documentElement.classList.add('stampa-bagno');
+		print();
+		setTimeout(() => document.documentElement.classList.remove('stampa-bagno'), 500);
+	});
+}
+
+/* Telefono: barretta con il budget sempre a portata, sparisce quando il riepilogo è sullo schermo */
+for (const barra of $$('[data-bagno-barra]')) {
+	const box = barra.parentElement.querySelector('[data-ris="bagno"]');
+	if (!box || !('IntersectionObserver' in window)) continue;
+	new IntersectionObserver(([e]) => barra.classList.toggle('is-nascosta', e.isIntersecting), { threshold: 0.15 }).observe(box);
+	barra.addEventListener('click', () => box.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }

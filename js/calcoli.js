@@ -51,19 +51,19 @@ export const tariffe = {
 	}
 };
 
-// Prezzi "a partire da": con materiali di base. Materiali e finiture si scelgono al sopralluogo.
-// PROVVISORI: ristrutturazioni, risanamento e falegnameria sono stime da far decidere a Fabri.
+// Prezzi "a partire da": ognuno legato a un lavoro preciso (consiglio della revisione dell'8/10).
+// PROVVISORI: da far approvare a Fabri. Quello delle ristrutturazioni si calcola dal simulatore del bagno (in fondo al file).
 export const aPartireDa = {
-	ristrutturazioni: { euro: 350, unita: '/m²', dettaglio: 'Al m² di superficie.' },
-	imbiancatura: { euro: 6, unita: '/m²', dettaglio: 'Al m² di parete, pittura bianca traspirante.' },
-	'risanamento-umidita': { euro: 60, unita: '/m²', dettaglio: 'Al m² di muro, con intonaco deumidificante.' },
+	ristrutturazioni: { euro: 0, unita: '', dettaglio: 'Rinnovo di un bagno piccolo con finiture Base, impianti invariati.' },
+	imbiancatura: { euro: 6, unita: '/m²', dettaglio: 'Al m² di parete: pittura bianca traspirante e manodopera, pareti in buono stato.' },
+	'risanamento-umidita': { euro: 60, unita: '/m²', dettaglio: 'Al m² di muro, con intonaco deumidificante di base. La causa va verificata al sopralluogo.' },
 	falegnameria: { euro: 60, unita: '', dettaglio: 'Piccole riparazioni a domicilio.' },
 	'montaggio-mobili': { euro: 70, unita: '', dettaglio: 'Uscita minima per mobili piccoli.' },
-	traslochi: { euro: 450, unita: '', dettaglio: 'Monolocale, in zona.' },
-	parquet: { euro: 14, unita: '/m²', dettaglio: 'Al m², posa di laminato.' }
+	traslochi: { euro: 450, unita: '', dettaglio: 'Monolocale, in zona, con ascensore.' },
+	parquet: { euro: 14, unita: '/m²', dettaglio: 'Sola posa di laminato, al m². Materiale escluso.' }
 };
 
-export const notaMateriali = 'Con materiali di base. Materiali e finiture li scegliamo insieme al sopralluogo.';
+export const notaMateriali = 'Materiali e finiture li scegliamo insieme al sopralluogo.';
 
 /** "6 €/m²" */
 export const daTesto = (slug) => {
@@ -233,3 +233,94 @@ export function calcola(tipo, v) {
 	}
 	return { valutazione: true, dettaglio: '', comprende: [], esclude: [], riepilogo: '' };
 }
+
+/* ---------------------------------------------------------------------------
+   SIMULATORE BAGNO (prima versione, 8/10/2026)
+   Fasce di partenza dalla revisione con ChatGPT: bagno completo di circa 5 m²,
+   Base 7.500–10.000 €, Comfort 10.000–14.000 €, Top 14.000–20.000 €, IVA esclusa.
+   NON VERIFICATE per ArtigianaMente: Fabri deve approvarle con i suoi preventivi reali.
+--------------------------------------------------------------------------- */
+export const bagno = {
+	voci: [
+		{ id: 'cantiere', nome: 'Preparazione cantiere e protezioni', base: [300, 500], area: false },
+		{ id: 'demolizioni', nome: 'Demolizioni, rimozioni e smaltimento', base: [900, 1300], area: true },
+		{ id: 'impianti', nome: 'Impianto idraulico ed elettrico', base: [1800, 2400], area: false },
+		{ id: 'ripristini', nome: 'Ripristini e impermeabilizzazione', base: [700, 1000], area: true },
+		{ id: 'rivestimenti', nome: 'Pavimenti e rivestimenti, con posa', base: [1800, 2400], area: true },
+		{ id: 'sanitari', nome: 'Sanitari, rubinetti, mobile e doccia, con installazione', base: [1600, 1800], area: false },
+		{ id: 'finiture', nome: 'Tinteggiatura, verifiche e pulizia', base: [400, 600], area: true }
+	],
+	// quanto si aggiunge rispetto al livello Base
+	livelli: {
+		base: {},
+		comfort: { impianti: [200, 400], rivestimenti: [1000, 1600], sanitari: [1300, 2000] },
+		top: { impianti: [500, 800], ripristini: [300, 400], rivestimenti: [2700, 4000], sanitari: [3000, 4800] }
+	},
+	misure: { piccolo: { area: 0.75, fisso: 0.95 }, medio: { area: 1, fisso: 1 }, grande: { area: 1.45, fisso: 1.1 } },
+	rinnovoImpianti: [400, 800], // solo piccoli adeguamenti, impianti che restano
+	rinnovoDemolizioni: 0.8,
+	spostamento: [1200, 2500],
+	iva: 1.1 // ipotesi: lavori su abitazione al 10%, da verificare caso per caso
+};
+
+const nomiBagno = {
+	intervento: { rinnovo: 'rinnovo di piastrelle e sanitari', completo: 'rifacimento completo' },
+	misura: { piccolo: 'piccolo (fino a 4 m²)', medio: 'medio (4–7 m²)', grande: 'grande (oltre 7 m²)', nonso: 'misura da verificare' },
+	disposizione: { uguale: 'disposizione uguale', cambio: 'disposizione da cambiare', nonso: 'disposizione da decidere' },
+	livello: { base: 'Base', comfort: 'Comfort', top: 'Top' },
+	dove: { terraferma: 'terraferma', venezia: 'Venezia e isole' }
+};
+
+const cento = (n) => Math.round(n / 100) * 100;
+
+export function calcolaBagno(v) {
+	const livello = bagno.livelli[v.livello] ? v.livello : 'comfort';
+	const m = bagno.misure[v.misura] ?? bagno.misure.medio;
+	const rinnovo = v.intervento === 'rinnovo';
+	const agg = bagno.livelli[livello];
+	const voci = bagno.voci.map((x) => {
+		let [a, b] = rinnovo && x.id === 'impianti' ? bagno.rinnovoImpianti : x.base;
+		if (rinnovo && x.id === 'demolizioni') {
+			a *= bagno.rinnovoDemolizioni;
+			b *= bagno.rinnovoDemolizioni;
+		}
+		if (agg[x.id]) {
+			a += agg[x.id][0];
+			b += agg[x.id][1];
+		}
+		const k = x.area ? m.area : m.fisso;
+		const nome = rinnovo && x.id === 'impianti' ? 'Piccoli adeguamenti di impianti' : x.nome;
+		return { nome, min: cento(a * k), max: cento(b * k) };
+	});
+	if (v.disposizione === 'cambio') voci.push({ nome: 'Spostamento di scarichi e punti acqua', min: bagno.spostamento[0], max: bagno.spostamento[1] });
+	if (v.disposizione === 'nonso') voci.push({ nome: 'Eventuale spostamento di scarichi', daValutare: true });
+	if (v.misura === 'nonso') voci.push({ nome: 'Misure esatte', daValutare: true });
+	if (v.dove === 'venezia') voci.push({ nome: 'Trasporto via acqua e logistica', daValutare: true });
+	const min = voci.reduce((t, x) => t + (x.min ?? 0), 0);
+	const max = voci.reduce((t, x) => t + (x.max ?? 0), 0);
+	const testo = [
+		nomiBagno.intervento[v.intervento] ?? nomiBagno.intervento.completo,
+		nomiBagno.misura[v.misura] ?? nomiBagno.misura.medio,
+		nomiBagno.disposizione[v.disposizione] ?? nomiBagno.disposizione.uguale,
+		'finiture ' + nomiBagno.livello[livello],
+		nomiBagno.dove[v.dove] ?? nomiBagno.dove.terraferma
+	].join(', ');
+	return {
+		min,
+		max,
+		ivaMin: cento(min * bagno.iva),
+		ivaMax: cento(max * bagno.iva),
+		voci,
+		livello,
+		durata: rinnovo ? '1–2 settimane' : '2–4 settimane',
+		comprende: ['Materiali del livello scelto e posa', 'Impermeabilizzazione della doccia', 'Smaltimento delle macerie', 'Pulizia finale'],
+		esclude: ['Progetto e pratiche comunali', 'Accessori non elencati', 'Imprevisti sotto pavimenti e rivestimenti'],
+		aumenti: ['Tubi o massetto da rifare', 'Spostare wc o doccia', 'Piano alto senza ascensore', 'Accesso solo via acqua'],
+		riepilogo: `Bagno: ${testo}. Budget indicativo: ${euro(min)}–${euro(max)} € + IVA.`
+	};
+}
+
+export const bagnoPredefinito = { cosa: 'bagno', intervento: 'completo', misura: 'medio', disposizione: 'uguale', livello: 'comfort', dove: 'terraferma' };
+
+// Il prezzo "da" delle ristrutturazioni è il caso più piccolo del simulatore
+aPartireDa.ristrutturazioni.euro = calcolaBagno({ intervento: 'rinnovo', misura: 'piccolo', disposizione: 'uguale', livello: 'base', dove: 'terraferma' }).min;
