@@ -362,7 +362,12 @@ const zonaCerca = $('.v3-cerca');
 if (sfondo && barraIcone && zonaCerca) {
 	// Altezza = ricerca + icone. Non si usa offsetTop delle icone: quando restano fisse in alto
 	// cambia con lo scroll e su iPhone (barra di Safari che si chiude) la foto copriva la pagina.
-	const misura = () => (sfondo.style.height = `${zonaCerca.offsetTop + zonaCerca.offsetHeight + barraIcone.offsetHeight}px`);
+	// + lo spazio di foto sotto le icone (margine sopra il contenuto), così le icone stanno un po' più su
+	const sotto = $('[data-contenuto]');
+	const misura = () =>
+		(sfondo.style.height = `${
+			zonaCerca.offsetTop + zonaCerca.offsetHeight + barraIcone.offsetHeight + (sotto ? parseFloat(getComputedStyle(sotto).marginTop) || 0 : 0)
+		}px`);
 	const fissa = () =>
 		barraIcone.classList.toggle(
 			'is-fissa',
@@ -382,6 +387,10 @@ if (contenuto) {
 	const input = $('[data-ricerca]');
 	const pulisci = $('[data-ricerca-pulisci]');
 	const sugg = $('[data-suggerimenti]');
+	const frequenti = $('[data-sugg-frequenti]');
+	const risultati = $('[data-sugg-risultati]');
+	const vuotoSugg = $('[data-sugg-vuoto]');
+	const bottoniRis = $$('[data-risultato]');
 	const barraChips = $('[data-chips]');
 	const chips = $$('[data-chip]');
 	const esitoBox = $('[data-esito-box]');
@@ -491,15 +500,33 @@ if (contenuto) {
 		}
 	};
 
+	// Tendina sotto la barra: ricerche frequenti se è vuota, i lavori trovati mentre scrivi (si vedono subito, anche col telefono)
+	const tendina = () => {
+		const testo = input.value.trim();
+		const scrivo = testo.length >= 2;
+		frequenti.hidden = scrivo;
+		risultati.hidden = !scrivo;
+		if (!scrivo) return;
+		const trovati = cerca(testo).slice(0, matchMedia('(max-width: 760px)').matches ? 3 : 4);
+		for (const b of bottoniRis) b.hidden = !trovati.includes(b.dataset.risultato);
+		for (const slug of trovati) {
+			const b = bottoniRis.find((x) => x.dataset.risultato === slug);
+			if (b) risultati.insertBefore(b, vuotoSugg);
+		}
+		vuotoSugg.hidden = trovati.length > 0;
+	};
+
 	let attesa;
 	input.addEventListener('input', () => {
-		sugg.hidden = Boolean(input.value) || document.activeElement !== input;
+		sugg.hidden = document.activeElement !== input;
+		tendina();
 		aggiornaPulisci();
 		clearTimeout(attesa);
 		attesa = setTimeout(() => esegui(false), 180);
 	});
 	input.addEventListener('focus', () => {
-		sugg.hidden = Boolean(input.value);
+		sugg.hidden = false;
+		tendina();
 		// Sul telefono la barra sale sotto l'intestazione, così i suggerimenti restano sopra la tastiera
 		if (matchMedia('(max-width: 760px)').matches) {
 			setTimeout(() => {
@@ -520,7 +547,7 @@ if (contenuto) {
 		esegui(true);
 	});
 	form.addEventListener('keydown', (e) => {
-		const voci = $$('button', sugg);
+		const voci = $$('button', sugg).filter((b) => b.offsetParent !== null);
 		const i = voci.indexOf(document.activeElement);
 		if (e.key === 'Escape') {
 			sugg.hidden = true;
@@ -533,6 +560,13 @@ if (contenuto) {
 		}
 	});
 	sugg.addEventListener('click', (e) => {
+		const r = e.target.closest('[data-risultato]');
+		if (r) {
+			sugg.hidden = true;
+			input.blur();
+			apri(r.dataset.risultato);
+			return;
+		}
 		const b = e.target.closest('[data-suggerimento]');
 		if (!b) return;
 		input.value = b.dataset.suggerimento;

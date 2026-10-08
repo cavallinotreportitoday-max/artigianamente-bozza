@@ -5,7 +5,7 @@
 export const paroleServizi = {
 	ristrutturazioni: [
 		'!ristruttur', 'rinnov', 'rifare', 'bagno', 'demoli', '!cartongess', 'controsoffitt', 'piastrell',
-		'rivestiment', 'tetto', 'copertur', 'impiant', 'appartament', 'casa intera', 'negozio', 'ufficio',
+		'rivestiment', 'cucin', 'tetto', 'copertur', 'impiant', 'appartament', 'casa intera', 'negozio', 'ufficio',
 		'muratur', 'muro nuovo', '!tramezz', 'facciat', 'cantiere', 'lavori in casa'
 	],
 	imbiancatura: [
@@ -24,7 +24,7 @@ export const paroleServizi = {
 		'scala', 'scale', 'persian', 'scuri', 'tavolo', 'mensol'
 	],
 	'montaggio-mobili': [
-		'!montaggio', '!montare', 'monta', '!ikea', 'mobil', 'cucina', 'armadi', 'letto', 'pensil', 'mensol',
+		'!montaggio', '!montare', 'monta', '!ikea', 'mobil', 'cucin', 'armadi', 'letto', 'pensil', 'mensol',
 		'smontare', 'smontaggio', '!assembl', 'comò', 'como', 'cassettiera', 'libreria', 'scrivania'
 	],
 	traslochi: [
@@ -34,6 +34,11 @@ export const paroleServizi = {
 	parquet: [
 		'!parquet', 'pavimento', 'pavimenti', '!laminato', '!levig', '!lamatur', 'rovere', 'flottante',
 		'prefinito', 'graffi', 'cera', 'olio', 'battiscopa', 'listoni', 'spina di pesce'
+	],
+	// La scheda "L'azienda"
+	azienda: [
+		'!aziend', '!appalt', 'chi siete', 'chi siamo', 'squadra', 'mezzi', '!festool', 'partner', 'officina',
+		'enti', 'pubblic', 'comune', 'collabor', 'esperienz', 'dove siete', 'sede', 'indirizz'
 	]
 };
 
