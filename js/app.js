@@ -47,7 +47,15 @@ const header = $('[data-header]');
 if (header) {
 	const chiaro = header.classList.contains('mm-header--chiaro');
 	const soglia = () => (chiaro ? 4 : Math.max(80, ($('[data-slider], [data-copertina], [data-sfondo]')?.offsetHeight || 400) - 90));
-	const aggiornaHeader = () => header.classList.toggle('is-scrolled', window.scrollY > soglia());
+	// In home l'intestazione diventa bianca insieme alle icone dei lavori, quando restano fisse in alto
+	const icone = $('[data-sfondo]') && $('[data-chips]');
+	const aggiornaHeader = () =>
+		header.classList.toggle(
+			'is-scrolled',
+			icone
+				? scrollY > 10 && icone.getBoundingClientRect().top <= header.offsetHeight + 1
+				: window.scrollY > soglia()
+		);
 	addEventListener('scroll', aggiornaHeader, { passive: true });
 	aggiornaHeader();
 }
