@@ -450,9 +450,13 @@ if (contenuto) {
 	};
 
 	// Porta l'inizio del contenuto subito sotto i pulsanti fissi
-	const scorri = () => {
-		const sopra = (header?.offsetHeight || 0) + (barraChips?.offsetHeight || 0);
-		const y = contenuto.getBoundingClientRect().top + scrollY - sopra;
+	// Un lavoro si apre direttamente sulla sua foto, subito sotto le icone fisse
+	const fotoDi = (slug) => $(`[data-scheda="${slug}"] .v3-scheda__img`) || contenuto;
+	const scorri = (dove = contenuto) => {
+		const sopra = (header?.offsetHeight || 0) + (barraChips?.offsetHeight || 0) + (dove === contenuto ? 0 : 14);
+		// posizione senza contare l'animazione d'entrata della scheda (che la sposta di qualche px)
+		let y = -sopra;
+		for (let el = dove; el; el = el.offsetParent) y += el.offsetTop;
 		if (Math.abs(scrollY - y) > 4) scrollTo({ top: y, behavior: ridotto ? 'auto' : 'smooth' });
 	};
 
@@ -478,7 +482,7 @@ if (contenuto) {
 			indirizzo(slug, true);
 			vista('lavoro', [slug]);
 		}
-		scorri();
+		scorri(slug === 'tutto' ? contenuto : fotoDi(slug));
 	};
 
 	const esegui = (conferma) => {
@@ -606,7 +610,9 @@ if (contenuto) {
 		const h = decodeURIComponent(location.hash.slice(1));
 		if (slugs.includes(h)) {
 			vista('lavoro', [h]);
-			if (primaVolta) requestAnimationFrame(scorri);
+			// anche dal menu (L'azienda) o col tasto indietro: si va sulla foto della scheda
+			if (primaVolta) requestAnimationFrame(() => scorri(fotoDi(h)));
+			else scorri(fotoDi(h));
 		} else if (!input.value.trim()) {
 			vista('tutto');
 		}
