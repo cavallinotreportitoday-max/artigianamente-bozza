@@ -186,20 +186,29 @@ for (const calc of $$('[data-calc]')) {
 		c.textContent = cifra + ' ';
 		const iva = document.createElement('span');
 		iva.className = 'risultato__iva';
-		iva.textContent = 'IVA esclusa';
+		iva.textContent = 'IVA inclusa';
 		c.append(iva);
-		$('[data-b-iva]', box).textContent = `Con IVA al 10%, se è la tua casa: circa ${euro(r.ivaMin)}–${euro(r.ivaMax)} €`;
+		$('[data-b-iva]', box).textContent = `Senza IVA: ${euro(r.nettoMin)}–${euro(r.nettoMax)} €. IVA al 10% per i lavori sulla casa (aziende ed enti: 22%).`;
 		$('[data-b-durata]', box).textContent = r.durata;
 		$('[data-barra-cifra]', calc).textContent = cifra;
 		const ul = $('[data-b-voci]', box);
+		const icona = (n) => {
+			const span = document.createElement('span');
+			span.className = 'scontrino__icona';
+			const svg = $(`[data-icone-set] [data-icona="${n}"] svg`, calc) ?? $('[data-icone-set] svg', calc);
+			if (svg) span.append(svg.cloneNode(true));
+			return span;
+		};
 		ul.replaceChildren(
 			...r.voci.map((x) => {
 				const li = document.createElement('li');
 				const a = document.createElement('span');
 				const b = document.createElement('span');
+				a.className = 'scontrino__nome';
+				b.className = 'scontrino__euro';
 				a.textContent = x.nome;
 				b.textContent = x.daValutare ? 'da valutare' : `${euro(x.min)}–${euro(x.max)} €`;
-				li.append(a, b);
+				li.append(icona(x.icona), a, b);
 				return li;
 			})
 		);
@@ -246,7 +255,7 @@ for (const calc of $$('[data-calc]')) {
 			cifra.append(`${euro(r.min)}–${euro(r.max)} € `);
 			const iva = document.createElement('span');
 			iva.className = 'risultato__iva';
-			iva.textContent = '+ IVA';
+			iva.textContent = 'IVA inclusa';
 			cifra.append(iva);
 			dettaglio.textContent = r.dettaglio;
 			liste.hidden = false;
@@ -269,9 +278,10 @@ for (const calc of $$('[data-calc]')) {
 		}
 		if (attivo()) {
 			riepilogo.value =
-				(r.riepilogo || servizio) + (r.min ? ` Stima orientativa: ${euro(r.min)}–${euro(r.max)} € + IVA.` : '');
+				(r.riepilogo || servizio) + (r.min ? ` Stima orientativa: ${euro(r.min)}–${euro(r.max)} €, IVA ${r.ivaPerc}% inclusa.` : '');
 		}
 	};
+	inputs.addEventListener('submit', (e) => e.preventDefault()); // Invio in un campo non ricarica la pagina
 	inputs.addEventListener('input', aggiorna);
 	inputs.addEventListener('change', aggiorna);
 	aggiorna();

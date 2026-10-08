@@ -65,10 +65,26 @@ export const aPartireDa = {
 
 export const notaMateriali = 'Materiali e finiture li scegliamo insieme al sopralluogo.';
 
-/** "6 €/m²" */
+// Aliquota IVA ipotizzata per i privati (lavori sulla casa 10%, servizi 22%). DA VERIFICARE col commercialista.
+export const iva = {
+	ristrutturazioni: 0.1,
+	imbiancatura: 0.1,
+	'risanamento-umidita': 0.1,
+	risanamento: 0.1,
+	parquet: 0.1,
+	falegnameria: 0.22,
+	'montaggio-mobili': 0.22,
+	montaggio: 0.22,
+	traslochi: 0.22
+};
+
+// Arrotonda a cifre "da listino": 6,6 → 7; 73 → 75; 549 → 550; 3.960 → 4.000
+const bello = (n) => (n < 20 ? Math.round(n) : n < 200 ? Math.round(n / 5) * 5 : n < 2000 ? Math.round(n / 10) * 10 : Math.round(n / 100) * 100);
+
+/** Prezzo "da" IVA inclusa, es. "7 €/m²" */
 export const daTesto = (slug) => {
 	const d = aPartireDa[slug];
-	return d ? `${euro(d.euro)} €${d.unita}` : '';
+	return d ? `${euro(bello(d.euro * (1 + (iva[slug] ?? 0.22))))} €${d.unita}` : '';
 };
 
 export const predefiniti = {
@@ -101,7 +117,7 @@ export const euro = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g
  * @returns {{ min?: number, max?: number, valutazione?: boolean, vuoto?: boolean, messaggio?: string,
  *            dettaglio: string, comprende: string[], esclude: string[], riepilogo: string }}
  */
-export function calcola(tipo, v) {
+function calcolaNetto(tipo, v) {
 	const t = tariffe[tipo];
 	if (tipo === 'imbiancatura') {
 		const mq = num(v.mq, 0);
@@ -234,51 +250,84 @@ export function calcola(tipo, v) {
 	return { valutazione: true, dettaglio: '', comprende: [], esclude: [], riepilogo: '' };
 }
 
+/** Stima per il preventivo guidato, IVA inclusa (ipotesi per i privati). */
+export function calcola(tipo, v) {
+	const r = calcolaNetto(tipo, v);
+	if (r.min) {
+		const k = 1 + (iva[tipo] ?? 0.22);
+		r.min = tondo(r.min * k);
+		r.max = tondo(r.max * k);
+		r.ivaPerc = Math.round((k - 1) * 100);
+	}
+	return r;
+}
+
 /* ---------------------------------------------------------------------------
-   SIMULATORE BAGNO (prima versione, 8/10/2026)
-   Fasce di partenza dalla revisione con ChatGPT: bagno completo di circa 5 m²,
-   Base 7.500–10.000 €, Comfort 10.000–14.000 €, Top 14.000–20.000 €, IVA esclusa.
-   NON VERIFICATE per ArtigianaMente: Fabri deve approvarle con i suoi preventivi reali.
+   SIMULATORE BAGNO (8/10/2026, seconda versione)
+   Numeri PROVVISORI. Partenza: revisione ChatGPT (Base 7.500–10.000 €) ricalibrata più in basso
+   sui prezzi pubblicati online (cronoshare.it 2026: bagno medio 4.000–7.000 €; idealista.it:
+   5 m² 4.000–6.000 €; pacchetto Leroy Merlin fino a 6 m² da 9.490 € IVA inclusa).
+   Bagno completo di circa 5 m², IVA esclusa: Base 5.500–7.500, Comfort 7.500–10.500, Top 10.500–15.000.
+   Fabri deve confermarli con i suoi preventivi reali.
 --------------------------------------------------------------------------- */
 export const bagno = {
 	voci: [
-		{ id: 'cantiere', nome: 'Preparazione cantiere e protezioni', base: [300, 500], area: false },
-		{ id: 'demolizioni', nome: 'Demolizioni, rimozioni e smaltimento', base: [900, 1300], area: true },
-		{ id: 'impianti', nome: 'Impianto idraulico ed elettrico', base: [1800, 2400], area: false },
-		{ id: 'ripristini', nome: 'Ripristini e impermeabilizzazione', base: [700, 1000], area: true },
-		{ id: 'rivestimenti', nome: 'Pavimenti e rivestimenti, con posa', base: [1800, 2400], area: true },
-		{ id: 'sanitari', nome: 'Sanitari, rubinetti, mobile e doccia, con installazione', base: [1600, 1800], area: false },
-		{ id: 'finiture', nome: 'Tinteggiatura, verifiche e pulizia', base: [400, 600], area: true }
+		{ id: 'cantiere', icona: 'shield', nome: 'Preparazione cantiere e protezioni', base: [200, 400], area: false },
+		{ id: 'demolizioni', icona: 'hammer', nome: 'Demolizioni, rimozioni e smaltimento', base: [700, 1000], area: true },
+		{ id: 'impianti', icona: 'drop', nome: 'Impianto idraulico ed elettrico', base: [1300, 1800], area: false },
+		{ id: 'ripristini', icona: 'trowel', nome: 'Ripristini e impermeabilizzazione', base: [500, 700], area: true },
+		{ id: 'rivestimenti', icona: 'wall', nome: 'Pavimenti e rivestimenti, con posa', base: [1300, 1800], area: true },
+		{ id: 'sanitari', icona: 'toilet', nome: 'Sanitari, rubinetti, mobile e doccia', base: [1200, 1400], area: false },
+		{ id: 'finiture', icona: 'roller', nome: 'Tinteggiatura, verifiche e pulizia', base: [300, 400], area: true }
 	],
 	// quanto si aggiunge rispetto al livello Base
 	livelli: {
 		base: {},
-		comfort: { impianti: [200, 400], rivestimenti: [1000, 1600], sanitari: [1300, 2000] },
-		top: { impianti: [500, 800], ripristini: [300, 400], rivestimenti: [2700, 4000], sanitari: [3000, 4800] }
+		comfort: { impianti: [150, 300], rivestimenti: [800, 1200], sanitari: [1050, 1500] },
+		top: { impianti: [400, 600], ripristini: [200, 300], rivestimenti: [2100, 3000], sanitari: [2300, 3600] }
 	},
 	misure: { piccolo: { area: 0.75, fisso: 0.95 }, medio: { area: 1, fisso: 1 }, grande: { area: 1.45, fisso: 1.1 } },
-	rinnovoImpianti: [400, 800], // solo piccoli adeguamenti, impianti che restano
+	pareti: { doccia: 0.8, meta: 1, soffitto: 1.3 }, // quanto rivestimento sulle pareti
+	rinnovoImpianti: [300, 600], // impianti che restano: solo piccoli adeguamenti
 	rinnovoDemolizioni: 0.8,
-	spostamento: [1200, 2500],
-	iva: 1.1 // ipotesi: lavori su abitazione al 10%, da verificare caso per caso
+	spostamento: [1000, 2000],
+	docciaVasca: {
+		doccia: null,
+		vasca: { icona: 'bathtub', nome: 'Vasca al posto della doccia', costo: [300, 600] },
+		entrambe: { icona: 'bathtub', nome: 'Doccia e vasca', costo: [900, 1500] },
+		davasca: { icona: 'shower', nome: 'Togliere la vasca e fare la doccia', costo: [300, 600] }
+	},
+	extra: {
+		filo: { icona: 'tray', nome: 'Piatto doccia a filo pavimento', costo: [400, 800] },
+		box: { icona: 'glass', nome: 'Box doccia in cristallo su misura', costo: [500, 1000] },
+		sospesi: { icona: 'toilet', nome: 'Sanitari sospesi', costo: [350, 650] },
+		termo: { icona: 'radiator', nome: 'Termoarredo scaldasalviette', costo: [250, 500] },
+		specchio: { icona: 'mirror', nome: 'Specchio con luce', costo: [150, 350] },
+		lavatrice: { icona: 'washer', nome: 'Attacco per la lavatrice', costo: [150, 300] }
+	},
+	iva: 0.1 // lavori sulla casa: IVA al 10% (aziende ed enti: 22%). Da verificare col commercialista.
 };
 
 const nomiBagno = {
 	intervento: { rinnovo: 'rinnovo di piastrelle e sanitari', completo: 'rifacimento completo' },
 	misura: { piccolo: 'piccolo (fino a 4 m²)', medio: 'medio (4–7 m²)', grande: 'grande (oltre 7 m²)', nonso: 'misura da verificare' },
+	doccia: { doccia: 'doccia', vasca: 'vasca', entrambe: 'doccia e vasca', davasca: 'da vasca a doccia' },
+	pareti: { doccia: 'piastrelle solo in zona doccia', meta: 'piastrelle fino a 1,2 m', soffitto: 'piastrelle fino al soffitto' },
 	disposizione: { uguale: 'disposizione uguale', cambio: 'disposizione da cambiare', nonso: 'disposizione da decidere' },
 	livello: { base: 'Base', comfort: 'Comfort', top: 'Top' },
 	dove: { terraferma: 'terraferma', venezia: 'Venezia e isole' }
 };
 
 const cento = (n) => Math.round(n / 100) * 100;
+const lista = (x) => (Array.isArray(x) ? x : x ? [x] : []);
 
+/** Budget del bagno. min e max sono IVA inclusa; nettoMin e nettoMax senza IVA. */
 export function calcolaBagno(v) {
 	const livello = bagno.livelli[v.livello] ? v.livello : 'comfort';
 	const m = bagno.misure[v.misura] ?? bagno.misure.medio;
 	const rinnovo = v.intervento === 'rinnovo';
 	const agg = bagno.livelli[livello];
-	const voci = bagno.voci.map((x) => {
+	const netto = bagno.voci.map((x) => {
 		let [a, b] = rinnovo && x.id === 'impianti' ? bagno.rinnovoImpianti : x.base;
 		if (rinnovo && x.id === 'demolizioni') {
 			a *= bagno.rinnovoDemolizioni;
@@ -288,39 +337,63 @@ export function calcolaBagno(v) {
 			a += agg[x.id][0];
 			b += agg[x.id][1];
 		}
-		const k = x.area ? m.area : m.fisso;
+		let k = x.area ? m.area : m.fisso;
+		if (x.id === 'rivestimenti') k *= bagno.pareti[v.pareti] ?? 1;
 		const nome = rinnovo && x.id === 'impianti' ? 'Piccoli adeguamenti di impianti' : x.nome;
-		return { nome, min: cento(a * k), max: cento(b * k) };
+		return { icona: x.icona, nome, min: a * k, max: b * k };
 	});
-	if (v.disposizione === 'cambio') voci.push({ nome: 'Spostamento di scarichi e punti acqua', min: bagno.spostamento[0], max: bagno.spostamento[1] });
-	if (v.disposizione === 'nonso') voci.push({ nome: 'Eventuale spostamento di scarichi', daValutare: true });
-	if (v.misura === 'nonso') voci.push({ nome: 'Misure esatte', daValutare: true });
-	if (v.dove === 'venezia') voci.push({ nome: 'Trasporto via acqua e logistica', daValutare: true });
-	const min = voci.reduce((t, x) => t + (x.min ?? 0), 0);
-	const max = voci.reduce((t, x) => t + (x.max ?? 0), 0);
+	const dv = bagno.docciaVasca[v.doccia];
+	if (dv) netto.push({ icona: dv.icona, nome: dv.nome, min: dv.costo[0], max: dv.costo[1] });
+	for (const e of lista(v.extra)) {
+		const x = bagno.extra[e];
+		if (x) netto.push({ icona: x.icona, nome: x.nome, min: x.costo[0], max: x.costo[1] });
+	}
+	if (v.disposizione === 'cambio') netto.push({ icona: 'wrench', nome: 'Spostamento di scarichi e punti acqua', min: bagno.spostamento[0], max: bagno.spostamento[1] });
+	const daValutare = [];
+	if (v.disposizione === 'nonso') daValutare.push({ icona: 'wrench', nome: 'Eventuale spostamento di scarichi', daValutare: true });
+	if (v.misura === 'nonso') daValutare.push({ icona: 'ruler', nome: 'Misure esatte', daValutare: true });
+	if (v.dove === 'venezia') daValutare.push({ icona: 'pin', nome: 'Trasporto via acqua e logistica', daValutare: true });
+	// voci arrotondate a 100 €, con e senza IVA: i totali sono la somma delle voci
+	const voci = netto.map((x) => ({ ...x, nettoMin: cento(x.min), nettoMax: cento(x.max), min: cento(x.min * (1 + bagno.iva)), max: cento(x.max * (1 + bagno.iva)) }));
+	const somma = (k) => voci.reduce((t, x) => t + x[k], 0);
+	const min = somma('min');
+	const max = somma('max');
 	const testo = [
 		nomiBagno.intervento[v.intervento] ?? nomiBagno.intervento.completo,
 		nomiBagno.misura[v.misura] ?? nomiBagno.misura.medio,
+		nomiBagno.doccia[v.doccia] ?? nomiBagno.doccia.doccia,
+		nomiBagno.pareti[v.pareti] ?? nomiBagno.pareti.meta,
 		nomiBagno.disposizione[v.disposizione] ?? nomiBagno.disposizione.uguale,
 		'finiture ' + nomiBagno.livello[livello],
 		nomiBagno.dove[v.dove] ?? nomiBagno.dove.terraferma
 	].join(', ');
+	const extra = lista(v.extra).map((e) => bagno.extra[e]?.nome.toLowerCase()).filter(Boolean);
 	return {
 		min,
 		max,
-		ivaMin: cento(min * bagno.iva),
-		ivaMax: cento(max * bagno.iva),
-		voci,
+		nettoMin: somma('nettoMin'),
+		nettoMax: somma('nettoMax'),
+		voci: [...voci, ...daValutare],
 		livello,
 		durata: rinnovo ? '1–2 settimane' : '2–4 settimane',
 		comprende: ['Materiali del livello scelto e posa', 'Impermeabilizzazione della doccia', 'Smaltimento delle macerie', 'Pulizia finale'],
 		esclude: ['Progetto e pratiche comunali', 'Accessori non elencati', 'Imprevisti sotto pavimenti e rivestimenti'],
 		aumenti: ['Tubi o massetto da rifare', 'Spostare wc o doccia', 'Piano alto senza ascensore', 'Accesso solo via acqua'],
-		riepilogo: `Bagno: ${testo}. Budget indicativo: ${euro(min)}–${euro(max)} € + IVA.`
+		riepilogo: `Bagno: ${testo}${extra.length ? ', con ' + extra.join(', ') : ''}. Budget indicativo: ${euro(min)}–${euro(max)} €, IVA 10% inclusa.`
 	};
 }
 
-export const bagnoPredefinito = { cosa: 'bagno', intervento: 'completo', misura: 'medio', disposizione: 'uguale', livello: 'comfort', dove: 'terraferma' };
+export const bagnoPredefinito = {
+	cosa: 'bagno',
+	intervento: 'completo',
+	misura: 'medio',
+	doccia: 'doccia',
+	extra: [],
+	pareti: 'meta',
+	disposizione: 'uguale',
+	livello: 'comfort',
+	dove: 'terraferma'
+};
 
-// Il prezzo "da" delle ristrutturazioni è il caso più piccolo del simulatore
-aPartireDa.ristrutturazioni.euro = calcolaBagno({ intervento: 'rinnovo', misura: 'piccolo', disposizione: 'uguale', livello: 'base', dove: 'terraferma' }).min;
+// Il prezzo "da" delle ristrutturazioni è il caso più piccolo del simulatore (senza IVA: daTesto la aggiunge)
+aPartireDa.ristrutturazioni.euro = calcolaBagno({ intervento: 'rinnovo', misura: 'piccolo', doccia: 'doccia', pareti: 'meta', disposizione: 'uguale', livello: 'base', dove: 'terraferma' }).nettoMin;
