@@ -1,6 +1,6 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js';
-import { cerca } from './ricerca.js';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100904';
+import { cerca } from './ricerca.js?v=2026100904';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -540,10 +540,15 @@ if (contenuto) {
 			}, 280);
 		}
 	});
+	// Su Safari (Mac e iPhone) un bottone toccato non prende il fuoco: senza questo la tendina si chiudeva
+	// prima del clic e i risultati non si potevano scegliere
+	sugg.addEventListener('mousedown', (e) => {
+		if (e.target.closest('button')) e.preventDefault();
+	});
 	form.addEventListener('focusout', () =>
 		setTimeout(() => {
-			if (!form.contains(document.activeElement)) sugg.hidden = true;
-		}, 0)
+			if (!form.contains(document.activeElement) && !sugg.matches(':hover')) sugg.hidden = true;
+		}, 150)
 	);
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();

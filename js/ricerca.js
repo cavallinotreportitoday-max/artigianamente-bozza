@@ -4,41 +4,64 @@
 
 export const paroleServizi = {
 	ristrutturazioni: [
-		'!ristruttur', 'rinnov', 'rifare', 'bagno', 'demoli', '!cartongess', 'controsoffitt', 'piastrell',
-		'rivestiment', 'cucin', 'tetto', 'copertur', 'impiant', 'appartament', 'casa intera', 'negozio', 'ufficio',
-		'muratur', 'muro nuovo', '!tramezz', 'facciat', 'cantiere', 'lavori in casa'
+		'!ristruttur', 'rinnov', 'rifare', 'rifacimento', 'bagno', 'doccia', 'vasca', 'sanitari', 'box doccia', 'cucin',
+		'demoli', '!cartongess', 'controsoffitt', 'piastrell', 'rivestiment', 'massetto', 'tetto', 'copertur', 'tegol',
+		'coppi', 'lamiera', 'grondai', 'guaina', 'impermeabilizz', 'terrazz', 'balcon', 'impiant', 'appartament',
+		'casa intera', 'rifare casa', 'negozio', 'ufficio', 'locale', 'ristorante', 'albergo', 'hotel', 'muratur',
+		'!muratore', 'edil', 'impresa edile', 'muro nuovo', 'abbattere', 'parete divisoria', '!tramezz', 'soppalc',
+		'ampliament', 'facciat', 'cappotto', 'cantiere', 'lavori in casa', 'pratiche', 'progetto', 'geometra'
 	],
 	imbiancatura: [
-		'!imbianc', '!pittur', '!pitturare', '!dipinger', '!tinteggi', 'pareti', 'parete', 'soffitt', 'colore',
-		'!rasatur', 'rasare', 'stucc', 'crepe', 'crepa', 'buchi', 'smalt', 'ringhier', 'vernici', 'bianco',
-		'facciat', 'antimuffa', 'muri', 'muro'
+		'!imbianc', '!pittur', '!pitturare', '!dipinger', '!tinteggi', 'tinta', 'colore', 'colori', 'ridipinger',
+		'dare il bianco', 'pareti', 'parete', 'soffitt', 'muri', 'muro', 'rullo', 'pennello', '!rasatur', 'rasare',
+		'stucc', 'crepe', 'crepa', 'buchi', 'fori', 'smalt', 'vernici', 'ringhier', 'cancell', 'bianco', 'lavabile',
+		'traspirante', 'ingiallit', 'annerit', 'sporc', 'ritocc', 'antimuffa', 'facciat', 'esterno', 'condomini',
+		'scale condominiali', 'vano scala', 'decoraz', 'stucco veneziano', 'spugnat', 'effetto'
 	],
 	'risanamento-umidita': [
-		'!muffa', '!muffe', '!umid', '!risalita', '!salnitro', 'sali', '!efflorescen', 'macchi', '!scrost', 'stacc',
-		'si stacca', 'intonaco', '!condensa', 'bagnato', 'laguna', 'odore', 'muro rovinato', 'piano terra',
-		'cantina', 'zoccol'
+		'!muffa', '!muffe', '!umid', '!risalita', '!salnitro', '!salin', 'sale', 'sali', '!efflorescen', '!acqua',
+		'bagnat', 'muro bagnato', 'infiltraz', 'macchi', 'macchie nere', 'muffa nera', 'polvere bianca',
+		'bianco sui muri', '!scrost', 'stacc', 'si stacca', 'gonfi', 'sbriciol', 'intonac', '!condensa', 'appann',
+		'vetri appannati', 'ponte termico', 'odore', 'puzza', 'capillar', 'deumidific', 'barriera', 'iniezion',
+		'vespaio', 'muro rovinato', 'piano terra', 'cantina', 'seminterrat', 'taverna', 'zoccol', 'mattoni',
+		'calce', 'acqua alta', 'marea', 'laguna', 'venezia', 'casa vecchia', 'case vecchie'
 	],
 	falegnameria: [
-		'!legno', '!falegnam', 'su misura', 'ripar', 'porta', 'porte', '!serrament', 'finestr', '!infiss',
-		'!tapparell', 'cernier', 'manigli', 'cassett', 'restaur', 'antico', 'antichi', '!pergol', 'pompeian',
-		'scala', 'scale', 'persian', 'scuri', 'tavolo', 'mensol'
+		'!legno', '!falegnam', 'su misura', 'mobile su misura', 'ripar', 'aggiust', 'porta', 'porte', '!serrament',
+		'finestr', '!infiss', '!tapparell', 'avvolgibil', 'cinghia', 'persian', 'scuri', 'cernier', 'manigli',
+		'serratur', 'cassett', 'anta', 'ante', 'antine', 'scorrevol', 'cigola', 'non chiude', 'restaur', 'antico',
+		'antichi', 'tarli', 'tarlo', 'impregnant', '!pergol', 'pompeian', 'gazebo', 'tettoi', 'staccionat',
+		'recinzion', 'cancell', 'decking', 'passerell', 'pontil', 'cabine', 'spiaggia', 'chiosco', 'bancone', 'arredo negozio',
+		'scala', 'scale', 'tavolo', 'mensol', 'zanzarier'
 	],
 	'montaggio-mobili': [
-		'!montaggio', '!montare', 'monta', '!ikea', 'mobil', 'cucin', 'armadi', 'letto', 'pensil', 'mensol',
-		'smontare', 'smontaggio', '!assembl', 'comò', 'como', 'cassettiera', 'libreria', 'scrivania'
+		'!montaggio', '!montare', 'monta', '!ikea', '!assembl', 'mondo convenienza', 'leroy', 'amazon', 'kit',
+		'istruzioni', 'mobil', 'cucin', 'cucina componibile', 'armadi', 'guardaroba', 'cabina armadio', 'letto',
+		'letto a castello', 'cameretta', 'pensil', 'mensol', 'libreria', 'scrivania', 'comò', 'como', 'cassettiera',
+		'scarpiera', 'divano', 'sedie', 'tavolo', 'appendere', 'fissare', 'tassell', 'quadri', 'tv a muro', 'staffa',
+		'specchio', 'tende', 'bastone', 'elettrodomestic', 'lavastoviglie', 'forno', 'smontare', 'smontaggio',
+		'mobili ufficio'
 	],
 	traslochi: [
-		'!trasloc', 'trasport', 'spostare', 'sposta', 'cambio casa', 'cambiare casa', '!imball', 'scatol',
-		'deposito', 'piattaforma', 'furgone', 'pianoforte', 'pesant', 'ingombrant', 'svuot', '!sgombero'
+		'!trasloc', 'traslocare', 'trasferiment', 'mi trasferisco', 'cambio casa', 'cambiare casa', 'cambio ufficio',
+		'trasport', 'spostare', 'sposta', 'portare', 'furgone', 'camion', 'piattaforma', 'autoscala', 'montacarichi',
+		'piani alti', 'senza ascensore', 'ascensore', '!imball', 'scatol', 'cartoni', 'pluriball', 'deposito',
+		'magazzino', 'custodia', 'pianoforte', 'cassaforte', 'pesant', 'ingombrant', 'fragile', 'svuot',
+		'!sgombero', 'sgomberare', 'svuota cantine', 'smaltiment', 'ritiro mobili', 'piccolo trasloco'
 	],
 	parquet: [
-		'!parquet', 'pavimento', 'pavimenti', '!laminato', '!levig', '!lamatur', 'rovere', 'flottante',
-		'prefinito', 'graffi', 'cera', 'olio', 'battiscopa', 'listoni', 'spina di pesce'
+		'!parquet', 'pavimento', 'pavimenti', 'pavimento in legno', '!laminato', 'vinilico', 'pvc', 'lvt', 'spc',
+		'!levig', '!lamatur', 'lamare', 'carteggi', 'rovere', 'teak', 'iroko', 'doussie', 'noce', 'flottante',
+		'incollato', 'prefinito', 'listoni', 'listelli', 'tavole', 'spina di pesce', 'spina ungherese', 'posa',
+		'posare', 'graffi', 'graffiato', 'scricchiol', 'si alza', 'rovinato', 'cera', 'olio', 'oliare', 'vernice',
+		'battiscopa', 'zoccolino', 'riscaldamento a pavimento', 'radiante'
 	],
 	// La scheda "L'azienda"
 	azienda: [
-		'!aziend', '!appalt', 'chi siete', 'chi siamo', 'squadra', 'mezzi', '!festool', 'partner', 'officina',
-		'enti', 'pubblic', 'comune', 'collabor', 'esperienz', 'dove siete', 'sede', 'indirizz'
+		'!aziend', '!appalt', 'chi siete', 'chi siamo', 'chi e', 'titolare', 'fabrizio', 'alzetta', 'squadra',
+		'mezzi', '!festool', 'partner', 'officina', 'enti', 'pubblic', 'comune', 'collabor', 'referenze',
+		'esperienz', 'anni', 'certificaz', 'assicuraz', 'albo', 'dove siete', 'sede', 'indirizz', 'contatti',
+		'telefono', 'orari', 'cavallino', 'treporti'
 	]
 };
 
@@ -80,6 +103,39 @@ export function cerca(testo) {
 		}
 		const primo = parole[0] || '';
 		if (primo.length >= 3 && normalizza(slug).split(' ')[0].startsWith(primo)) p += 1;
+		return [slug, p];
+	});
+	const trovati = punteggi
+		.filter(([, p]) => p > 0)
+		.sort((a, b) => b[1] - a[1])
+		.map(([s]) => s);
+	return trovati.length ? trovati : cercaConErrori(parole);
+}
+
+// Distanza tra due parole (quante lettere cambiare): serve per gli errori di battitura
+const distanza = (a, b) => {
+	const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+	for (let j = 1; j <= b.length; j++) d[0][j] = j;
+	for (let i = 1; i <= a.length; i++)
+		for (let j = 1; j <= b.length; j++)
+			d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+	return d[a.length][b.length];
+};
+
+/** Se non trova niente: "muffs", "trasloko", "parqet"… una lettera sbagliata (due per parole lunghe) va bene. */
+function cercaConErrori(parole) {
+	const lunghe = parole.filter((w) => w.length >= 5);
+	if (!lunghe.length) return [];
+	const punteggi = Object.entries(paroleServizi).map(([slug, radici]) => {
+		let p = 0;
+		for (const r of radici) {
+			const rn = normalizza(r.replace('!', ''));
+			if (rn.includes(' ') || rn.length < 4) continue;
+			for (const w of lunghe) {
+				const pezzo = w.slice(0, Math.max(rn.length, 4));
+				if (distanza(pezzo, rn) <= (rn.length >= 8 ? 2 : 1)) p += r.startsWith('!') ? 4 : 2;
+			}
+		}
 		return [slug, p];
 	});
 	return punteggi
