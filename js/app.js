@@ -156,11 +156,13 @@ for (const calc of $$('[data-calc]')) {
 	const dettaglio = $('[data-out-dettaglio]', calc);
 	const liste = $('[data-out-liste]', calc);
 	const conCalcolo = Boolean(cifra);
+	// Nella pagina Preventivo ci sono tutti i lavori: scrive il riepilogo solo quello scelto
+	const attivo = () => riepilogo && !calc.closest('[hidden]');
 
 	const aggiorna = () => {
 		const v = leggi(inputs);
 		if (!conCalcolo) {
-			if (riepilogo) riepilogo.value = riepilogoLibero(servizio, inputs);
+			if (attivo()) riepilogo.value = riepilogoLibero(servizio, inputs);
 			return;
 		}
 		const r = calcola(tipo, v);
@@ -200,7 +202,7 @@ for (const calc of $$('[data-calc]')) {
 				liste.append(p);
 			}
 		}
-		if (riepilogo) {
+		if (attivo()) {
 			riepilogo.value =
 				(r.riepilogo || servizio) + (r.min ? ` Stima orientativa: ${euro(r.min)}–${euro(r.max)} € + IVA.` : '');
 		}
@@ -440,4 +442,53 @@ if (contenuto) {
 		daIndirizzo(false);
 	});
 	daIndirizzo(true);
+}
+
+/* Pagina Preventivo: un solo posto per tutti i lavori (1 scegli, 2 domande, 3 dati) */
+const pv = $('[data-pv]');
+if (pv) {
+	const lavori = $$('[data-scegli]', pv);
+	const pannelli = $$('[data-pannello]', pv);
+	const domande = $('[data-pv-domande]', pv);
+	const dati = $('[data-pv-dati]', pv);
+	const campoLavoro = $('[data-pv-lavoro]', pv);
+	const riepilogo = $('[data-riepilogo]', pv);
+	const msg = $('[data-pv-msg]', pv);
+	const facolt = $('[data-pv-facolt]', pv);
+	const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	const scegli = (slug, scorri) => {
+		const scelto = lavori.find((b) => b.dataset.scegli === slug);
+		if (!scelto) return;
+		for (const b of lavori) {
+			const si = b === scelto;
+			b.classList.toggle('is-active', si);
+			b.setAttribute('aria-pressed', String(si));
+		}
+		for (const p of pannelli) p.hidden = p.dataset.pannello !== slug;
+		domande.hidden = false;
+		dati.hidden = false;
+		campoLavoro.value = $('.v3-pv__nome', scelto).textContent.trim();
+		const altro = slug === 'altro';
+		msg.required = altro;
+		facolt.hidden = altro;
+		if (altro) riepilogo.value = 'Altro lavoro: vedi la descrizione.';
+		else $(`[data-pannello="${slug}"] [data-calc-inputs]`, pv)?.dispatchEvent(new Event('input', { bubbles: true }));
+		try {
+			history.replaceState(null, '', location.pathname + '#' + slug);
+		} catch {
+			// in alcune anteprime l'indirizzo non si può cambiare
+		}
+		if (scorri) domande.scrollIntoView({ behavior: ridotto ? 'auto' : 'smooth', block: 'start' });
+	};
+
+	for (const b of lavori) b.addEventListener('click', () => scegli(b.dataset.scegli, true));
+
+	// Arrivo da "Calcola il preventivo" (preventivo.html#parquet): lavoro già scelto
+	const daIndirizzo = () => {
+		const h = decodeURIComponent(location.hash.slice(1));
+		if (lavori.some((b) => b.dataset.scegli === h)) requestAnimationFrame(() => scegli(h, true));
+	};
+	addEventListener('hashchange', daIndirizzo);
+	daIndirizzo();
 }

@@ -51,6 +51,26 @@ export const tariffe = {
 	}
 };
 
+// Prezzi "a partire da": con materiali di base. Materiali e finiture si scelgono al sopralluogo.
+// PROVVISORI: ristrutturazioni, risanamento e falegnameria sono stime da far decidere a Fabri.
+export const aPartireDa = {
+	ristrutturazioni: { euro: 350, unita: '/m²', dettaglio: 'Al m² di superficie.' },
+	imbiancatura: { euro: 6, unita: '/m²', dettaglio: 'Al m² di parete, pittura bianca traspirante.' },
+	'risanamento-umidita': { euro: 60, unita: '/m²', dettaglio: 'Al m² di muro, con intonaco deumidificante.' },
+	falegnameria: { euro: 60, unita: '', dettaglio: 'Piccole riparazioni a domicilio.' },
+	'montaggio-mobili': { euro: 70, unita: '', dettaglio: 'Uscita minima per mobili piccoli.' },
+	traslochi: { euro: 450, unita: '', dettaglio: 'Monolocale, in zona.' },
+	parquet: { euro: 14, unita: '/m²', dettaglio: 'Al m², posa di laminato.' }
+};
+
+export const notaMateriali = 'Con materiali di base. Materiali e finiture li scegliamo insieme al sopralluogo.';
+
+/** "6 €/m²" */
+export const daTesto = (slug) => {
+	const d = aPartireDa[slug];
+	return d ? `${euro(d.euro)} €${d.unita}` : '';
+};
+
 export const predefiniti = {
 	imbiancatura: { mq: 80, soffitti: true, pittura: 'traspirante', pareti: 'buone', stanze: 'arredate', colore: 'bianco' },
 	parquet: { lavoro: 'prefinito', mq: 40, rimozione: false, battiscopa: false },
