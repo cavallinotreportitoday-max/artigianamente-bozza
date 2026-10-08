@@ -490,7 +490,17 @@ if (contenuto) {
 		clearTimeout(attesa);
 		attesa = setTimeout(() => esegui(false), 180);
 	});
-	input.addEventListener('focus', () => (sugg.hidden = Boolean(input.value)));
+	input.addEventListener('focus', () => {
+		sugg.hidden = Boolean(input.value);
+		// Sul telefono la barra sale sotto l'intestazione, così i suggerimenti restano sopra la tastiera
+		if (matchMedia('(max-width: 760px)').matches) {
+			setTimeout(() => {
+				const titolo = $('.v3-cerca__titolo') || form;
+				const y = titolo.getBoundingClientRect().top + scrollY - (header?.offsetHeight || 60) - 10;
+				if (y > scrollY + 8) scrollTo({ top: y, behavior: ridotto ? 'auto' : 'smooth' });
+			}, 280);
+		}
+	});
 	form.addEventListener('focusout', () =>
 		setTimeout(() => {
 			if (!form.contains(document.activeElement)) sugg.hidden = true;
@@ -659,6 +669,59 @@ for (const a of $$('[data-indietro]')) {
 			history.back();
 		}
 	});
+}
+
+/* Mappe "Dove siamo": disegnate con MapLibre e la mappa libera di OpenFreeMap (nitida anche su iPhone).
+   Il programma (nel sito, cartella vendor) si carica solo quando una mappa sta per vedersi. */
+const mappe = $$('[data-mappa]');
+if (mappe.length && 'IntersectionObserver' in window) {
+	const base = new URL('../vendor/maplibre/', import.meta.url);
+	let libreria;
+	const carica = () =>
+		(libreria ||= new Promise((ok, no) => {
+			const css = document.createElement('link');
+			css.rel = 'stylesheet';
+			css.href = new URL('maplibre-gl.css', base).href;
+			document.head.append(css);
+			const s = document.createElement('script');
+			s.src = new URL('maplibre-gl.js', base).href;
+			s.onload = ok;
+			s.onerror = no;
+			document.head.append(s);
+		}));
+	const disegna = async (el) => {
+		try {
+			await carica();
+			const mappa = new window.maplibregl.Map({
+				container: el,
+				style: 'https://tiles.openfreemap.org/styles/bright',
+				center: [Number(el.dataset.lon), Number(el.dataset.lat)],
+				zoom: el.clientWidth < 600 ? 12.2 : 12.8,
+				interactive: false,
+				attributionControl: false,
+				fadeDuration: 0
+			});
+			mappa.once('load', () => el.classList.add('is-pronta'));
+		} catch {
+			// senza mappa resta il fondo chiaro con il pallino: si può sempre toccare per aprire Mappe
+		}
+	};
+	const guarda = new IntersectionObserver(
+		(voci) => {
+			for (const v of voci) {
+				if (!v.isIntersecting) continue;
+				guarda.unobserve(v.target);
+				disegna(v.target);
+			}
+		},
+		{ rootMargin: '300px' }
+	);
+	for (const m of mappe) guarda.observe(m);
+}
+
+/* "Portami qui": su iPhone, iPad e Mac apre Mappe di Apple, altrimenti Google Maps */
+if (/iPhone|iPad|Macintosh/.test(navigator.userAgent)) {
+	for (const a of $$('[data-portami]')) a.href = `https://maps.apple.com/?daddr=${encodeURIComponent(a.dataset.portami)}`;
 }
 
 /* Righe con frecce ‹ › (come Airbnb): scorrono di una pagina e si spengono agli estremi. Sul telefono si usa il dito. */
