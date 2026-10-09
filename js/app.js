@@ -345,23 +345,66 @@ if (sel && soloTraslochi) {
 	mostra();
 }
 
-/* Visore foto */
+/* Visore foto. Le foto della stessa galleria (data-visore-gruppo) si sfogliano: frecce, dito, tasti ← → */
 const visore = $('[data-visore]');
 if (visore && typeof visore.showModal === 'function') {
 	const img = $('[data-visore-img]', visore);
+	const prec = $('[data-visore-prec]', visore);
+	const succ = $('[data-visore-succ]', visore);
+	const conta = $('[data-visore-conta]', visore);
+	let gruppo = [];
+	let at = 0;
+	const mostra = (i) => {
+		at = (i + gruppo.length) % gruppo.length;
+		const a = gruppo[at];
+		img.src = a.getAttribute('href');
+		img.alt = $('img', a)?.alt || '';
+		const tante = gruppo.length > 1;
+		prec.hidden = succ.hidden = conta.hidden = !tante;
+		conta.textContent = `${at + 1} / ${gruppo.length}`;
+	};
 	for (const a of $$('[data-visore-link]')) {
 		a.addEventListener('click', (e) => {
 			e.preventDefault();
-			const thumb = $('img', a);
-			img.src = a.getAttribute('href');
-			img.alt = thumb?.alt || '';
+			const nome = a.dataset.visoreGruppo;
+			gruppo = nome ? $$(`[data-visore-gruppo="${nome}"]`) : [a];
+			mostra(gruppo.indexOf(a));
 			visore.showModal();
 		});
 	}
+	prec.addEventListener('click', () => mostra(at - 1));
+	succ.addEventListener('click', () => mostra(at + 1));
+	scorriColDito(visore, (avanti) => gruppo.length > 1 && mostra(at + (avanti ? 1 : -1)));
+	visore.addEventListener('keydown', (e) => {
+		if (gruppo.length < 2) return;
+		if (e.key === 'ArrowRight') mostra(at + 1);
+		else if (e.key === 'ArrowLeft') mostra(at - 1);
+	});
 	$('[data-visore-chiudi]', visore).addEventListener('click', () => visore.close());
 	visore.addEventListener('click', (e) => {
 		if (e.target === visore || e.target.hasAttribute('data-visore-chiudi-sfondo')) visore.close();
 	});
+}
+
+/* Galleria in cima alle pagine dei servizi: si scorre col dito, "1 / 6" segue la foto, frecce ‹ › col mouse */
+for (const g of $$('[data-galleria]')) {
+	const riga = $('[data-galleria-riga]', g);
+	const n = $('[data-galleria-n]', g);
+	const prec = $('[data-galleria-prec]', g);
+	const succ = $('[data-galleria-succ]', g);
+	const lento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const quale = () => Math.round(riga.scrollLeft / (riga.clientWidth || 1));
+	const stato = () => {
+		const i = quale();
+		n.textContent = String(i + 1);
+		prec.disabled = i <= 0;
+		succ.disabled = i >= riga.children.length - 1;
+	};
+	const vai = (verso) => riga.scrollTo({ left: (quale() + verso) * riga.clientWidth, behavior: lento ? 'auto' : 'smooth' });
+	prec.addEventListener('click', () => vai(-1));
+	succ.addEventListener('click', () => vai(1));
+	riga.addEventListener('scroll', stato, { passive: true });
+	stato();
 }
 
 /* Home: la foto di sfondo è alta quanto la prima schermata (titolo e ricerca);
@@ -383,7 +426,15 @@ if (sfondo && zonaCerca) {
 	);
 }
 
-/* Home: ricerca, pulsanti dei lavori e schede */
+/* Icone dei lavori (in ogni pagina): l'icona attiva si vede subito, anche quando la riga scorre di lato */
+const barraChips = $('[data-chips]');
+const chipAttiva = barraChips && $('.v3-chip.is-active', barraChips);
+if (chipAttiva) {
+	const riga = chipAttiva.parentElement;
+	riga.scrollLeft = Math.max(0, chipAttiva.offsetLeft - riga.clientWidth / 2 + chipAttiva.offsetWidth / 2);
+}
+
+/* Home: la vetrina. La ricerca e le icone portano alla pagina di ogni lavoro */
 const contenuto = $('[data-contenuto]');
 if (contenuto) {
 	const form = $('[data-ricerca-form]');
@@ -394,136 +445,52 @@ if (contenuto) {
 	const risultati = $('[data-sugg-risultati]');
 	const vuotoSugg = $('[data-sugg-vuoto]');
 	const bottoniRis = $$('[data-risultato]');
-	const barraChips = $('[data-chips]');
-	const chips = $$('[data-chip]');
-	const esitoBox = $('[data-esito-box]');
-	const esito = $('[data-esito]');
-	const anche = $('[data-anche]');
-	const panoramica = $('[data-panoramica]');
-	const schede = $$('[data-scheda]');
 	const vuoto = $('[data-vuoto]');
-	const slugs = schede.map((s) => s.dataset.scheda);
 	const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
-	const nome = (slug) => $(`[data-chip="${slug}"] span`)?.textContent.trim() || slug;
+	const pagina = (slug) => `./${slug}.html`;
 
-	const attivaChip = (slug) => {
-		for (const c of chips) {
-			const si = c.dataset.chip === slug;
-			c.classList.toggle('is-active', si);
-			c.setAttribute('aria-pressed', String(si));
-			if (si) {
-				const box = c.parentElement;
-				const x = c.offsetLeft - box.clientWidth / 2 + c.offsetWidth / 2;
-				box.scrollTo({ left: Math.max(0, x), behavior: ridotto ? 'auto' : 'smooth' });
-			}
-		}
+	// Porta la vetrina subito sotto le icone fisse
+	const scorriAiLavori = (morbido) => {
+		const y = contenuto.getBoundingClientRect().top + scrollY - (header?.offsetHeight || 0) - (barraChips?.offsetHeight || 0);
+		scrollTo({ top: Math.max(0, y), behavior: morbido && !ridotto ? 'smooth' : 'instant' });
 	};
 
-	const bottone = (slug) => {
-		const b = document.createElement('button');
-		b.type = 'button';
-		b.dataset.vai = slug;
-		b.textContent = nome(slug);
-		return b;
+	// Indirizzi vecchi (#traslochi, #azienda…): ora ogni lavoro ha la sua pagina
+	const daIndirizzo = (primaVolta) => {
+		const h = decodeURIComponent(location.hash.slice(1));
+		if (h && h !== 'tutto' && bottoniRis.some((b) => b.dataset.risultato === h)) location.replace(pagina(h));
+		else if (h === 'tutto' && !(primaVolta && tornato)) requestAnimationFrame(() => scorriAiLavori(!primaVolta));
 	};
+	daIndirizzo(true);
+	addEventListener('hashchange', () => daIndirizzo(false));
 
-	// modo: 'tutto' = vista iniziale, 'lavoro' = una scheda, 'ricerca' = risultato di una ricerca
-	const vista = (modo, trovati = [], testo = '') => {
-		const primo = trovati[0];
-		panoramica.hidden = modo !== 'tutto';
-		for (const s of schede) s.hidden = s.dataset.scheda !== primo;
-		vuoto.hidden = !(modo === 'ricerca' && !primo);
-		attivaChip(modo === 'tutto' ? 'tutto' : primo);
-		anche.replaceChildren();
-		esitoBox.hidden = modo !== 'ricerca';
-		if (modo !== 'ricerca') return;
-		if (!primo) {
-			esito.textContent = `Nessun risultato per «${testo}».`;
-			return;
-		}
-		const forte = document.createElement('strong');
-		forte.textContent = nome(primo);
-		esito.replaceChildren(`Per «${testo}» il lavoro giusto è `, forte, '.');
-		const altri = trovati.slice(1, 3);
-		if (altri.length) {
-			const t = document.createElement('span');
-			t.textContent = 'Guarda anche:';
-			anche.append(t, ...altri.map(bottone));
-		}
-	};
-
-	// Un lavoro si apre dal suo titolo (sopra la foto), subito sotto le icone fisse
-	const testaDi = (slug) => $(`[data-scheda="${slug}"] .v3-scheda__testa`) || contenuto;
-	// Porta il punto giusto subito sotto le icone fisse. Sul telefono il salto è immediato e poi si ricontrolla:
-	// su iPhone lo scorrimento morbido a volte si fermava prima e restava in vista la foto della home.
-	const touch = matchMedia('(pointer: coarse)').matches;
-	let mossoDalDito = false;
-	addEventListener('touchstart', () => (mossoDalDito = true), { passive: true });
-	addEventListener('wheel', () => (mossoDalDito = true), { passive: true });
-	const puntoDi = (dove) => {
-		const sopra = (header?.offsetHeight || 0) + (barraChips?.offsetHeight || 0) + (dove === contenuto ? 0 : 14);
-		// posizione senza contare l'animazione d'entrata della scheda (che la sposta di qualche px)
-		let y = -sopra;
-		for (let el = dove; el; el = el.offsetParent) y += el.offsetTop;
-		return Math.max(0, y);
-	};
-	const scorri = (dove = contenuto) => {
-		const y = puntoDi(dove);
-		if (Math.abs(scrollY - y) <= 4) return;
-		mossoDalDito = false;
-		scrollTo({ top: y, behavior: touch || ridotto ? 'instant' : 'smooth' });
-		setTimeout(() => {
-			const giusto = puntoDi(dove);
-			if (!mossoDalDito && Math.abs(scrollY - giusto) > 4) scrollTo({ top: giusto, behavior: 'instant' });
-		}, touch ? 350 : 900);
-	};
-
-	const indirizzo = (slug, nuovo) => {
-		const url = location.pathname + (slug ? '#' + slug : '');
-		if (url === location.pathname + location.hash) return;
+	// "Tutto" in home: resta qui e scende alla vetrina
+	$('[data-chip="tutto"]')?.addEventListener('click', (e) => {
+		e.preventDefault();
 		try {
-			history[nuovo ? 'pushState' : 'replaceState'](null, '', url);
+			history.replaceState(null, '', location.pathname + '#tutto');
 		} catch {
-			// in alcune anteprime l'indirizzo non si può cambiare: la pagina funziona lo stesso
+			// in alcune anteprime l'indirizzo non si può cambiare
 		}
-	};
+		scorriAiLavori(true);
+	});
 
 	const aggiornaPulisci = () => (pulisci.hidden = !input.value);
 
-	const apri = (slug) => {
-		input.value = '';
-		aggiornaPulisci();
-		if (slug === 'tutto') {
-			indirizzo('', true);
-			vista('tutto');
-			scorri(contenuto);
-		} else {
-			indirizzo(slug, true);
-			vista('lavoro', [slug]);
-			scorri(testaDi(slug));
-		}
-	};
-
-	const esegui = (conferma) => {
-		const testo = input.value.trim();
-		aggiornaPulisci();
-		if (!testo) {
-			indirizzo('', false);
-			vista('tutto');
+	const vai = (testo) => {
+		const trovati = cerca(testo);
+		if (trovati.length) {
+			location.href = pagina(trovati[0]);
 			return;
 		}
-		if (testo.length < 2 && !conferma) return;
-		const trovati = cerca(testo);
-		indirizzo(trovati[0] || '', false);
-		vista('ricerca', trovati, testo);
-		if (conferma) {
-			sugg.hidden = true;
-			input.blur();
-			scorri();
-		}
+		// niente trovato: un messaggio gentile sopra la vetrina
+		sugg.hidden = true;
+		input.blur();
+		vuoto.hidden = false;
+		scorriAiLavori(true);
 	};
 
-	// Tendina sotto la barra: ricerche frequenti se è vuota, i lavori trovati mentre scrivi (si vedono subito, anche col telefono)
+	// Tendina sotto la barra: ricerche frequenti se è vuota, i lavori trovati mentre scrivi
 	const tendina = () => {
 		const testo = input.value.trim();
 		const scrivo = testo.length >= 2;
@@ -539,13 +506,11 @@ if (contenuto) {
 		vuotoSugg.hidden = trovati.length > 0;
 	};
 
-	let attesa;
 	input.addEventListener('input', () => {
 		sugg.hidden = document.activeElement !== input;
+		vuoto.hidden = true;
 		tendina();
 		aggiornaPulisci();
-		clearTimeout(attesa);
-		attesa = setTimeout(() => esegui(false), 180);
 	});
 	input.addEventListener('focus', () => {
 		sugg.hidden = false;
@@ -571,8 +536,8 @@ if (contenuto) {
 	);
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();
-		clearTimeout(attesa);
-		esegui(true);
+		const testo = input.value.trim();
+		if (testo) vai(testo);
 	});
 	form.addEventListener('keydown', (e) => {
 		const voci = $$('button', sugg).filter((b) => b.offsetParent !== null);
@@ -590,63 +555,21 @@ if (contenuto) {
 	sugg.addEventListener('click', (e) => {
 		const r = e.target.closest('[data-risultato]');
 		if (r) {
-			sugg.hidden = true;
-			input.blur();
-			apri(r.dataset.risultato);
+			location.href = pagina(r.dataset.risultato);
 			return;
 		}
 		const b = e.target.closest('[data-suggerimento]');
 		if (!b) return;
 		input.value = b.dataset.suggerimento;
-		esegui(true);
+		vai(b.dataset.suggerimento);
 	});
 	pulisci.addEventListener('click', () => {
 		input.value = '';
-		esegui(false);
+		aggiornaPulisci();
+		vuoto.hidden = true;
+		tendina();
 		input.focus();
 	});
-
-	for (const c of chips) c.addEventListener('click', () => apri(c.dataset.chip));
-	anche.addEventListener('click', (e) => {
-		const b = e.target.closest('[data-vai]');
-		if (b) apri(b.dataset.vai);
-	});
-	for (const a of $$('[data-apri]')) {
-		a.addEventListener('click', (e) => {
-			if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-			e.preventDefault();
-			apri(a.dataset.apri);
-		});
-	}
-
-	// "‹ Tutti i lavori" sopra la scheda
-	for (const b of $$('[data-torna]')) b.addEventListener('click', () => apri('tutto'));
-
-	// Sul telefono: trascinare la foto della scheda porta al lavoro dopo o prima
-	for (const s of schede) {
-		const img = $('.v3-scheda__img', s);
-		const i = slugs.indexOf(s.dataset.scheda);
-		scorriColDito(img, (avanti) => apri(slugs[(i + (avanti ? 1 : -1) + slugs.length) % slugs.length]));
-	}
-
-	// Indirizzo con #lavoro: apre direttamente quella scheda (anche col tasto indietro)
-	const daIndirizzo = (primaVolta) => {
-		const h = decodeURIComponent(location.hash.slice(1));
-		if (slugs.includes(h)) {
-			vista('lavoro', [h]);
-			// anche dal menu (L'azienda) o col tasto indietro: si va al titolo della scheda
-			if (primaVolta) !tornato && requestAnimationFrame(() => scorri(testaDi(h)));
-			else scorri(testaDi(h));
-		} else if (!input.value.trim()) {
-			vista('tutto');
-		}
-	};
-	addEventListener('popstate', () => {
-		input.value = '';
-		aggiornaPulisci();
-		daIndirizzo(false);
-	});
-	daIndirizzo(true);
 }
 
 /* Pagina Preventivo: scegli il servizio, rispondi, vedi la stima; i dati solo se chiedi il sopralluogo */
@@ -866,11 +789,6 @@ for (const box of $$('[data-scorri]')) {
 	stato();
 }
 
-/* Pagina di un lavoro: col dito sulla foto di copertina si va al lavoro dopo o prima */
-const copertina = $('[data-copertina]');
-const succ = $('[data-succ]');
-const prec = $('[data-prec]');
-if (copertina && succ && prec) scorriColDito(copertina, (avanti) => (location.href = (avanti ? succ : prec).href));
 
 /* Tipi di ristrutturazione: pulsanti che cambiano la scheda sotto */
 const tipi = $$('[data-tipo]');
