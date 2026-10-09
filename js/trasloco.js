@@ -55,31 +55,21 @@ export const zoneVenezia = [
 	{ id: 'pellestrina', nome: 'Pellestrina', lat: 45.4383, lon: 12.3187, ferry: true, km: 18 }
 ];
 
-// sm: ore-persona per smontare e rimontare. extra: € netti in più. valuta: si decide al sopralluogo.
+// sm: ore-persona per smontare e rimontare. extra: € netti in più. Pochi oggetti, i più comuni (richiesta del 9/10: semplice).
 export const stanze = [
 	{
 		id: 'soggiorno',
 		nome: 'Soggiorno',
 		icona: 't-divano',
 		oggetti: [
-			{ id: 'divano2', nome: 'Divano 2 posti', m3: 1.5, icona: 't-divano' },
-			{ id: 'divano3', nome: 'Divano 3 posti', m3: 2, icona: 't-divano' },
+			{ id: 'divano3', nome: 'Divano', m3: 2, icona: 't-divano' },
 			{ id: 'divanoL', nome: 'Divano angolare', m3: 3, icona: 't-angolo', sm: 0.5 },
 			{ id: 'poltrona', nome: 'Poltrona', m3: 0.8, icona: 't-poltrona' },
-			{ id: 'tavolo', nome: 'Tavolo 4–6 posti', m3: 1, icona: 't-tavolo', sm: 0.3 },
-			{ id: 'tavoloG', nome: 'Tavolo grande', m3: 1.5, icona: 't-tavolo', sm: 0.5 },
+			{ id: 'tavolo', nome: 'Tavolo', m3: 1, icona: 't-tavolo', sm: 0.3 },
 			{ id: 'sedia', nome: 'Sedia', m3: 0.25, icona: 't-sedia' },
-			{ id: 'tavolino', nome: 'Tavolino', m3: 0.3, icona: 't-tavolino' },
-			{ id: 'mobileTv', nome: 'Mobile TV', m3: 0.6, icona: 't-mobiletv', sm: 0.3 },
-			{ id: 'tv', nome: 'Televisore', m3: 0.2, icona: 't-tv' },
-			{ id: 'libreriaP', nome: 'Libreria piccola', m3: 0.6, icona: 't-libreria', sm: 0.4 },
-			{ id: 'libreriaG', nome: 'Libreria grande', m3: 1.5, icona: 't-libreria', sm: 0.8 },
-			{ id: 'parete', nome: 'Parete attrezzata', m3: 3, icona: 't-parete', sm: 2.5 },
-			{ id: 'credenza', nome: 'Credenza o madia', m3: 1.5, icona: 't-credenza' },
-			{ id: 'vetrina', nome: 'Vetrina', m3: 1.2, icona: 't-vetrina' },
-			{ id: 'tappeto', nome: 'Tappeto', m3: 0.2, icona: 't-tappeto' },
-			{ id: 'lampada', nome: 'Lampada da terra', m3: 0.2, icona: 't-lampada' },
-			{ id: 'quadro', nome: 'Quadro o specchio', m3: 0.1, icona: 't-quadro' }
+			{ id: 'mobileTv', nome: 'Mobile TV e televisore', m3: 0.8, icona: 't-mobiletv', sm: 0.3 },
+			{ id: 'libreriaG', nome: 'Libreria o vetrina', m3: 1.2, icona: 't-libreria', sm: 0.6 },
+			{ id: 'credenza', nome: 'Credenza o madia', m3: 1.5, icona: 't-credenza' }
 		]
 	},
 	{
@@ -89,59 +79,32 @@ export const stanze = [
 		oggetti: [
 			{ id: 'cucinaM', nome: 'Cucina componibile', m3: 0.8, icona: 't-cucina', sm: 1.2, unita: 'm', passo: 0.5 },
 			{ id: 'frigo', nome: 'Frigorifero', m3: 1, icona: 't-frigo' },
-			{ id: 'frigoA', nome: 'Frigo americano', m3: 1.5, icona: 't-frigoa' },
-			{ id: 'lavastoviglie', nome: 'Lavastoviglie', m3: 0.5, icona: 't-lavastoviglie' },
-			{ id: 'forno', nome: 'Forno o cucina a gas', m3: 0.5, icona: 't-forno' },
-			{ id: 'microonde', nome: 'Microonde', m3: 0.1, icona: 't-microonde' },
-			{ id: 'tavoloC', nome: 'Tavolo da cucina', m3: 0.8, icona: 't-tavolo', sm: 0.3 },
-			{ id: 'sediaC', nome: 'Sedia', m3: 0.25, icona: 't-sedia' },
-			{ id: 'dispensa', nome: 'Dispensa o credenza', m3: 1, icona: 't-credenza' }
+			{ id: 'lavastoviglie', nome: 'Lavastoviglie o forno', m3: 0.5, icona: 't-lavastoviglie' },
+			{ id: 'tavoloC', nome: 'Tavolo', m3: 0.8, icona: 't-tavolo', sm: 0.3 },
+			{ id: 'sediaC', nome: 'Sedia', m3: 0.25, icona: 't-sedia' }
 		]
 	},
 	{
 		id: 'camera',
-		nome: 'Camere da letto',
+		nome: 'Camere',
 		icona: 't-letto',
 		oggetti: [
 			{ id: 'lettoM', nome: 'Letto matrimoniale', m3: 2, icona: 't-letto', sm: 1 },
 			{ id: 'lettoS', nome: 'Letto singolo', m3: 1, icona: 't-lettos', sm: 0.6 },
-			{ id: 'castello', nome: 'Letto a castello', m3: 2, icona: 't-castello', sm: 1.5 },
-			{ id: 'armadio2', nome: 'Armadio 2 ante', m3: 1.5, icona: 't-armadio', sm: 1.4 },
-			{ id: 'armadio3', nome: 'Armadio 3 ante', m3: 2, icona: 't-armadio', sm: 2.1 },
-			{ id: 'armadio4', nome: 'Armadio 4 ante', m3: 3, icona: 't-armadiog', sm: 2.8 },
-			{ id: 'armadio6', nome: 'Armadio 6 ante', m3: 4, icona: 't-armadiog', sm: 4 },
-			{ id: 'cabina', nome: 'Cabina armadio', m3: 3.5, icona: 't-abiti', sm: 4 },
+			{ id: 'armadio3', nome: 'Armadio fino a 3 ante', m3: 2, icona: 't-armadio', sm: 2.1 },
+			{ id: 'armadio6', nome: 'Armadio grande', m3: 3.5, icona: 't-armadiog', sm: 3.6 },
 			{ id: 'como', nome: 'Comò o cassettiera', m3: 0.8, icona: 'drawers' },
 			{ id: 'comodino', nome: 'Comodino', m3: 0.2, icona: 't-comodino' },
-			{ id: 'scrivania', nome: 'Scrivania', m3: 0.8, icona: 't-scrivania', sm: 0.5 },
-			{ id: 'sediaS', nome: 'Sedia', m3: 0.25, icona: 't-sedia' },
-			{ id: 'culla', nome: 'Culla o lettino', m3: 0.5, icona: 't-lettos', sm: 0.4 }
+			{ id: 'scrivania', nome: 'Scrivania', m3: 0.8, icona: 't-scrivania', sm: 0.5 }
 		]
 	},
 	{
 		id: 'bagno',
-		nome: 'Bagno e lavanderia',
+		nome: 'Bagno',
 		icona: 't-bagno',
 		oggetti: [
 			{ id: 'bagno', nome: 'Mobili del bagno', m3: 1, icona: 't-bagno', sm: 1.5 },
-			{ id: 'lavatrice', nome: 'Lavatrice', m3: 0.5, icona: 't-lavatrice' },
-			{ id: 'asciugatrice', nome: 'Asciugatrice', m3: 0.5, icona: 't-asciugatrice' },
-			{ id: 'scarpiera', nome: 'Scarpiera o armadietto', m3: 0.5, icona: 't-comodino' },
-			{ id: 'stendino', nome: 'Stendino e asse da stiro', m3: 0.2, icona: 't-stendino' }
-		]
-	},
-	{
-		id: 'studio',
-		nome: 'Studio e ingresso',
-		icona: 't-scrivania',
-		oggetti: [
-			{ id: 'scrivaniaG', nome: 'Scrivania grande', m3: 1.5, icona: 't-scrivania', sm: 0.8 },
-			{ id: 'sediaU', nome: 'Sedia da ufficio', m3: 0.4, icona: 't-sediau' },
-			{ id: 'schedario', nome: 'Cassettiera o schedario', m3: 0.5, icona: 't-schedario' },
-			{ id: 'armadioU', nome: 'Armadio da ufficio', m3: 1.5, icona: 't-armadio', sm: 1 },
-			{ id: 'computer', nome: 'Computer e monitor', m3: 0.2, icona: 't-tv' },
-			{ id: 'attaccapanni', nome: 'Attaccapanni o consolle', m3: 0.3, icona: 't-abiti' },
-			{ id: 'cassapanca', nome: 'Cassapanca', m3: 0.6, icona: 't-credenza' }
+			{ id: 'lavatrice', nome: 'Lavatrice o asciugatrice', m3: 0.5, icona: 't-lavatrice' }
 		]
 	},
 	{
@@ -151,25 +114,16 @@ export const stanze = [
 		oggetti: [
 			{ id: 'bici', nome: 'Bicicletta', m3: 0.6, icona: 't-bici' },
 			{ id: 'scooter', nome: 'Moto o scooter', m3: 2.5, icona: 't-scooter', extra: 40 },
-			{ id: 'tavoloE', nome: 'Tavolo da giardino', m3: 1, icona: 't-ombrellone' },
-			{ id: 'sediaE', nome: 'Sedia o sdraio', m3: 0.2, icona: 't-sdraio' },
-			{ id: 'barbecue', nome: 'Barbecue', m3: 0.5, icona: 't-barbecue' },
-			{ id: 'pianta', nome: 'Pianta o vaso grande', m3: 0.3, icona: 't-pianta' },
-			{ id: 'attrezzi', nome: 'Attrezzi e banco da lavoro', m3: 1, icona: 'tools' },
-			{ id: 'tagliaerba', nome: 'Tagliaerba', m3: 0.5, icona: 't-tagliaerba' }
+			{ id: 'giardino', nome: 'Tavolo e sedie da giardino', m3: 1.5, icona: 't-ombrellone' }
 		]
 	},
 	{
 		id: 'speciali',
-		nome: 'Oggetti speciali',
+		nome: 'Pianoforte e cassaforte',
 		icona: 't-pianoforte',
 		oggetti: [
-			{ id: 'piano', nome: 'Pianoforte verticale', m3: 1.5, icona: 't-pianoforte', extra: 150, squadra: 3 },
-			{ id: 'pianoCoda', nome: 'Pianoforte a coda', m3: 3, icona: 't-pianoforte', valuta: true },
-			{ id: 'cassaforte', nome: 'Cassaforte piccola', m3: 0.2, icona: 't-cassaforte', extra: 60 },
-			{ id: 'cassaforteG', nome: 'Cassaforte grande', m3: 0.5, icona: 't-cassaforte', valuta: true },
-			{ id: 'acquario', nome: 'Acquario', m3: 0.4, icona: 't-acquario', extra: 30 },
-			{ id: 'arte', nome: 'Opere d’arte o mobili antichi', m3: 0.5, icona: 't-quadro', valuta: true }
+			{ id: 'piano', nome: 'Pianoforte', m3: 1.5, icona: 't-pianoforte', extra: 150, squadra: 3 },
+			{ id: 'cassaforte', nome: 'Cassaforte', m3: 0.3, icona: 't-cassaforte', extra: 60 }
 		]
 	}
 ];
@@ -178,49 +132,47 @@ export const oggetti = Object.fromEntries(stanze.flatMap((s) => s.oggetti.map((o
 
 /** Scatoloni standard (misure in cm) */
 export const scatole = [
-	{ id: 'piccolo', nome: 'Piccolo', misure: [40, 30, 30], per: 'libri, piatti, bicchieri' },
-	{ id: 'medio', nome: 'Medio', misure: [50, 35, 40], per: 'vestiti piegati, pentole, giochi' },
-	{ id: 'grande', nome: 'Grande', misure: [60, 40, 50], per: 'cuscini, coperte, cose leggere' },
-	{ id: 'abiti', nome: 'Porta-abiti', misure: [50, 50, 100], per: 'vestiti appesi, con la stampella' },
-	{ id: 'valigia', nome: 'Valigia o borsone', misure: [70, 45, 30], per: 'quello che porti già in valigia' }
+	{ id: 'piccolo', nome: 'Piccolo', misure: [40, 30, 30] },
+	{ id: 'medio', nome: 'Medio', misure: [50, 35, 40] },
+	{ id: 'grande', nome: 'Grande', misure: [60, 40, 50] }
 ];
 export const m3Scatola = (s) => (s.misure[0] * s.misure[1] * s.misure[2]) / 1e6;
-const M3_SCATOLA_NOI = 0.07; // misura media quando imballiamo noi
+const M3_SCATOLA_NOI = 0.07; // misura media di uno scatolone quando ci dicono solo quanti sono
 
 /** Case tipo: un punto di partenza da correggere */
 export const caseTipo = {
 	mono: {
 		nome: 'Monolocale',
 		scatoloni: 20,
-		oggetti: { divano2: 1, tavolo: 1, sedia: 2, mobileTv: 1, tv: 1, frigo: 1, microonde: 1, lettoM: 1, armadio2: 1, comodino: 1, lavatrice: 1, quadro: 2 }
+		oggetti: { divano3: 1, tavolo: 1, sedia: 2, mobileTv: 1, frigo: 1, lettoM: 1, armadio3: 1, comodino: 1, lavatrice: 1 }
 	},
 	bi: {
 		nome: 'Bilocale',
 		scatoloni: 35,
-		oggetti: { divano3: 1, tavolo: 1, sedia: 4, mobileTv: 1, tv: 1, quadro: 3, cucinaM: 3, frigo: 1, lavastoviglie: 1, microonde: 1, lettoM: 1, armadio3: 1, comodino: 2, como: 1, lavatrice: 1 }
+		oggetti: { divano3: 1, tavolo: 1, sedia: 4, mobileTv: 1, libreriaG: 1, cucinaM: 3, frigo: 1, lavastoviglie: 1, lettoM: 1, armadio3: 1, comodino: 2, como: 1, lavatrice: 1 }
 	},
 	tri: {
 		nome: 'Trilocale',
 		scatoloni: 50,
-		oggetti: { divano3: 1, poltrona: 1, tavolo: 1, sedia: 4, mobileTv: 1, tv: 1, libreriaG: 1, credenza: 1, tappeto: 1, quadro: 4, cucinaM: 3.5, frigo: 1, lavastoviglie: 1, microonde: 1, lettoM: 1, armadio4: 1, comodino: 2, como: 1, lettoS: 1, armadio2: 1, scrivania: 1, sediaS: 1, lavatrice: 1, stendino: 1, bici: 1 }
+		oggetti: { divano3: 1, poltrona: 1, tavolo: 1, sedia: 4, mobileTv: 1, libreriaG: 1, credenza: 1, cucinaM: 3.5, frigo: 1, lavastoviglie: 1, lettoM: 1, armadio6: 1, comodino: 2, como: 1, lettoS: 1, armadio3: 1, scrivania: 1, lavatrice: 1, bici: 1 }
 	},
 	quattro: {
-		nome: 'Casa con 4 o più locali',
+		nome: '4 o più locali',
 		scatoloni: 70,
-		oggetti: { divano3: 1, divano2: 1, poltrona: 1, tavoloG: 1, sedia: 6, tavolino: 1, mobileTv: 1, tv: 2, libreriaG: 1, credenza: 1, tappeto: 2, quadro: 6, cucinaM: 4, frigo: 1, lavastoviglie: 1, forno: 1, microonde: 1, lettoM: 1, armadio6: 1, comodino: 4, como: 2, lettoS: 2, armadio2: 2, scrivania: 1, sediaS: 1, lavatrice: 1, asciugatrice: 1, stendino: 1, bici: 2, tavoloE: 1, sediaE: 4 }
+		oggetti: { divano3: 1, divanoL: 1, poltrona: 1, tavolo: 1, sedia: 6, mobileTv: 2, libreriaG: 1, credenza: 1, cucinaM: 4, frigo: 1, lavastoviglie: 2, lettoM: 1, armadio6: 1, comodino: 4, como: 2, lettoS: 2, armadio3: 2, scrivania: 1, bagno: 1, lavatrice: 2, bici: 2, giardino: 1 }
 	},
-	poco: { nome: 'Solo alcune cose', scatoloni: 10, oggetti: {} }
+	poco: { nome: 'Poche cose', scatoloni: 10, oggetti: {} }
 };
 
 export const statoIniziale = () => ({
 	casa: 'bi',
-	partenza: { comune: '', zona: '', piano: 1, ascensore: 'grande', porta: 'vicino', ponti: '0', piattaforma: false },
-	arrivo: { comune: '', zona: '', piano: 2, ascensore: 'grande', porta: 'vicino', ponti: '0', piattaforma: false },
+	partenza: { comune: '', zona: '', piano: 1, ascensore: 'grande', porta: 'vicino', piattaforma: false },
+	arrivo: { comune: '', zona: '', piano: 2, ascensore: 'grande', porta: 'vicino', piattaforma: false },
 	oggetti: { ...caseTipo.bi.oggetti },
-	misure: [], // oggetti con misure tue: { nome, l, p, a, q } in cm
 	imballo: 'noi',
 	scatoloniNoi: caseTipo.bi.scatoloni,
-	scatole: { piccolo: 0, medio: 0, grande: 0, abiti: 0, valigia: 0 },
+	conMisure: false, // "+ misure": scatoloni piccoli, medi, grandi o di misura tua
+	scatole: { piccolo: 0, medio: 0, grande: 0 },
 	scatoleMisure: [], // { l, p, a, q } in cm
 	smontaggio: true,
 	permesso: false,
@@ -249,7 +201,7 @@ function fatica(lato) {
 	const tipo = lato.piattaforma ? 'piattaforma' : lato.ascensore;
 	let k = 1 + piano * (tt.piano[tipo] ?? tt.piano.no);
 	k += tt.porta[lato.porta] ?? 0;
-	if (z?.barca) k += tt.isola + (tt.ponti[lato.ponti] ?? 0);
+	if (z?.barca) k += tt.isola + (tt.ponti[lato.ponti] ?? tt.ponti.pochi); // senza risposta: 1 o 2 ponti
 	return k;
 }
 
@@ -289,7 +241,8 @@ export function calcolaTrasloco(s, strada) {
 	}
 	let nScatole = 0;
 	let m3Scatole = 0;
-	if (s.imballo === 'noi') {
+	if (!s.conMisure) {
+		// di solito basta il numero: misura media di uno scatolone
 		nScatole = Math.round(n(s.scatoloniNoi));
 		m3Scatole = nScatole * M3_SCATOLA_NOI;
 	} else {
@@ -394,16 +347,15 @@ export function calcolaTrasloco(s, strada) {
 	voce('Oggetti speciali', 't-pianoforte', extra);
 	voce(`Deposito per ${mesi} ${mesi === 1 ? 'mese' : 'mesi'}`, 'warehouse', costoDeposito, `${euro(conIva(V * tt.depositoM3))} € al mese`);
 	voce('Sgombero e smaltimento', 'hammer', costoVia, `${m3Testo(m3Via)} m³`);
-	if (sottoMinimo) avvisi.push(`Sotto i ${euro(conIva(tt.minimo))} € facciamo comunque l’uscita minima.`);
-	if (s.giorno === 'sabato') avvisi.push('Di sabato il lavoro costa il 15% in più.');
+	if (sottoMinimo) avvisi.push(`Uscita minima ${euro(conIva(tt.minimo))} €.`);
 	if (daValutare.length) avvisi.push(`${daValutare.join(', ')}: ${daValutare.length === 1 ? 'lo valutiamo al sopralluogo, non è nel prezzo' : 'li valutiamo al sopralluogo, non sono nel prezzo'}.`.replace(/^./, (c) => c.toUpperCase()));
-	if (lungo) avvisi.push('Oltre 150 km usiamo un camion e un solo viaggio: la stima è indicativa, il preventivo lo prepariamo su misura.');
-	if (st.mancante) avvisi.push('Scegli i due comuni: per ora la strada è stimata come un trasloco in zona.');
-	else if (st.stima) avvisi.push('Strada stimata in linea d’aria: la controlliamo noi.');
-	if (zp?.barca || za?.barca) avvisi.push('A Venezia e nelle isole il carico va in barca e a mano sui ponti.');
+	if (lungo) avvisi.push('Oltre 150 km il preventivo lo facciamo su misura.');
+	if (st.mancante) avvisi.push('Scegli i comuni per contare i km.');
+	else if (st.stima) avvisi.push('Km stimati: li controlliamo noi.');
+	if (zp?.barca || za?.barca) avvisi.push('A Venezia il carico va in barca.');
 	for (const [nome, lato] of [['partenza', s.partenza], ['arrivo', s.arrivo]]) {
 		if (!lato.piattaforma && lato.ascensore === 'no' && Math.abs(Number(lato.piano) || 0) >= 3)
-			avvisi.push(`Alla ${nome} sei al ${lato.piano}° piano senza ascensore: con la piattaforma elevatrice si fa prima e i mobili grandi passano dal balcone.`);
+			avvisi.push(`${lato.piano}° piano senza ascensore: al sopralluogo vediamo se serve la piattaforma.`);
 	}
 
 	const min = bello(totale * k * tt.forbice[0]);
@@ -412,7 +364,7 @@ export function calcolaTrasloco(s, strada) {
 	const lato = (x, z) => {
 		const p = Number(x.piano) || 0;
 		const piano = p < 0 ? 'seminterrato' : p === 0 ? 'piano terra' : `${p}° piano`;
-		const asc = { no: 'senza ascensore', piccolo: 'ascensore piccolo', grande: 'ascensore grande' }[x.ascensore] ?? '';
+		const asc = { no: 'senza ascensore', piccolo: 'ascensore piccolo', grande: 'con ascensore' }[x.ascensore] ?? '';
 		return `${x.comune || 'comune da scegliere'}${z ? ` (${z.nome})` : ''}, ${piano}${p > 0 ? `, ${x.piattaforma ? 'con piattaforma' : asc}` : ''}`;
 	};
 	const imb = { noi: `imballo nostro (${nScatole} scatoloni)`, kit: `imballa il cliente con il nostro kit (${nScatole} scatoloni)`, io: `imballa il cliente (${nScatole} scatoloni)` }[s.imballo];
