@@ -1,6 +1,6 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100904';
-import { cerca } from './ricerca.js?v=2026100904';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100910';
+import { cerca } from './ricerca.js?v=2026100910';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -852,3 +852,6 @@ if (tipi.length) {
 	addEventListener('hashchange', daIndirizzo);
 	daIndirizzo();
 }
+
+/* Calcolatore del trasloco: lo script si carica solo dove serve */
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026100910');

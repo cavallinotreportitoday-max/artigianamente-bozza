@@ -1,6 +1,7 @@
 // Parole che la gente scrive davvero, collegate ai lavori. Bozza: si allarga col tempo.
 // Le parole sono "radici": "imbianc" trova imbiancare, imbiancatura, imbianchino.
 // Il "!" davanti indica una parola forte (vale il doppio): "muffa in bagno" porta al risanamento, non alla ristrutturazione.
+// Il "=" davanti vuol dire solo la parola intera: "=porta" trova porta ma non portare.
 
 export const paroleServizi = {
 	ristrutturazioni: [
@@ -27,7 +28,7 @@ export const paroleServizi = {
 		'calce', 'acqua alta', 'marea', 'laguna', 'venezia', 'casa vecchia', 'case vecchie'
 	],
 	falegnameria: [
-		'!legno', '!falegnam', 'su misura', 'mobile su misura', 'ripar', 'aggiust', 'porta', 'porte', '!serrament',
+		'!legno', '!falegnam', 'su misura', 'mobile su misura', 'ripar', 'aggiust', '!=porta', 'la porta', 'una porta', 'porta blindata', 'porta interna', 'porte', '!serrament',
 		'finestr', '!infiss', '!tapparell', 'avvolgibil', 'cinghia', 'persian', 'scuri', 'cernier', 'manigli',
 		'serratur', 'cassett', 'anta', 'ante', 'antine', 'scorrevol', 'cigola', 'non chiude', 'restaur', 'antico',
 		'antichi', 'tarli', 'tarlo', 'impregnant', '!pergol', 'pompeian', 'gazebo', 'tettoi', 'staccionat',
@@ -44,9 +45,9 @@ export const paroleServizi = {
 	],
 	traslochi: [
 		'!trasloc', 'traslocare', 'trasferiment', 'mi trasferisco', 'cambio casa', 'cambiare casa', 'cambio ufficio',
-		'trasport', 'spostare', 'sposta', 'portare', 'furgone', 'camion', 'piattaforma', 'autoscala', 'montacarichi',
+		'trasport', 'spostare', 'sposta', 'portare', '!portare via', 'furgone', 'camion', 'piattaforma', 'autoscala', 'montacarichi',
 		'piani alti', 'senza ascensore', 'ascensore', '!imball', 'scatol', 'cartoni', 'pluriball', 'deposito',
-		'magazzino', 'custodia', 'pianoforte', 'cassaforte', 'pesant', 'ingombrant', 'fragile', 'svuot',
+		'magazzino', 'custodia', 'pianoforte', 'cassaforte', 'pesant', 'ingombrant', 'fragile', 'svuot', '!metri cubi', 'calcolatore trasloco', 'quanto costa un trasloco', 'kit trasloco', 'traghetto', 'barca',
 		'!sgombero', 'sgomberare', 'svuota cantine', 'smaltiment', 'ritiro mobili', 'piccolo trasloco'
 	],
 	parquet: [
@@ -92,12 +93,13 @@ export function cerca(testo) {
 	const punteggi = Object.entries(paroleServizi).map(([slug, radici]) => {
 		let p = 0;
 		for (const r of radici) {
-			const forte = r.startsWith('!');
-			const rn = normalizza(forte ? r.slice(1) : r);
+			const forte = r.includes('!');
+			const intera = r.includes('='); // "=" : solo la parola intera (porta sì, portare no)
+			const rn = normalizza(r.replace(/[!=]/g, ''));
 			const peso = forte ? 4 : 2;
 			if (rn.includes(' ')) {
 				if (q.includes(rn)) p += peso + 1;
-			} else if (parole.some((w) => w.startsWith(rn) || (w.length >= 4 && rn.startsWith(w)))) {
+			} else if (intera ? parole.includes(rn) : parole.some((w) => w.startsWith(rn) || (w.length >= 4 && rn.startsWith(w)))) {
 				p += peso;
 			}
 		}
@@ -129,7 +131,7 @@ function cercaConErrori(parole) {
 	const punteggi = Object.entries(paroleServizi).map(([slug, radici]) => {
 		let p = 0;
 		for (const r of radici) {
-			const rn = normalizza(r.replace('!', ''));
+			const rn = normalizza(r.replace(/[!=]/g, ''));
 			if (rn.includes(' ') || rn.length < 4) continue;
 			for (const w of lunghe) {
 				const pezzo = w.slice(0, Math.max(rn.length, 4));
