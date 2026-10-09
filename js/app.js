@@ -376,6 +376,7 @@ if (sfondo && barraIcone && zonaCerca) {
 	misura();
 	fissa();
 	addEventListener('resize', misura);
+	document.addEventListener('sfondo-misura', misura);
 	addEventListener('load', misura);
 	addEventListener('scroll', fissa, { passive: true });
 }
@@ -426,6 +427,10 @@ if (contenuto) {
 
 	// modo: 'tutto' = vista iniziale, 'lavoro' = una scheda, 'ricerca' = risultato di una ricerca
 	const vista = (modo, trovati = [], testo = '') => {
+		if (modo === 'tutto' && document.documentElement.classList.contains('is-scheda')) {
+			document.documentElement.classList.remove('is-scheda');
+			document.dispatchEvent(new Event('sfondo-misura'));
+		}
 		const primo = trovati[0];
 		panoramica.hidden = modo !== 'tutto';
 		for (const s of schede) s.hidden = s.dataset.scheda !== primo;
@@ -452,7 +457,10 @@ if (contenuto) {
 	// Porta l'inizio del contenuto subito sotto i pulsanti fissi
 	// Un lavoro si apre direttamente sulla sua foto, subito sotto le icone fisse
 	const fotoDi = (slug) => $(`[data-scheda="${slug}"] .v3-scheda__img`) || contenuto;
-	const scorri = (dove = contenuto) => {
+	// pulito = lavoro aperto: la striscia di foto sotto le icone sparisce (torna con "Tutti i lavori")
+	const scorri = (dove = contenuto, pulito = true) => {
+		document.documentElement.classList.toggle('is-scheda', pulito);
+		document.dispatchEvent(new Event('sfondo-misura'));
 		const sopra = (header?.offsetHeight || 0) + (barraChips?.offsetHeight || 0) + (dove === contenuto ? 0 : 14);
 		// posizione senza contare l'animazione d'entrata della scheda (che la sposta di qualche px)
 		let y = -sopra;
@@ -478,11 +486,12 @@ if (contenuto) {
 		if (slug === 'tutto') {
 			indirizzo('', true);
 			vista('tutto');
+			scorri(contenuto, false);
 		} else {
 			indirizzo(slug, true);
 			vista('lavoro', [slug]);
+			scorri(fotoDi(slug));
 		}
-		scorri(slug === 'tutto' ? contenuto : fotoDi(slug));
 	};
 
 	const esegui = (conferma) => {
