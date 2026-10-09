@@ -1,6 +1,6 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
 import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100910';
-import { cerca } from './ricerca.js?v=2026100910';
+import { cerca } from './ricerca.js?v=2026100911';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));

@@ -1,69 +1,463 @@
-// Parole che la gente scrive davvero, collegate ai lavori. Bozza: si allarga col tempo.
-// Le parole sono "radici": "imbianc" trova imbiancare, imbiancatura, imbianchino.
-// Il "!" davanti indica una parola forte (vale il doppio): "muffa in bagno" porta al risanamento, non alla ristrutturazione.
-// Il "=" davanti vuol dire solo la parola intera: "=porta" trova porta ma non portare.
+// Ricerca dei lavori nella barra "Cosa vuoi realizzare?" (home).
+// Liste e regole dal pacchetto preparato con ChatGPT il 9/10/2026 (266 prove), integrate qui.
+// Voci: minuscole senza accenti; "!" = voce forte; le voci con lo spazio sono frasi intere.
+// Le parole ambigue (porta, scuri, acqua, quadri…) valgono solo intere: vedi paroleEsatte.
+// Lo stesso file serve alla pagina (suggerimenti) e allo script nel browser (copiato in static/js).
 
 export const paroleServizi = {
-	ristrutturazioni: [
-		'!ristruttur', 'rinnov', 'rifare', 'rifacimento', 'bagno', 'doccia', 'vasca', 'sanitari', 'box doccia', 'cucin',
-		'demoli', '!cartongess', 'controsoffitt', 'piastrell', 'rivestiment', 'massetto', 'tetto', 'copertur', 'tegol',
-		'coppi', 'lamiera', 'grondai', 'guaina', 'impermeabilizz', 'terrazz', 'balcon', 'impiant', 'appartament',
-		'casa intera', 'rifare casa', 'negozio', 'ufficio', 'locale', 'ristorante', 'albergo', 'hotel', 'muratur',
-		'!muratore', 'edil', 'impresa edile', 'muro nuovo', 'abbattere', 'parete divisoria', '!tramezz', 'soppalc',
-		'ampliament', 'facciat', 'cappotto', 'cantiere', 'lavori in casa', 'pratiche', 'progetto', 'geometra'
-	],
-	imbiancatura: [
-		'!imbianc', '!pittur', '!pitturare', '!dipinger', '!tinteggi', 'tinta', 'colore', 'colori', 'ridipinger',
-		'dare il bianco', 'pareti', 'parete', 'soffitt', 'muri', 'muro', 'rullo', 'pennello', '!rasatur', 'rasare',
-		'stucc', 'crepe', 'crepa', 'buchi', 'fori', 'smalt', 'vernici', 'ringhier', 'cancell', 'bianco', 'lavabile',
-		'traspirante', 'ingiallit', 'annerit', 'sporc', 'ritocc', 'antimuffa', 'facciat', 'esterno', 'condomini',
-		'scale condominiali', 'vano scala', 'decoraz', 'stucco veneziano', 'spugnat', 'effetto'
-	],
-	'risanamento-umidita': [
-		'!muffa', '!muffe', '!umid', '!risalita', '!salnitro', '!salin', 'sale', 'sali', '!efflorescen', '!acqua',
-		'bagnat', 'muro bagnato', 'infiltraz', 'macchi', 'macchie nere', 'muffa nera', 'polvere bianca',
-		'bianco sui muri', '!scrost', 'stacc', 'si stacca', 'gonfi', 'sbriciol', 'intonac', '!condensa', 'appann',
-		'vetri appannati', 'ponte termico', 'odore', 'puzza', 'capillar', 'deumidific', 'barriera', 'iniezion',
-		'vespaio', 'muro rovinato', 'piano terra', 'cantina', 'seminterrat', 'taverna', 'zoccol', 'mattoni',
-		'calce', 'acqua alta', 'marea', 'laguna', 'venezia', 'casa vecchia', 'case vecchie'
-	],
-	falegnameria: [
-		'!legno', '!falegnam', 'su misura', 'mobile su misura', 'ripar', 'aggiust', '!=porta', 'la porta', 'una porta', 'porta blindata', 'porta interna', 'porte', '!serrament',
-		'finestr', '!infiss', '!tapparell', 'avvolgibil', 'cinghia', 'persian', 'scuri', 'cernier', 'manigli',
-		'serratur', 'cassett', 'anta', 'ante', 'antine', 'scorrevol', 'cigola', 'non chiude', 'restaur', 'antico',
-		'antichi', 'tarli', 'tarlo', 'impregnant', '!pergol', 'pompeian', 'gazebo', 'tettoi', 'staccionat',
-		'recinzion', 'cancell', 'decking', 'passerell', 'pontil', 'cabine', 'spiaggia', 'chiosco', 'bancone', 'arredo negozio',
-		'scala', 'scale', 'tavolo', 'mensol', 'zanzarier'
-	],
-	'montaggio-mobili': [
-		'!montaggio', '!montare', 'monta', '!ikea', '!assembl', 'mondo convenienza', 'leroy', 'amazon', 'kit',
-		'istruzioni', 'mobil', 'cucin', 'cucina componibile', 'armadi', 'guardaroba', 'cabina armadio', 'letto',
-		'letto a castello', 'cameretta', 'pensil', 'mensol', 'libreria', 'scrivania', 'comò', 'como', 'cassettiera',
-		'scarpiera', 'divano', 'sedie', 'tavolo', 'appendere', 'fissare', 'tassell', 'quadri', 'tv a muro', 'staffa',
-		'specchio', 'tende', 'bastone', 'elettrodomestic', 'lavastoviglie', 'forno', 'smontare', 'smontaggio',
-		'mobili ufficio'
-	],
-	traslochi: [
-		'!trasloc', 'traslocare', 'trasferiment', 'mi trasferisco', 'cambio casa', 'cambiare casa', 'cambio ufficio',
-		'trasport', 'spostare', 'sposta', 'portare', '!portare via', 'furgone', 'camion', 'piattaforma', 'autoscala', 'montacarichi',
-		'piani alti', 'senza ascensore', 'ascensore', '!imball', 'scatol', 'cartoni', 'pluriball', 'deposito',
-		'magazzino', 'custodia', 'pianoforte', 'cassaforte', 'pesant', 'ingombrant', 'fragile', 'svuot', '!metri cubi', 'calcolatore trasloco', 'quanto costa un trasloco', 'kit trasloco', 'traghetto', 'barca',
-		'!sgombero', 'sgomberare', 'svuota cantine', 'smaltiment', 'ritiro mobili', 'piccolo trasloco'
-	],
-	parquet: [
-		'!parquet', 'pavimento', 'pavimenti', 'pavimento in legno', '!laminato', 'vinilico', 'pvc', 'lvt', 'spc',
-		'!levig', '!lamatur', 'lamare', 'carteggi', 'rovere', 'teak', 'iroko', 'doussie', 'noce', 'flottante',
-		'incollato', 'prefinito', 'listoni', 'listelli', 'tavole', 'spina di pesce', 'spina ungherese', 'posa',
-		'posare', 'graffi', 'graffiato', 'scricchiol', 'si alza', 'rovinato', 'cera', 'olio', 'oliare', 'vernice',
-		'battiscopa', 'zoccolino', 'riscaldamento a pavimento', 'radiante'
-	],
-	// La scheda "L'azienda"
-	azienda: [
-		'!aziend', '!appalt', 'chi siete', 'chi siamo', 'chi e', 'titolare', 'fabrizio', 'alzetta', 'squadra',
-		'mezzi', '!festool', 'partner', 'officina', 'enti', 'pubblic', 'comune', 'collabor', 'referenze',
-		'esperienz', 'anni', 'certificaz', 'assicuraz', 'albo', 'dove siete', 'sede', 'indirizz', 'contatti',
-		'telefono', 'orari', 'cavallino', 'treporti'
-	]
+  ristrutturazioni: [
+    '!ristruttur', '!ristrutur', '!ristuttur', 'rifaciment', 'cucina',
+    'bagno', 'bagni', 'doccia', 'vasca',
+    'sanitari', 'box doccia', 'demoli', '!cartongess',
+    '!cartongeso', '!carton gesso', 'controsoffitt', 'piastrell',
+    'rivestiment', 'massetto', 'tetto', 'copertur',
+    'tegol', 'coppi', 'lamiera', 'grondai',
+    'guaina', 'impermeabilizz', 'terrazz', 'balcone',
+    'balconi', '!muratur', '!murator', '!muraro',
+    'impresa edile', 'muro nuovo', 'parete divisoria', '!tramezz',
+    'soppalc', 'ampliament', 'facciat', 'cappotto',
+    'cantiere', 'lavori in casa', 'rifare casa', '!rifare il bagno',
+    '!rifare la cucina', 'rinnovare casa', '!cucina da rifare', '!bagno da rifare',
+    'cambiare piastrelle', 'togliere piastrelle', 'rifare il tetto', '!acqua dal tetto',
+    '!tetto che perde', '!abbattere un muro', '!buttare giu un muro', '!dividere una stanza',
+    'unire due stanze', 'intonaco nuovo', 'rifare il massetto', 'rifare il balcone',
+    'rifare la terrazza', 'ristrutturare seconda casa', 'ristrutturare casa al mare', 'rifare bagno campeggio',
+    'rifare i bagni del campeggio', 'rifare bagno hotel', 'ristrutturare negozio', 'servizi igienici',
+    'pavimento in piastrelle', 'pavimento in gres', 'rifare pavimento', 'rinnovare appartamento',
+    'chiavi in mano', 'lavori di muratura', 'controsoffitto in gesso', '!rifare un bagno',
+    '!rifare i bagni', '!rinnovare il bagno', '!rinnovare un bagno', '!rifare una cucina',
+    '!rinnovare la cucina', 'cucina da rinnovare', 'bagno da rinnovare', 'bagno vecchio da rifare',
+    'bagno completo', 'rifacimento del bagno', 'rifacimento della cucina', 'cambiare le piastrelle',
+    'sostituire le piastrelle', 'togliere le piastrelle', 'staccare le piastrelle', 'mattonell',
+    'mettere le mattonelle', 'cambiare le mattonelle', 'piastrelle rotte', 'piastrelle staccate',
+    'piastrelle che si muovono', 'piastrelle che suonano vuote', 'rifare le fughe', 'fughe rovinate',
+    'rivestire il bagno', 'rivestire la cucina', 'gres porcellanato', 'pavimento di ceramica',
+    'pavimento in ceramica', 'posare un pavimento in gres', 'sostituire un pavimento in ceramica', '!trasformare la vasca in doccia',
+    '!togliere la vasca', 'sostituire il piatto doccia', 'piatto doccia rotto', 'rifare il box doccia',
+    'cambiare i sanitari', '!creare un bagno', '!ricavare un bagno', '!abbattere una parete',
+    '!eliminare una parete', '!demolire un muro', '!demolire una parete', '!togliere un divisorio',
+    '!creare una parete', '!fare una parete divisoria', '!fare un divisorio', '!separare due stanze',
+    '!ricavare una stanza', '!ricavare due stanze', '!unire cucina e soggiorno', '!aprire un passaggio nel muro',
+    '!allargare una porta nel muro', '!murare una finestra', 'chiudere una porta nel muro', 'spostare una parete',
+    'spostare il muro', 'parete in gesso', 'pareti in gesso', 'parete in cartone gesso',
+    'pareti di cartongesso', 'soffitto in cartone gesso', 'abbassare il soffitto', 'abbassamento del soffitto',
+    'soffitto ribassato', 'fare un controsoffitto', 'controsoffitto da sistemare', 'tetto da rifare',
+    'rifacimento del tetto', 'riparare il tetto', 'sistemare il tetto', '!perde il tetto',
+    '!piove dal tetto', '!piove dentro dal tetto', 'tegole rotte', 'tegole spostate',
+    'coppi rotti', 'cambiare le tegole', 'sostituire i coppi', 'rifare la copertura',
+    'riparare la copertura', 'copertura da sistemare', 'guaina rovinata', 'rifare la guaina',
+    'riparare la guaina', 'terrazzo da rifare', 'rifare il terrazzo', 'terrazza da rifare',
+    'balcone da sistemare', 'riparare il balcone', 'ripristinare il balcone', 'intonaco da rifare',
+    'intonacare una parete', 'intonacare il muro', 'rifare gli intonaci', 'rifare il sottofondo',
+    'sottofondo del pavimento', 'livellare il pavimento', 'massetto rovinato', 'risistemare un appartamento',
+    'rimettere a nuovo la casa', 'sistemare una casa vecchia', 'casa da rimettere a posto', 'rinnovare la casa delle vacanze',
+    'rifare il bagno della seconda casa', 'rifare la cucina della casa al mare', 'rinnovare le camere dell hotel', 'rifare il bagno dell albergo',
+    'rifare i bagni di un campeggio', 'rinnovare i servizi del camping', 'sistemare gli interni di un bungalow', 'rinnovare un locale commerciale',
+    'rifare un negozio', 'rifare un ufficio', 'rimettere a nuovo il ristorante', '!restuttur',
+    '!ristruttar', 'cartonghesso', 'bagno da ristruturare'
+  ],
+  imbiancatura: [
+    '!imbianc', '!inbianc', '!pittur', '!pitur',
+    '!dipinger', '!dipintur', 'ridipinger', '!dare il bianco',
+    '!rasatur', 'rasare', 'stucc', 'ringhier',
+    'cancell', 'smalto', 'smaltare', 'smaltatur',
+    'lavabile', 'traspirante', 'ritocc', 'decoraz',
+    'spugnat', 'stucco veneziano', 'verniciare ringhiere', 'verniciare cancelli',
+    'riverniciare ringhiere', 'riverniciare cancelli', '!dare una mano di bianco', '!dare una mano di pittura',
+    '!rinfrescare le pareti', 'rinfrescare casa', 'cambiare colore alle pareti', 'pareti ingiallite',
+    'pareti sporche', 'segni sul muro', 'buchi nel muro', 'buchi dei tasselli',
+    'chiudere i buchi', 'coprire le crepe', 'crepe nel muro', 'crepe sul soffitto',
+    'muro crepato', 'pittura che si sfoglia', 'vernice che si sfoglia', 'pittura da rifare',
+    'ringhiera arrugginita', 'cancello arrugginito', '!pittura ad acqua', '!smalto ad acqua',
+    '!vernice ad acqua', 'pittura lavabile', 'pittura traspirante', 'pittura per esterni',
+    'pittore edile', 'pareti da rinfrescare', 'imbiancare casa vacanze', 'imbiancare seconda casa',
+    'imbiancare casa al mare', 'imbiancare camere hotel', 'imbiancare camere albergo', 'imbiancare bungalow',
+    'imbiancare bagni campeggio', 'rasatura pareti', 'verniciatura ringhiere', 'verniciatura cancelli',
+    'vano scala', 'scale condominiali', 'facciat', 'antimuffa',
+    '!dare il colore', '!dare colore alle pareti', '!dare una mano di colore', '!dare una mano alle pareti',
+    '!dare una mano ai muri', '!passare una mano di bianco', '!passare il bianco', '!fare le pareti bianche',
+    '!fare i muri bianchi', '!rimettere a nuovo le pareti', '!rimettere a nuovo i muri', '!rinfrescare i muri',
+    '!rinfrescare il soffitto', '!cambiare il colore dei muri', '!cambiare colore ai muri', '!cambiare il colore della stanza',
+    'rifare il colore', 'colore da rifare', 'rifare il bianco', 'bianco da rifare',
+    'mettere il bianco alle pareti', 'mettere il bianco sui muri', 'dare due mani', 'seconda mano di colore',
+    'ritintegg', 'ritintegi', 'ridipintur', 'ridare il bianco',
+    'pittare', 'pittore per casa', '!dipintor', 'pareti da colorare',
+    'muri da colorare', 'colorare una parete', 'colorare le pareti', 'colorare i muri',
+    'colorare il soffitto', 'dipintura della casa', 'dipinture interne', 'dipinture esterne',
+    'pareti gialle da rifare', 'soffitto giallo', 'soffitto ingiallito', 'pareti annerite',
+    'soffitto annerito', 'muri sporchi', 'parete sporca', 'soffitto sporco',
+    'impronte sul muro', 'ditate sul muro', 'segni sulle pareti', 'righe sulle pareti',
+    'coprire le macchie sulle pareti', 'togliere i segni dal muro', 'pareti segnate', 'muri segnati',
+    'scrostare la vecchia pittura', 'togliere la vecchia pittura', 'vernice vecchia da togliere', 'colore che si stacca',
+    'colore che viene via', 'pittura che viene via', 'pittura che cade', 'parete da lisciare',
+    '!lisciare le pareti', '!lisciare un muro', '!rasare i muri', '!rasare una parete',
+    'parete ruvida', 'muro ruvido', 'parete non liscia', 'muro non liscio',
+    'muro da stuccare', 'parete da stuccare', 'soffitto da stuccare', 'stuccare i fori',
+    'stuccare le fessure', 'stuccare le crepe', 'fori dei chiodi', 'buchi lasciati dai chiodi',
+    'buchi lasciati dai tasselli', 'chiudere i fori sul muro', 'riempire i buchi nel muro', 'riprendere il colore',
+    'ritoccare le pareti', 'ritoccare il soffitto', 'ritoccare il muro', 'raccordare il colore',
+    'verniciare la ringhiera', 'verniciare il cancello', 'riverniciare la ringhiera', 'riverniciare il cancello',
+    'dare lo smalto al cancello', 'dare lo smalto alle ringhiere', 'smaltare la ringhiera', 'smaltare il cancello',
+    'cancello da riverniciare', 'ringhiera da riverniciare', 'vernice scrostata sulla ringhiera', 'vernice scrostata sul cancello',
+    'togliere la ruggine dalla ringhiera', 'togliere la ruggine dal cancello', 'antiruggine per cancello', 'antiruggine per ringhiera',
+    'pareti interne', 'soffitti interni', 'muri esterni da rifare', 'colore della facciata',
+    'facciata da colorare', 'pareti del vano scala', 'imbiancare il vano scale', 'rinfrescare le scale del condominio',
+    'rinfrescare la seconda casa', 'rinfrescare la casa al mare', 'dare il bianco alla casa delle vacanze', 'pitturare la casa prima di affittarla',
+    'imbiancare dopo gli inquilini', 'rinfrescare le camere dell hotel', 'dare il bianco alle camere dell albergo', 'pitturare i bagni del campeggio',
+    'rinfrescare le pareti del bungalow', 'rinfrescare un negozio', 'rinfrescare un ufficio', 'pitturare un locale',
+    'vernice lavabile per pareti', 'colore lavabile', 'idropittura', 'bianco traspirante',
+    'dipigere', 'piturare la casa', '!scurire le pareti', '!scurire una parete',
+    '!scurire i muri', '!scurire il soffitto', '!tinteg', '!imbiank'
+  ],
+  'risanamento-umidita': [
+    '!muff', '!umid', '!risalita', '!salnitr',
+    '!salinita', '!salsedin', '!efflorescen', '!acqua',
+    '!condensa', 'infiltraz', 'deumidific', 'capillar',
+    'ponte termico', 'acqua alta', '!muro bagnato', '!muri bagnati',
+    '!parete bagnata', 'muro umido', 'muri umidi', 'parete umida',
+    'macchie nere', 'polvere bianca', 'bianco sui muri', '!sali sui muri',
+    '!sale sui muri', 'sali sul muro', 'muri che fanno sale', 'macchie di sale',
+    'muro che suda', 'parete che suda', 'mi entra acqua', 'odore di umido',
+    'puzza di umido', 'odore di chiuso', 'vetri appannati', 'gocce sui vetri',
+    'gocce sul muro', 'macchie di umido', '!muro che si scrosta', '!muri che si scrostano',
+    '!intonaco che si stacca', '!intonaco si stacca', '!intonaco che cade', '!intonaco gonfio',
+    '!intonaco che si sbriciola', 'intonaco sbriciolato', 'intonaco che fa polvere', 'pittura gonfia',
+    'pittura che fa bolle', 'bolle sulla parete', 'macchie sul soffitto', 'aloni sul muro',
+    'aloni sui muri', 'umido in cantina', 'cantina bagnata', '!risanare i muri',
+    '!risanare le pareti', 'risanamento muri', 'trattamento antimuffa', 'problema di sali',
+    'salsedine sui muri', 'umidita seconda casa', 'muffa bagno campeggio', 'muffa camere hotel',
+    'salnitro sui mattoni', 'umidita di condensa', 'infiltrazioni dal muro', 'antimuffa',
+    '!mufa', '!umdita', '!salnito', '!finestre appannate',
+    '!finestra appannata', 'vetro appannato', '!togliere la muffa', '!eliminare la muffa',
+    '!muro che si sfalda', '!muri che si sfaldano', '!parete che si sfalda', '!intonaco che si sfalda',
+    '!intonaco si sbriciola', '!intonaco sfarina', '!muro che si sbriciola', '!muri che si sbriciolano',
+    '!parete che si sbriciola', '!intonaco friabile', '!intonaco si gonfia', '!intonaco che si gonfia',
+    '!intonaco si scrosta', '!intonaco che si scrosta', '!intonaco scrostato', '!intonaco staccato',
+    'pezzi di intonaco per terra', 'intonaco per terra', 'cadono pezzi dal muro', 'si staccano pezzi dal muro',
+    'muro che fa polvere', 'muri che fanno polvere', 'parete che fa polvere', 'intonaco polveroso',
+    'polverina bianca sul muro', 'polvere bianca sul muro', 'polvere bianca sulle pareti', 'cristalli bianchi sul muro',
+    'cristalli sul muro', 'sali sulle pareti', 'sale sulle pareti', 'sali nell intonaco',
+    'sale nell intonaco', 'muro con il sale', 'crosta bianca sul muro', 'croste bianche sui muri',
+    'muro bianco in basso', 'parete bianca in basso', 'macchie bianche sul muro', 'patina bianca sul muro',
+    'pareti che sudano', 'muri che sudano', 'muro che trasuda', 'parete che trasuda',
+    'muri freddi e bagnati', 'pareti fredde e bagnate', 'parete fredda', 'muro freddo',
+    'gocce sulla parete', 'goccioline sui muri', 'parete piena di gocce', 'muro pieno di gocce',
+    '!si appannano le finestre', '!si appannano i vetri', '!finestre che si appannano', '!vetri che si appannano',
+    '!vetro che si appanna', 'finestre sempre appannate', 'vetri sempre appannati', 'finestra bagnata dentro',
+    'finestre bagnate dentro', 'gocce sulla finestra', 'acqua sui vetri', 'acqua sotto la finestra',
+    'acqua lungo il muro', 'parete bagnata in basso', 'muro bagnato in basso', 'muri bagnati in basso',
+    'muro bagnato a terra', 'parete bagnata a terra', 'bagnato vicino al battiscopa', 'macchie vicino al battiscopa',
+    'macchie dietro l armadio', 'macchie dietro i mobili', 'nero dietro i mobili', 'nero dietro l armadio',
+    'puntini neri sul muro', 'puntini neri sulle pareti', 'chiazze nere sul muro', 'chiazze nere sul soffitto',
+    'macchie verdi sul muro', 'macchie verdi sulle pareti', 'nero negli angoli', 'angoli del soffitto neri',
+    'soffitto a macchie', 'soffitto con macchie nere', 'pareti a chiazze', 'chiazze sul soffitto',
+    'odore nelle pareti', 'puzza di chiuso', 'casa che sa di chiuso', 'casa che puzza di umido',
+    'stanza che sa di umido', 'odore dietro l armadio', 'odore di cantina', 'camera che sa di umido',
+    'odore nella seconda casa', 'macchie dopo l inverno', 'pareti bagnate dopo la pioggia', 'muro bagnato quando piove',
+    'macchia che torna sul muro', 'macchie che ritornano', 'pittura gonfia in basso', 'bolle sul muro',
+    'vernice che fa bolle', 'vernice gonfia sui muri', 'bolle nell intonaco', 'rigonfiamento dell intonaco',
+    'intonaco rovinato in basso', 'intonaco che cade alla base', 'pareti rovinate in basso', 'muro rovinato alla base',
+    'zoccolo del muro bagnato', 'battiscopa bagnato', 'muro umido dietro l armadio', 'parete umida dietro il letto',
+    'casa umida dopo la chiusura', 'umido nella casa delle vacanze', 'muri umidi nella seconda casa', 'odore di umido nel bungalow',
+    'macchie nere nelle camere dell hotel', 'pareti bagnate nei bagni del campeggio', 'sali sui muri della casa al mare', 'intonaco scrostato nella casa al mare',
+    'cantina sempre umida', 'cantina sempre bagnata', 'seminterrato bagnato', 'pareti della taverna bagnate',
+    '!risanare un muro', '!risanare una parete', '!risanare muri', '!risanare pareti',
+    '!risanar', '!risanam', 'intonaco deumidificante', 'intonaco macroporoso',
+    'barriera contro la risalita', 'trattamento contro i sali', 'trattamento dei muri umidi', 'muro da asciugare',
+    '!condenza', '!salmitr', '!muffa in bagno', '!muffa sulle pareti',
+    '!muffa sui muri', '!umidita di risalita', '!salinita sui muri'
+  ],
+  falegnameria: [
+    '!falegnam', '!marangon', '!serrament', 'finestr',
+    '!infiss', '!tapparell', '!taparell', '!tapparela',
+    'avvolgibil', 'persian', '!scuri', 'cernier',
+    'manigli', 'serratur', 'cigola', '!pergol',
+    'pompeian', 'staccionat', 'recinzion', 'tarli',
+    'tarlo', 'impregnant', 'zanzarier', 'porte',
+    'portonc', 'legno su misura', '!mobile su misura', '!mobili su misura',
+    '!armadio su misura', '!armadi su misura', '!armaro su misura', '!mensole su misura',
+    '!tavolo su misura', '!libreria su misura', 'bancone su misura', '!finestra che non chiude',
+    '!finestra non si chiude', '!porta che non chiude', '!porta non si chiude', 'porta bloccata',
+    'finestra bloccata', 'porta gonfia', 'porta che striscia', 'porta che cigola',
+    'porta da sistemare', 'riparare la porta', 'riparare la finestra', 'riparare mobili',
+    'aggiustare mobili', 'restauro mobili', 'restauro legno', 'restauro porte',
+    'restauro finestre', 'legno rovinato', 'legno marcio', 'legno tarlato',
+    'corda tapparella', 'cinghia della tapparella', 'cinghia rotta', 'avvolgitor',
+    'rullo tapparella', 'stecche tapparella', 'tapparella bloccata', 'tapparella non sale',
+    'tapparella non scende', 'persiana bloccata', 'scuro in legno', 'scuro rotto',
+    'anta rotta', 'antina rotta', 'cassetto bloccato', 'guide cassetti',
+    'cerniere antine', 'maniglia rotta', '!balcon che non chiude', '!balcon non chiude',
+    'balcon in legno', 'riparare balcon', 'riparare mobili campeggio', 'riparare porte bungalow',
+    'gazebo in legno', 'tettoia in legno', 'scala in legno', 'cancello in legno',
+    'cancelli in legno', 'porta rotta', 'porta in legno', 'porta interna',
+    'cambiare la porta', 'cambiare porta', '!armadio fatto su misura', '!mobile fatto su misura',
+    '!mobili fatti su misura', 'decking', 'passerell', 'pontil',
+    'cabine in legno', 'bancone in legno', '!scurett', 'antoni in legno',
+    'imposte delle finestre', '!porta non chiude', '!porta non chiude bene', '!porta chiude male',
+    '!porta del bagno non chiude', '!porta della camera non chiude', '!porta che non si apre', '!porta che sfrega sul pavimento',
+    'porta che tocca per terra', 'porta che si apre da sola', 'porta che resta aperta', 'porta che sbatte',
+    'porta fuori squadra', 'porta storta', 'porta svergolata', 'porta che gratta il pavimento',
+    'porta scorrevole bloccata', 'porta a soffietto rotta', 'porta tamburata', 'porte massello',
+    'porte vecchie da restaurare', 'porte da accorciare', 'accorciare una porta', 'registrare una porta',
+    'rimettere in squadra la porta', 'telaio della porta', 'stipite rotto', 'coprifilo staccato',
+    '!finestra non chiude', '!finestra chiude male', '!finestra che non si apre', 'finestra che sfrega',
+    'finestra fuori squadra', 'finestra storta', 'finestra che sbatte', 'finestra che resta aperta',
+    'finestra da registrare', 'registrare le finestre', 'spifferi dalla finestra', 'entra aria dalle finestre',
+    'guarnizioni delle finestre', 'telaio della finestra', 'infissi da sostituire', 'serramenti da riparare',
+    '!riparare gli scuri', '!restaurare gli scuri', '!scuri che non chiudono', '!scuri bloccati',
+    '!scuri da cambiare', 'scuri mangiati dalla salsedine', 'scuri scoloriti dal sole', 'scuri con vernice staccata',
+    'scuri che sbattono col vento', 'scuri con cerniere arrugginite', 'fermascuri rotti', 'sostituire i fermascuri',
+    'persiane da restaurare', 'persiana che non chiude', 'persiane rovinate dalla salsedine', '!balconi che non chiudono',
+    'balconi di legno da sistemare', '!tapparella incastrata', '!tapparella caduta', '!tapparella storta',
+    'tapparella uscita dalle guide', 'tapparella che va giu da sola', 'tapparella che si blocca a meta', 'tapparella non torna su',
+    'tapparella con stecche rotte', 'tapparella con corda spezzata', 'cinghietta della tapparella', 'cambiare il cintino',
+    'cintino tapparella', 'rullo della serranda', 'cassonetto della tapparella', 'molla avvolgitore rotta',
+    '!riparare un mobile', '!aggiustare un mobile', '!mobile da restaurare', 'mobili antichi da sistemare',
+    'mobile ereditato', 'vecchia credenza', 'credenza da restaurare', 'tavolo che traballa',
+    'sedia che traballa', 'gamba del tavolo rotta', 'gamba della sedia rotta', 'incollare una sedia',
+    'riparare una sedia', 'anta che non chiude', 'anta del mobile caduta', 'antina della cucina storta',
+    'cerniera del mobile strappata', 'cassetto che non scorre', 'cassetto che esce dalle guide', 'fondo del cassetto sfondato',
+    'sostituire guide dei cassetti', 'cassetti su misura', '!libreria fatta su misura', '!tavolo fatto su misura',
+    'mobile per una nicchia', 'armadio per il sottotetto', 'mobile per il sottoscala', 'mensole per una nicchia',
+    'ripiano da accorciare', 'ripiano in legno su misura', 'bancone per il chiosco', 'bancone per la reception',
+    'armadietti in legno', 'arredi in legno per bungalow', '!pergola in legno', '!pergola da riparare',
+    '!pompeiana in legno', 'pergola per il campeggio', 'staccionata rotta', 'pali della staccionata marci',
+    'recinzione in legno', 'camminamento in legno', 'passerella in legno da sistemare', 'tavole del pontile rovinate',
+    'decking da riparare', 'rivestimento esterno in legno', 'cabina spiaggia da sistemare', 'legno rovinato dal sale',
+    'legno gonfio per umidita', 'buchi dei tarli nel mobile', 'polvere sotto il mobile', 'trattamento antitarlo',
+    'cambiare rete zanzariera', 'zanzariera uscita dalla guida', 'zanzariera strappata', '!falegniam',
+    'finesrtra rotta', 'porta', '!scuro', '!finesrtra',
+    '!finesrta'
+  ],
+  'montaggio-mobili': [
+    '!ikea', '!ichea', '!ikeia', 'assemblare mobili', '!montaggi', 'cucina',
+    '!mondo convenienza', 'cucina componibile', 'armadi', 'guardaroba',
+    'cabina armadio', 'letto a castello', 'cameretta', 'pensil',
+    'mensol', 'libreria', 'scrivania', 'cassettiera',
+    'scarpiera', 'divano', 'sedie', 'tavolo',
+    'tassell', 'quadri', '!tv a muro', 'specchio',
+    '!montaggio mobili', '!montare mobili', '!smontare mobili', '!smontaggio mobili',
+    '!montare armadio', '!montare l armadio', '!montare larmadio', '!montaggio armadio',
+    '!montare cucina', '!montare la cucina', '!montaggio cucina', 'montare pensili',
+    'montare letto', 'montare un letto', 'montare libreria', 'montare scrivania',
+    'montare un mobile', 'montare scarpiera', 'montare comodino', 'montare una mensola',
+    'mobili in scatola', 'mobili da assemblare', 'mobili da montare', 'istruzioni di montaggio',
+    'fissare mobili', 'appendere pensili', 'appendere una mensola', 'appendere un quadro',
+    'appendere quadri', 'appendere uno specchio', 'appendere la tv', '!televisore a muro',
+    '!televisione a muro', 'staffa tv', 'supporto tv', '!montaggio arredi hotel',
+    'montare mobili bungalow', 'montare mobili casa vacanze', 'montaggio mobili ufficio', 'smontare la cucina',
+    'smontare l armadio', 'rimontare mobili', 'rimontare armadio', 'mobilli',
+    'montagio mobili', 'mobili in kit', 'montare un como', 'mobili amazon',
+    'montaggio mobili leroy', '!montare armaro', 'assembl', '!montare il mobile',
+    '!montare i mobili', '!montare una cucina', '!montaggio della cucina', '!fissare la tv',
+    'tv al muro', 'appendere la televisione', '!armadio da montare', '!mobile da montare',
+    'mobili smontati', '!montare un armadio', '!montare gli armadi', '!montare il letto',
+    '!montare la libreria', '!montare una libreria', '!montare una scrivania', '!montare la scrivania',
+    '!montare una cassettiera', '!montare la cassettiera', '!montare una scarpiera', '!montare la scarpiera',
+    '!montare un guardaroba', '!montare il guardaroba', '!montare una cameretta', '!montare la cameretta',
+    '!montare un divano', '!montare il divano', '!montare un tavolo', '!montare il tavolo',
+    '!montare le sedie', '!montare una sedia', '!montare una cucina componibile', '!montare la cucina componibile',
+    '!montare i pensili', '!montare un pensile', '!montare i mobili del bagno', '!montare il mobile bagno',
+    '!montare il mobile del bagno', '!montare un letto a castello', '!montare una cabina armadio', '!montare un mobile tv',
+    '!montare il mobile tv', '!montaggio letto', '!montaggio libreria', '!montaggio scrivania',
+    '!montaggio cassettiera', '!montaggio scarpiera', '!montaggio guardaroba', '!montaggio cameretta',
+    '!montaggio letto a castello', '!montaggio pensili', '!montaggio mobile bagno', '!montaggio mobile tv',
+    '!montaggio cabina armadio', '!montaggio armadio ad ante scorrevoli', '!montaggio armadi hotel', '!montaggio mobili campeggio',
+    '!montaggio arredi campeggio', '!montaggio mobili bungalow', '!montaggio mobili seconda casa', '!montaggio mobili casa vacanze',
+    '!montaggio cucina bungalow', '!montaggio letti hotel', '!montaggio scrivanie ufficio', '!assemblare un armadio',
+    '!assemblare una libreria', '!assemblare una scrivania', '!assemblare una cassettiera', '!assemblare una cucina',
+    '!montatore mobili', '!montatori mobili', '!montatore di mobili', '!montatore per mobili',
+    'montatore ikea', 'montaggio ikea', '!montaggio mondo convenienza', '!mobili comprati da montare',
+    '!mobili nuovi da montare', 'armadio in scatola', 'armadio in kit', 'libreria in kit',
+    'cucina in kit', '!armadio da assemblare', '!libreria da montare', '!scrivania da montare',
+    '!cassettiera da montare', '!cameretta da montare', '!letto da montare', '!letto a castello da montare',
+    '!cucina da montare', '!pensili da montare', '!scarpiera da montare', '!guardaroba da montare',
+    '!mobile bagno da montare', '!mobile tv da montare', '!cabina armadio da montare', '!smontare un armadio',
+    '!smontare gli armadi', '!smontare un mobile', '!smontare i mobili', '!smontare il letto',
+    '!smontare una libreria', '!smontare una cucina', '!rimontare un armadio', '!rimontare la cucina',
+    '!rimontare i mobili', '!rimontaggio mobili', '!rimontaggio armadio', '!rimontaggio cucina',
+    '!fissare un armadio', '!fissare l armadio al muro', '!fissare larmadio al muro', '!armadio da fissare',
+    '!ancorare un armadio', '!fissare i pensili', '!fissare un pensile', '!fissare le mensole',
+    '!fissare una mensola', '!fissare una libreria al muro', '!libreria da fissare', '!pensili da appendere',
+    '!quadro da appendere', '!quadri da appendere', '!specchio da appendere', '!tv da appendere',
+    '!televisore da appendere', '!appendere il televisore', '!appendere un televisore', '!mettere la tv a muro',
+    '!mettere il televisore a muro', '!fissare il televisore', '!fissare uno specchio', 'staffa televisore',
+    'supporto televisore', 'fissaggio televisore', 'fissaggio pensili', 'fissaggio mensole',
+    '!mensola da montare', '!mensole da fissare', '!appendere le mensole', '!appendere i quadri',
+    '!montare i mobili della seconda casa', '!montare i mobili dell ufficio', '!montare i mobili dellufficio', '!montare i mobili del bungalow',
+    '!montare i letti dell hotel', '!montare i letti dellhotel', '!montare gli armadi dell albergo', '!montare gli armadi dellalbergo',
+    '!cucina acquistata da montare', '!ho comprato un armadio da montare', '!mi serve un montatore di mobili', 'mobile',
+    'mobili', '!montagio', '!assemblaggio mobili'
+  ],
+  traslochi: [
+    '!trasloc', '!traslog', '!sgomber', '!imball',
+    'trasport', '!mi trasferisco', '!cambio casa', '!cambiare casa',
+    '!cambio ufficio', 'furgone', 'camion', 'autoscala',
+    'montacarichi', 'piani alti', 'senza ascensore', 'pluriball',
+    'ritiro mobili', 'piccolo trasloco', 'trasferire mobili', 'spostare mobili',
+    'spostare un armadio', 'spostare un divano', 'spostare una cucina', 'portare mobili',
+    'portare via mobili', 'portare via vecchi mobili', 'ritirare vecchi mobili', 'ritirare mobili usati',
+    'ritiro ingombranti', 'rimuovere vecchi mobili', 'liberare la casa', '!liberare la cantina',
+    'liberare il garage', '!svuotare casa', '!svuotare la casa', 'svuotare un appartamento',
+    '!svuotare cantina', '!svuotare la cantina', 'svuotare le cantine', 'svuotare il garage',
+    'svuotare la soffitta', 'svuotare un magazzino', 'svuota cantine', '!deposito mobili',
+    'depositare mobili', 'custodia mobili', 'scatole per trasloco', 'scatoloni per trasloco',
+    'cartoni per trasloco', 'imballaggio mobili', 'mobili da imballare', 'trasloco seconda casa',
+    'trasloco casa al mare', 'trasloco ufficio', 'trasloco negozio', 'sgombero bungalow',
+    'sgombero camere hotel', 'trasporto arredi hotel', 'cambiare appartamento', '!devo trasferirmi',
+    'devo cambiare casa', 'smontaggio per trasloco', 'sgonbero', 'sgombro cantina',
+    'sgombro casa', 'trasporto da ikea', '!svuotare cantine', '!svuotare una cantina',
+    'portare un divano', 'portare un armadio', 'portare un mobile', 'spostare i mobili',
+    'pianofort', 'cassaforte', 'smaltimento mobili', '!cantina da svuotare',
+    '!soffitta da svuotare', '!garage da svuotare', '!appartamento da svuotare', '!casa da svuotare',
+    '!magazzino da svuotare', '!locale da sgomberare', '!cantina da sgomberare', '!garage da sgomberare',
+    '!soffitta da sgomberare', '!appartamento da sgomberare', '!casa da sgomberare', '!svuotare una soffitta',
+    '!svuotare soffitta', '!svuotare il sottotetto', '!svuotare un garage', '!svuotare garage',
+    '!svuotare un deposito', '!svuotare il magazzino', '!svuotare il ripostiglio', '!svuotare un box',
+    '!sgomberare la cantina', '!sgomberare il garage', '!sgomberare la soffitta', '!sgomberare un appartamento',
+    '!sgomberare la casa', '!sgomberare un magazzino', '!sgomberare un ufficio', '!sgomberare un negozio',
+    '!sgomberare il locale', '!sgombrare la cantina', '!sgombrare il garage', '!sgombrare la casa',
+    '!sgombrare un appartamento', '!liberare casa', '!liberare cantina', '!liberare garage',
+    '!liberare soffitta', '!liberare un appartamento', '!liberare una casa', '!liberare un garage',
+    '!liberare una cantina', '!liberare una soffitta', '!liberare il magazzino', '!liberare il box',
+    'vecchi mobili da portare via', 'mobili da portare via', '!divano da portare via', '!armadio da portare via',
+    '!letto da portare via', 'mobili da ritirare', '!divano da ritirare', '!armadio da ritirare',
+    'ritiro divano', 'ritiro armadio', 'ritiro vecchi mobili', 'ritirare un divano',
+    'ritirare un armadio', 'ritirare una cucina', 'portare via un divano', 'portare via un armadio',
+    'portare via una cucina', 'portare via il divano', 'portare via l armadio', 'portare via larmadio',
+    'spostare il divano', 'spostare l armadio', 'spostare larmadio', 'spostare una libreria',
+    'spostare un letto', 'spostare un tavolo', 'trasportare un divano', 'trasportare un armadio',
+    'trasportare una cucina', 'trasportare mobili', 'trasporto divano', 'trasporto armadio',
+    'trasporto cucina', 'trasporto letto', 'trasporto mobili', 'trasporto da negozio',
+    'trasporto mobili seconda casa', 'trasporto mobili campeggio', 'trasporto mobili bungalow', 'trasporto arredi campeggio',
+    'trasporto mobili ufficio', 'trasloco casa vacanze', 'trasloco appartamento', 'trasloco stanza',
+    'trasloco camera', 'trasloco cucina', 'trasloco mobili hotel', 'trasloco mobili campeggio',
+    'traslocare la seconda casa', 'traslocare casa', 'traslocare ufficio', '!cambio appartamento',
+    '!cambio abitazione', '!cambiare abitazione', '!mi sposto di casa', '!trasferimento di casa',
+    '!trasferimento ufficio', 'trasferimento mobili', '!mobili da trasportare', 'mobili da spostare',
+    '!divano da trasportare', '!armadio da trasportare', '!cucina da trasportare', 'mobili da depositare',
+    '!mobili in deposito', '!deposito dei mobili', '!deposito per mobili', '!custodire i mobili',
+    '!tenere i mobili in deposito', 'imballare i mobili', 'imballare un mobile', 'imballare un divano',
+    'imballare un armadio', 'imballare i quadri', 'scatole da trasloco', 'scatoloni da trasloco',
+    'cartoni da trasloco', 'trasloco ai piani alti', 'trasloco senza ascensore', 'trasporto al terzo piano',
+    'trasporto al quarto piano', 'sgombero seconda casa', 'sgombero casa vacanze', 'sgombero casa al mare',
+    'sgombero appartamento', 'sgombero garage', 'sgombero soffitta', 'sgombero magazzino',
+    'sgombero ufficio', 'sgombero negozio', 'sgombero cantine', 'sgombero campeggio',
+    'sgombero hotel', 'sgombero albergo', '!svuotare il bungalow', '!svuotare una camera dell hotel',
+    '!svuotare una camera dellhotel', '!svuotare le camere dell albergo', '!svuotare le camere dellalbergo', '!svuotare i locali dell ufficio',
+    '!svuotare i locali dellufficio', '!mobili da trasferire', '!portare i mobili in un altra casa', '!portare i mobili in unaltra casa',
+    '!metri cubi', 'deposit', 'kit trasloco', 'trasloco in barca', 'trasloco a venezia', 'traghett', 'piattaforma elevatrice', '!trasferire i mobili', '!sgombrare cantina', '!sgombrare casa'
+  ],
+  parquet: [
+    '!parquet', '!parchett', '!parqet', '!parket',
+    '!laminato', 'vinilico', '!levig', '!lamatur',
+    'lamare', 'rovere', 'teak', 'iroko',
+    'doussie', 'prefinito', 'listoni', 'listelli',
+    'spina di pesce', 'spina ungherese', 'battiscopa', 'zoccolino',
+    '!pavimento in legno', 'pavimento laminato', 'pavimento in laminato', 'pavimento vinilico',
+    '!pavimento in pvc', '!pavimento in lvt', '!pavimento in spc', 'posare il parquet',
+    'posare il laminato', 'posare il vinilico', 'lamatura pavimento', 'carteggiare il parquet',
+    '!pavimento graffiato', 'pavimento rovinato', '!pavimento che scricchiola', 'pavimento che cigola',
+    'pavimento gonfio', 'pavimento sollevato', 'pavimento che si alza', 'pavimento scollato',
+    'pavimento consumato', 'doghe sollevate', 'doghe rovinate', 'listelli staccati',
+    'listelli rovinati', 'graffi sul pavimento', 'fughe tra listelli', 'fessure tra listelli',
+    'cambiare una doga', 'sostituire doghe', 'sostituire listelli', 'incollare listelli',
+    'verniciare il parquet', 'vernice per parquet', 'olio per parquet', 'oliare il parquet',
+    'cera per parquet', 'lucidare il parquet', 'laminato bungalow', 'pavimento flottante',
+    'posa flottante', 'posa incollata', 'posa a spina di pesce', 'montare battiscopa',
+    'sostituire battiscopa', 'mettere zoccolino', '!parquet da rifare', '!parquet da sistemare',
+    '!parquet da restaurare', '!parquet da levigare', '!parquet da lucidare', '!parquet graffiato',
+    'parquet rigato', 'parquet opaco', 'parquet annerito', 'parquet scolorito',
+    'parquet consumato', 'parquet che si stacca', 'parquet che si muove', 'parquet che fa rumore',
+    'parquet che scricchiola', 'parquet che si gonfia', 'parquet che si solleva', 'parquet che fa gobbe',
+    'parquet che ha preso acqua', 'parquet rovinato da una perdita', 'parquet rovinato dal cane', 'parquet graffiato dalle sedie',
+    'parquet con macchie scure', 'parquet con macchie di acqua', 'parquet con vernice consumata', 'parquet con fessure',
+    'parquet con fughe aperte', 'parquet con listelli mancanti', 'parquet vecchio da recuperare', 'parquet sotto la moquette',
+    'parquet della seconda casa', '!riparare il parquet', '!recuperare il parquet', '!rinnovare il parquet',
+    '!ripristinare il parquet', '!levigare il parquet', '!lamare il parquet', '!lamatura del parquet',
+    '!levigatura del parquet', '!posa del parquet', '!posare un parquet', '!mettere il parquet',
+    '!sostituire il parquet', 'cambiare un pezzo di parquet', 'togliere graffi dal parquet', 'togliere macchie dal parquet',
+    'rimettere un listello', 'sostituire listelli rovinati', 'riparare una doga', 'incollare una doga',
+    'doghe del pavimento', 'doga del pavimento rotta', 'listelli del parquet', 'listelli che si alzano',
+    'listelli che si muovono', 'listoni sollevati', 'listoni da sostituire', 'tavolette del parquet',
+    'pavimento in massello', 'parquet massello', 'parquet multistrato', 'parquet prefinito',
+    'parquet a incastro', 'parquet a click', 'parquet incollato', 'parquet flottante',
+    'parquet oliato', 'parquet verniciato', 'parquet spazzolato', 'parquet in bamboo',
+    'parquet in bambu', 'parquet in faggio', 'parquet in acero', 'parquet in castagno',
+    'parquet in noce', 'pavimento in legno da levigare', 'pavimento in legno opaco', 'pavimento in legno rigato',
+    'pavimento in legno con buchi', '!laminato da posare', '!laminato da sostituire', 'laminato graffiato',
+    'laminato gonfio', 'laminato che si solleva', 'laminato che scricchiola', 'laminato con giunti aperti',
+    'laminato rovinato dall acqua', 'laminato effetto legno', 'laminato a incastro', 'laminato a click',
+    '!posa del laminato', '!mettere il laminato', '!sostituire il laminato', 'cambiare una doga del laminato',
+    '!pavimento in vinile', 'pavimento vinilico a click', 'pavimento vinilico incollato', 'pavimento vinilico effetto legno',
+    'pavimento vinilico rovinato', 'doghe in pvc', 'doghe in vinile', 'doghe spc',
+    'doghe lvt', 'pavimento spc', 'pavimento lvt', '!posa pavimento vinilico',
+    '!posa pavimento in pvc', '!posare un pavimento in pvc', '!posare un pavimento spc', '!posare un pavimento lvt',
+    'piastrella vinilica staccata', 'pavimento a incastro', 'pavimento a doghe', 'parquet sopra le piastrelle',
+    'laminato sopra le piastrelle', 'parquet sul riscaldamento a pavimento', 'parquet per pavimento radiante', 'battiscopa staccato',
+    'battiscopa rovinato', 'battiscopa da incollare', 'battiscopa da cambiare', 'battiscopa in legno',
+    'zoccolino staccato', 'zoccolino rotto', 'zoccolino da sostituire', 'profili per parquet',
+    'soglia tra parquet e piastrelle', 'olio per pavimento in legno', 'vernice per pavimento in legno', 'cera per pavimento in legno',
+    'parquet camere hotel', 'parquet sala ristorante', 'pavimento vinilico bungalow', 'laminato nella casa vacanze',
+    '!palquet', 'parquet graffiatoo', '!laminatto', '!scurire il parquet',
+    '!scurire parquet', '!montare il parquet', '!montare il laminato', '!pavimento di legno',
+    '!pavimenti in legno'
+  ],
+  azienda: [
+    'aziend', '!appalt', '!chi siete', '!chi siamo',
+    'titolare', 'fabrizio', 'alzetta', 'festool',
+    'partner', 'collabor', 'referenze', 'esperienz',
+    'certificaz', 'assicuraz', '!dove siete', 'sede',
+    'indirizz', 'contatt', 'telefon', 'orari',
+    'artigianamente', 'artigiana mente', 'artigianamete', 'la ditta',
+    'storia della ditta', 'chi lavora con voi', '!chi e il titolare', 'chi e fabrizio',
+    'la vostra squadra', 'da quanto lavorate', 'da quanti anni lavorate', 'lavori realizzati',
+    'recension', 'posso fidarmi', 'che attrezzi usate', 'attrezzatur',
+    'officina mobile', 'i vostri mezzi', '!lavori pubblici', '!enti pubblici',
+    'pubblica amministrazione', '!lavorate per il comune', 'lavori per il comune', '!gare pubbliche',
+    'bandi di gara', 'albo fornitori', '!partita iva', 'ragione sociale',
+    'lavorare con voi', 'siete assicurati', '!come contattarvi', 'come vi contatto',
+    'whatsapp', 'email', 'posta elettronica', '!come raggiungervi',
+    'come arrivare', 'dove vi trovate', 'dove siete a cavallino', 'via julia',
+    'a che ora aprite', 'quando siete aperti', 'aperti il sabato', '!zone servite',
+    'dove lavorate', 'in quali comuni lavorate', '!numero di cellulare', '!numero cellulare',
+    '!numero di telefono', '!numero telefono', '!numero per chiamarvi', '!come posso contattarvi',
+    '!come posso chiamarvi', '!posso chiamarvi', '!vi posso chiamare', '!posso telefonarvi',
+    '!come vi posso contattare', '!chiamarvi', '!cellulare della ditta', '!telefono della ditta',
+    '!numero della ditta', '!contatto della ditta', '!recapito telefonico', '!recapit',
+    '!indirizzo email', '!indirizzo di posta', '!indirizzo della ditta', '!indirizzo dell azienda',
+    '!indirizzo dellazienda', '!mail della ditta', '!email della ditta', '!scrivervi',
+    '!dove posso scrivervi', '!come posso scrivervi', '!numero whatsapp', '!whatsapp della ditta',
+    '!orario di apertura', '!orari di apertura', '!a che ora chiudete', '!quando chiudete',
+    '!quando aprite', '!siete aperti oggi', '!siete aperti domani', '!siete aperti il sabato',
+    '!siete aperti la domenica', '!ricevete su appuntamento', '!come arrivare alla sede', '!dove vi trovo',
+    '!dove vi posso trovare', '!dove si trova la ditta', '!dove si trova artigianamente', '!come raggiungere artigianamente',
+    '!dove avete la sede', '!dove si trova la sede', '!sede della ditta', '!come venire da voi',
+    '!come raggiungere la sede', '!chi e il proprietario', '!chi e il responsabile', '!responsabile della ditta',
+    '!chi gestisce la ditta', '!chi lavora da voi', '!chi sono gli artigiani', '!chi fa parte della squadra',
+    '!chi c e nella squadra', '!chi ce nella squadra', '!presentazione della ditta', '!presentazione azienda',
+    '!presentazione dell azienda', '!presentazione dellazienda', '!storia di artigianamente', '!storia dell azienda',
+    '!storia dellazienda', '!da quanto tempo lavorate', '!da quanto esiste la ditta', '!quando e nata la ditta',
+    '!quando avete aperto', '!nome della ditta', '!denominazione della ditta', '!ditta artigianamente',
+    '!impresa artigianamente', 'artigianamnte', '!recensioni della ditta', '!recensioni su artigianamente',
+    '!opinioni su artigianamente', '!referenze della ditta', '!che lavori avete fatto', '!esempi dei vostri lavori',
+    '!foto dei vostri lavori', '!lavori gia realizzati', '!clienti della ditta', '!quali attrezzi usate',
+    '!che strumenti usate', '!che mezzi avete', '!avete un officina mobile', '!avete unofficina mobile',
+    '!attrezzi della ditta', '!attrezzature della ditta', '!mezzi della ditta', '!lavori per enti pubblici',
+    '!manutenzioni comunali', '!manutenzione per il comune', '!gare di appalto', '!gare d appalto',
+    '!gare dappalto', '!affidamenti pubblici', '!contratti pubblici', '!appalti comunali',
+    '!appalti per enti pubblici', '!fornitori del comune', '!iscrizione albo fornitori', '!documenti per appalti',
+    '!lavorate con enti pubblici', '!lavorate con il comune', '!lavorate per enti pubblici', '!collaborare con voi',
+    '!collaborazione con artigianamente', '!collaborazioni professionali', '!partner professionali', '!cercate collaboratori',
+    '!cercate artigiani', '!proporre una collaborazione', '!collaborare con la ditta', '!lavorate con altre ditte',
+    '!lavorate con altre imprese', '!collaborate con architetti', '!collaborate con geometri', '!collaborate con amministratori',
+    '!siete una ditta assicurata', '!avete un assicurazione', '!avete unassicurazione', '!che certificazioni avete',
+    '!certificazioni della ditta', '!documenti della ditta', '!dati della ditta', '!dati aziendali',
+    '!in quali zone lavorate', '!quali zone servite', '!in che zona lavorate', '!fino a dove lavorate',
+    '!dove intervenite', '!lavorate per privati', '!lavorate per hotel', '!lavorate per alberghi',
+    '!lavorate per campeggi', '!lavorate per uffici', '!lavorate per negozi', '!lavorate nelle seconde case',
+    '!lavorate nelle case vacanze'
+  ],
 };
 
 export const suggerimenti = [
@@ -76,42 +470,174 @@ export const suggerimenti = [
 	'Rifare il bagno'
 ];
 
-export const normalizza = (t) =>
-	String(t || '')
-		.toLowerCase()
-		.normalize('NFD')
-		.replace(/[̀-ͯ]/g, '')
-		.replace(/[^a-z0-9 ]+/g, ' ')
-		.replace(/\s+/g, ' ')
-		.trim();
 
-/** Restituisce gli slug dei lavori ordinati per pertinenza (punteggio > 0). */
+export const paroleEsatte = new Set([
+  'acqua', 'scuri', 'scuro', 'porta', 'porte', 'sale', 'sali',
+  'posa', 'olio', 'como', 'quadri', 'tavolo', 'tavoli',
+  'mobile', 'mobili', 'legno', 'sede', 'email', 'teak', 'iroko',
+  'rovere', 'noce', 'bagno', 'bagni', 'vasca', 'doccia', 'camion'
+]);
+
+export function normalizzaRicerca(testo) {
+  return String(testo ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+}
+
+function togliRichiesteNegate(testo) {
+  // Non tocca problemi come "non chiude", "non sale", "senza ascensore".
+  return testo.replace(
+    /\b(?:non voglio|non devo|non cerco|non mi serve|non mi servono|non serve|non occorre)\b[\s\S]*?(?=\b(?:ma|invece|pero|e devo|e voglio|e mi serve|mi serve|devo)\b|$)/g,
+    parte => /^non voglio (?:piu )?(?:muff\w*|umid\w*|condensa)\b/.test(parte) ? parte : ' '
+  ).replace(/\s+/g, ' ').trim();
+}
+
+const ambienti = /^(?:casa$|case$|casett|appartament|bagno$|bagni$|cucina$|cucine$|negoz|locale$|locali$|uffic|stanza$|stanze$|camera$|camere$|hotel$|alberg|bungalow$|campegg|paret|muro$|muri$|muratur|soffitt|facciat)/;
+const superfici = /^(?:paret|muro$|muri$|soffitt|facciat|ringhier|cancell|casa$|camera$|camere$|bagno$|bagni$|hotel$|alberg|bungalow$)/;
+const pavimenti = /^(?:parquet|parqet|parchett|parket|laminat|vinilic|listell|liston|doghe|battiscop|zoccolin)/;
+const infissiLegno = /^(?:porta$|porte$|portafin|portefin|portonc|porton|finestr|infiss|serrament|tapparell|taparell|persian|scuro$|scuri$|balcon$|pergol|pompeian|staccionat|zanzarier)/;
+const arredi = /^(?:mobile$|mobili$|mobilio$|mobilli$|arredo$|arredi$|armadio$|armadi$|armaro$|armari$|tavolo$|tavoli$|tavolin|sedia$|sedie$|librer|cassett|comodin|como$|pensil|mensol|scarpier|scrivan|letto$|letti$|guardarob|cucina$|cucine$|camerett|divan)/;
+const oggettiDaFissare = /^(?:tv$|televisor|television|quadr|specch|mensol|pensil|armadi|mobil|staffa|support)/;
+const ambientiDaSvuotare = /^(?:casa$|case$|appartament|cantin|garag|soffitt|magazzin|negoz|locale$|locali$|uffic|bungalow$|camera$|camere$|deposit)/;
+const copertura = /^(?:tetto$|tetti$|copertur|tegol|coppi|grondai|guaina)/;
+
+function vicino(parole, verbi, oggetti, distanza = 8) {
+  return parole.some((p, i) => verbi.test(p) && parole.some((o, j) => Math.abs(i - j) <= distanza && oggetti.test(o)));
+}
+
+function intenzioni(parole, query) {
+  const found = new Map();
+  const add = (id, motivo, livello = 4) => {
+    const record = found.get(id) ?? { livello: 0, motivi: [] };
+    record.livello = Math.max(record.livello, livello);
+    record.motivi.push(motivo);
+    found.set(id, record);
+  };
+  const haPavimento = parole.some(p => pavimenti.test(p));
+  const pavimentoLegno = /\bpaviment\w* (?:in |di )?(?:legno|laminato|vinilico|pvc|lvt|spc)\b/.test(query);
+  const pavimentoGenerico = parole.some(p => /^paviment/.test(p));
+  const haInfisso = parole.some(p => infissiLegno.test(p));
+  const haMuffaUmido = parole.some(p => /^(?:muffa|muffe|muffett|muffos|mufa$|umid|umdita$|salnitr|salnito$|condensa$|efflorescen)/.test(p));
+  const dipingere = /^(?:imbianc|inbianc|pittur|pitur|dipinger|dipintur|tintegg|tintegi|ridipinger|rinfresc|smaltare|smaltatur|verniciar|riverniciar)/;
+  const montare = /^(?:montar|montagg|monti$|monta$|montat|assembl|smont|rimont)/;
+  const riparare = /^(?:ripar(?!t)|aggiust|sistem|restaur|restauro|sostitu|cambiar|regolar|registrar|rifar|verniciar|riverniciar)/;
+  const spostare = /^(?:trasloc|traslog|trasport|spostar|trasferir|ritir|portar|depositar|custod)/;
+  const svuotare = /^(?:sgomber|sgonber|sgombrar|svuot|liber(?:ar|at|a$|i$))/;
+  const colore = parole.some(p => /^(?:colore$|colori$|tinta$|bianco$|pittura$)/.test(p));
+
+  if (vicino(parole, /^(?:ristruttur|ristrutur|ristuttur|demol|ampliar)/, ambienti)
+      || (!colore && vicino(parole, /^(?:rinnovar|rifar)/, ambienti))) add('ristrutturazioni', 'ristrutturazione con ambiente o superficie');
+  if (vicino(parole, /^(?:rifar|ripar|sistem|sostitu|impermeabilizz)/, copertura)) add('ristrutturazioni', 'intervento sulla copertura');
+  if (parole.some(p => copertura.test(p)) && /\b(?:perde|perdita|entra acqua|infiltraz\w*)\b/.test(query)) add('ristrutturazioni', 'perdita dalla copertura');
+  if (vicino(parole, /^(?:abbatter|demol|costru|divid|unir|tirar)/, /^(?:mur|paret|stanz|tramezz)/)) add('ristrutturazioni', 'modifica di muri o divisione degli spazi');
+
+  if (vicino(parole, montare, arredi)) add('montaggio-mobili', 'montaggio o smontaggio di arredi');
+  if (vicino(parole, /^(?:fissar|append|appes|ancorar|installar)/, oggettiDaFissare, 16)) add('montaggio-mobili', 'fissaggio a parete di arredi o accessori');
+  if (parole.some(p => arredi.test(p)) && /\b(?:a pezzi|in scatola|in kit|da montare|da assemblare)\b/.test(query)) add('montaggio-mobili', 'arredo consegnato da assemblare');
+  if (vicino(parole, spostare, arredi, 24) || vicino(parole, svuotare, ambientiDaSvuotare, 24)) add('traslochi', 'trasporto di arredi o svuotamento di ambienti');
+
+  if (vicino(parole, /^(?:posar|posa$|montar|montagg|ripar(?!t)|sistem|cambiar|levig|lamar|lamatur|cartegg|lucidar|oliar|verniciar|riverniciar|scurir|sostitu|incollar)/, pavimenti)) add('parquet', 'lavorazione del pavimento in legno o dei materiali dichiarati');
+  if (pavimentoLegno && parole.some(p => /^(?:posar|posa$|montar|ripar|sistem|levig|lamar|cartegg|lucidar|oliar|verniciar|scurir)/.test(p))) add('parquet', 'lavorazione di pavimento con materiale esplicito');
+  if (pavimentoGenerico && parole.some(p => /^(?:levig|lamar|lamatur)/.test(p))) add('parquet', 'levigatura o lamatura del pavimento');
+  if ((haPavimento || pavimentoLegno) && parole.some(p => /^(?:vernice$|vernici$|olio$|cera$|pittura$|colore$|graffi|graffiat|rovinat|gonfi|sollev|alzat|scricchiol|acqua$|macchi)/.test(p))) add('parquet', 'materiale o problema riferito al pavimento');
+
+  if (vicino(parole, riparare, infissiLegno)) add('falegnameria', 'riparazione o restauro di infissi e strutture in legno');
+  if (vicino(parole, /^(?:ripar(?!t)|aggiust|restaur|restauro|sistem)/, arredi)) add('falegnameria', 'riparazione o restauro di mobili');
+  if (/\bsu misura\b/.test(query) && parole.some(p => /^(?:mobil|armadi|armar|mensol|librer|tavol|bancon|scarpier|scrivan)/.test(p))) add('falegnameria', 'arredo su misura');
+  if (haInfisso && /\b(?:non (?:si )?chiud\w*|non (?:si )?apr\w*|non sale|non scende|blocc\w*|rott\w*|gonfi\w*|strisc\w*|cigol\w*)\b/.test(query)) add('falegnameria', 'problema di apertura, chiusura o funzionamento');
+  if (haInfisso && parole.some(p => /^(?:rovinat|mangiat|scolorit|salsedin|vernice$|vernici$)/.test(p))) add('falegnameria', 'degrado o finitura di un infisso o di una struttura in legno');
+
+  if (vicino(parole, dipingere, superfici)) add('imbiancatura', 'pittura delle superfici dichiarate');
+  if (vicino(parole, /^(?:cambiar|rinnovar|rifar|ridar)/, /^(?:colore$|tinta$|bianco$|pittura$)/, 16)) add('imbiancatura', 'rinnovo del colore');
+  if (/\b(?:vorrei|vorremmo|voglio|vogliamo|fare)\b/.test(query) && vicino(parole, /^(?:colorat|bianc)/, /^(?:paret|muro$|muri$|soffitt)/)) add('imbiancatura', 'colore richiesto per pareti e soffitti');
+  if (/\b(?:dare (?:il |una mano di )?bianco|dare una mano di pittura)\b/.test(query)) add('imbiancatura', 'richiesta di dare il bianco');
+  if (haMuffaUmido && (vicino(parole, dipingere, superfici) || /\b(?:togliere|eliminare|risanare|risolvere)\b/.test(query))) add('risanamento-umidita', 'problema di muffa o umidita da trattare prima della pittura', 5);
+  const pareteIntonaco = /^(?:paret|muro$|muri$|intonac|soffitt)/;
+  if (vicino(parole, /^(?:sbriciol|sfarin|sfald|scrost|gonfi|stacc|bagnat|polver|cristall|bolle$)/, pareteIntonaco, 16)) add('risanamento-umidita', 'degrado o bagnato di muro e intonaco');
+  if (/\b(?:puntini neri|polverina bianca|polvere bianca)\b/.test(query) && parole.some(p => pareteIntonaco.test(p) || /^(?:camera$|camere$|angoli$)/.test(p))) add('risanamento-umidita', 'macchie o efflorescenze descritte nel contesto dei muri');
+  if (/\b(?:pittura|vernice)\b/.test(query) && /\b(?:in basso|alla base|bolle|gonfi\w*)\b/.test(query) && /\b(?:gonfi\w*|bolle|stacc\w*)\b/.test(query)) add('risanamento-umidita', 'pittura gonfia o degradata alla base del muro');
+  if (/\b(?:chi siete|chi siamo|come contattarvi|come vi contatto|dove siete|dove vi trovate|numero di (?:telefono|cellulare)|partita iva)\b/.test(query)) add('azienda', 'domanda esplicita su identita o contatti');
+  if (/\b(?:lavorate|intervenite|operate)\b/.test(query) && /\b(?:comune|privati|seconde case|case vacanze|alberghi|hotel|campeggi|cavallino|treporti)\b/.test(query)) add('azienda', 'domanda sul territorio o sui clienti serviti');
+  return found;
+}
+
+const fuoriAmbito = /\b(?:idraulic\w*|elettricist\w*|caldai\w*|scaldabagn\w*|rubinett\w*|scarico intasato|acqua calda|acqua fredda|acquario|acquari|biciclett\w*|bici|meccanic\w*|motore|motori|automobile|automobili|giardinagg\w*|potatura|pulizie domestiche|pulire casa|pulire i vetri|pulire le finestre)\b/;
+
+export function creaRicercaServizi(paroleServizi) {
+  const servizi = Object.entries(paroleServizi).map(([id, entries], ordine) => ({
+    id, ordine,
+    entries: entries.map(entry => {
+      const forte = entry.startsWith('!');
+      const termine = forte ? entry.slice(1) : entry;
+      return { entry, termine, forte, tokens: termine.split(' '), esatta: paroleEsatte.has(termine) };
+    })
+  }));
+
+  return function cercaServizi(testo) {
+      const normalizzata = normalizzaRicerca(testo);
+    const query = String(testo ?? '').split(/[.!?;,:\n]+/)
+      .map(normalizzaRicerca).map(togliRichiesteNegate).filter(Boolean).join(' ')
+      .replace(/\b(?:non ho|non abbiamo|non c e|non ce|non ci sono|niente|senza) (?:la |le |il |lo |gli |della |di )?(?:muff\w*|mufa|umid\w*|condensa)\b/g, ' ')
+      .replace(/\bgia montat[oaie]\b/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+    const parole = query ? query.split(' ') : [];
+    const intenti = intenzioni(parole, query);
+    const ignoraAcqua = fuoriAmbito.test(query) || /\b(?:pittura|vernice|smalto) ad acqua\b/.test(query);
+    const risultati = [];
+
+    for (const servizio of servizi) {
+      const matches = [];
+      for (const item of servizio.entries) {
+        if (item.termine === 'acqua' && ignoraAcqua) continue;
+        for (let start = 0; start < parole.length; start++) {
+          const end = start + item.tokens.length;
+          if (end > parole.length) continue;
+          const found = item.tokens.length > 1
+            ? item.tokens.every((token, i) => parole[start + i] === token)
+            : item.esatta ? parole[start] === item.termine : parole[start].startsWith(item.termine);
+          if (item.termine === 'muff' && !/^(?:muffa|muffe|muffett|muffos)/.test(parole[start])) continue;
+          if (item.termine === 'mufa' && parole[start] !== 'mufa') continue;
+          if (found) matches.push({ ...item, start, end, livello: item.forte ? (item.tokens.length > 1 ? 4 : 3) : (item.tokens.length > 1 ? 2 : 1) });
+        }
+      }
+      // Conta una voce una volta e non somma radice e frase sugli stessi token.
+      matches.sort((a, b) => b.livello - a.livello || b.tokens.length - a.tokens.length || a.start - b.start);
+      const occupati = new Set(), visti = new Set(), scelti = [];
+      for (const hit of matches) {
+        if (visti.has(hit.termine) || Array.from({ length: hit.end - hit.start }, (_, i) => hit.start + i).some(i => occupati.has(i))) continue;
+        scelti.push(hit); visti.add(hit.termine);
+        for (let i = hit.start; i < hit.end; i++) occupati.add(i);
+      }
+      const intento = intenti.get(servizio.id);
+      if (!scelti.length && !intento) continue;
+      const livello = Math.max(intento?.livello ?? 0, ...scelti.map(x => x.livello), 0);
+      risultati.push({
+        id: servizio.id, livello,
+        intentoEsplicito: Boolean(intento),
+        punteggio: Math.min(8, scelti.reduce((n, hit) => n + (hit.forte ? 2 : 1), 0)),
+        ordine: servizio.ordine,
+        corrispondenze: scelti.map(x => x.entry), motivi: intento?.motivi ?? []
+      });
+    }
+    // Un mestiere non offerto non deve essere suggerito per un oggetto debole.
+    const specificaSupportata = risultati.some(r => r.livello >= 3);
+    if (fuoriAmbito.test(query) && !specificaSupportata) return { normalizzata, risultati: [], ambigua: false, fuoriAmbito: true };
+    risultati.sort((a, b) => b.livello - a.livello || Number(b.intentoEsplicito) - Number(a.intentoEsplicito) || b.punteggio - a.punteggio || a.ordine - b.ordine);
+    const ambigua = risultati.length > 1 && risultati[0].livello === risultati[1].livello && risultati[0].intentoEsplicito === risultati[1].intentoEsplicito && risultati[0].punteggio === risultati[1].punteggio;
+    return { normalizzata, risultati: risultati.map(({ ordine, ...r }) => r), ambigua, fuoriAmbito: false };
+  };
+}
+
+const motore = creaRicercaServizi(paroleServizi);
+export const normalizza = normalizzaRicerca;
+
+/** Restituisce gli slug dei lavori ordinati per pertinenza (vuoto se non c'entra con i nostri lavori). */
 export function cerca(testo) {
-	const q = normalizza(testo);
+	const q = normalizzaRicerca(testo);
 	if (q.length < 2) return [];
-	const parole = q.split(' ').filter((w) => w.length >= 2);
-	const punteggi = Object.entries(paroleServizi).map(([slug, radici]) => {
-		let p = 0;
-		for (const r of radici) {
-			const forte = r.includes('!');
-			const intera = r.includes('='); // "=" : solo la parola intera (porta sì, portare no)
-			const rn = normalizza(r.replace(/[!=]/g, ''));
-			const peso = forte ? 4 : 2;
-			if (rn.includes(' ')) {
-				if (q.includes(rn)) p += peso + 1;
-			} else if (intera ? parole.includes(rn) : parole.some((w) => w.startsWith(rn) || (w.length >= 4 && rn.startsWith(w)))) {
-				p += peso;
-			}
-		}
-		const primo = parole[0] || '';
-		if (primo.length >= 3 && normalizza(slug).split(' ')[0].startsWith(primo)) p += 1;
-		return [slug, p];
-	});
-	const trovati = punteggi
-		.filter(([, p]) => p > 0)
-		.sort((a, b) => b[1] - a[1])
-		.map(([s]) => s);
-	return trovati.length ? trovati : cercaConErrori(parole);
+	const r = motore(testo);
+	if (r.risultati.length || r.fuoriAmbito) return r.risultati.map((x) => x.id);
+	// Un solo errore di battitura su una parola sola e lunga ("trasloko", "pavimeto"): niente ipotesi sulle frasi
+	return q.includes(' ') ? [] : cercaConErrori([q]);
 }
 
 // Distanza tra due parole (quante lettere cambiare): serve per gli errori di battitura
@@ -124,19 +650,17 @@ const distanza = (a, b) => {
 	return d[a.length][b.length];
 };
 
-/** Se non trova niente: "muffs", "trasloko", "parqet"… una lettera sbagliata (due per parole lunghe) va bene. */
+/** Solo voci forti e lunghe, una lettera di differenza: "trasloko" sì, "muffin" o "montagna" no. */
 function cercaConErrori(parole) {
-	const lunghe = parole.filter((w) => w.length >= 5);
+	const lunghe = parole.filter((w) => w.length >= 6);
 	if (!lunghe.length) return [];
 	const punteggi = Object.entries(paroleServizi).map(([slug, radici]) => {
 		let p = 0;
 		for (const r of radici) {
-			const rn = normalizza(r.replace(/[!=]/g, ''));
-			if (rn.includes(' ') || rn.length < 4) continue;
-			for (const w of lunghe) {
-				const pezzo = w.slice(0, Math.max(rn.length, 4));
-				if (distanza(pezzo, rn) <= (rn.length >= 8 ? 2 : 1)) p += r.startsWith('!') ? 4 : 2;
-			}
+			if (!r.startsWith('!')) continue;
+			const rn = r.slice(1);
+			if (rn.includes(' ') || rn.length < 6) continue;
+			for (const w of lunghe) if (distanza(w.slice(0, rn.length), rn) <= 1) p += 1;
 		}
 		return [slug, p];
 	});
