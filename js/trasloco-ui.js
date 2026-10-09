@@ -78,7 +78,10 @@ export function avviaTrasloco(box) {
 		const x = Number(String(v ?? '').replace(',', '.'));
 		return Number.isFinite(x) && x >= 0 ? x : 0;
 	};
-	const sopra = () => (header?.offsetHeight || 60) + (barra && !barra.hidden && barra.offsetHeight ? barra.offsetHeight + 8 : 0) + 12;
+	// altezza di quello che sta fisso in alto: intestazione del sito, oppure la testa della tendina (telefono)
+	const testaFoglio = document.querySelector('[data-foglio-testa]');
+	const inAlto = () => (testaFoglio && testaFoglio.offsetHeight ? testaFoglio.offsetHeight : header?.offsetHeight || 60);
+	const sopra = () => inAlto() + (barra && !barra.hidden && barra.offsetHeight ? barra.offsetHeight + 8 : 0) + 12;
 	const scorriA = (dove) => {
 		const y = dove.getBoundingClientRect().top + scrollY - sopra();
 		if (Math.abs(y - scrollY) > 8) scrollTo({ top: Math.max(0, y), behavior: ridotto ? 'auto' : 'smooth' });

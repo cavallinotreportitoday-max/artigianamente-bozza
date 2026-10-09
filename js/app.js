@@ -716,6 +716,18 @@ if (pv) {
 		vai(dati);
 	};
 
+	const telefono = () => matchMedia('(max-width: 860px)').matches;
+	// × della tendina: si torna alla pagina di prima del sito (es. Traslochi), altrimenti alla scelta del servizio
+	$('[data-foglio-chiudi]')?.addEventListener('click', () => {
+		let primaNelSito = false;
+		try {
+			primaNelSito = !!document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1;
+		} catch {
+			// referrer non leggibile: si resta qui
+		}
+		if (primaNelSito) history.back();
+		else $('[data-pv-cambia]', pv).click();
+	});
 	const scegli = (slug, scorri) => {
 		const btn = lavori.find((b) => b.dataset.scegli === slug);
 		if (!btn) return;
@@ -743,6 +755,8 @@ if (pv) {
 		const trasloco = slug === 'traslochi';
 		// traslochi: titolo più corto e meno spazio sopra, così il passo aperto arriva prima
 		document.documentElement.classList.toggle('pv-trasloco', trasloco);
+		// sul telefono la stima del trasloco diventa una tendina a tutto schermo
+		document.documentElement.classList.toggle('pv-foglio', trasloco);
 		comuneCampo.hidden = trasloco;
 		$('input', comuneCampo).required = !trasloco;
 		dati.hidden = !altro;
@@ -755,14 +769,15 @@ if (pv) {
 		} catch {
 			// in alcune anteprime l'indirizzo non si può cambiare
 		}
-		if (scorri) vai(scelto);
+		// nella tendina del trasloco si parte dall'alto; altrimenti si va al servizio scelto
+		if (scorri) trasloco && telefono() ? scrollTo({ top: 0, behavior: 'instant' }) : vai(scelto);
 	};
 
 	for (const b of lavori) b.addEventListener('click', () => scegli(b.dataset.scegli, true));
 	$('[data-pv-cambia]', pv).addEventListener('click', () => {
 		scelta.hidden = false;
 		scelto.hidden = true;
-		document.documentElement.classList.remove('pv-trasloco');
+		document.documentElement.classList.remove('pv-trasloco', 'pv-foglio');
 		vai(scelta);
 	});
 	// "Richiedi un sopralluogo", "Parliamone insieme": aprono il modulo dei dati
@@ -942,7 +957,7 @@ if (tipi.length) {
 }
 
 /* Calcolatore del trasloco: lo script si carica solo dove serve */
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026100914');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101005');
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {
