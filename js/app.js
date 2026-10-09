@@ -364,30 +364,23 @@ if (visore && typeof visore.showModal === 'function') {
 	});
 }
 
-/* Home: la foto di sfondo arriva fino al fondo delle icone; le icone tornano scure quando restano fisse in alto */
+/* Home: la foto di sfondo è alta quanto la prima schermata (titolo e ricerca);
+   le icone dei lavori arrivano subito sotto, la freccia ↓ ci porta lì */
 const sfondo = $('[data-sfondo]');
-const barraIcone = $('[data-chips]');
 const zonaCerca = $('.v3-cerca');
-if (sfondo && barraIcone && zonaCerca) {
-	// Altezza = ricerca + icone. Non si usa offsetTop delle icone: quando restano fisse in alto
-	// cambia con lo scroll e su iPhone (barra di Safari che si chiude) la foto copriva la pagina.
-	// + lo spazio di foto sotto le icone (margine sopra il contenuto), così le icone stanno un po' più su
-	const sotto = $('[data-contenuto]');
-	const misura = () =>
-		(sfondo.style.height = `${
-			zonaCerca.offsetTop + zonaCerca.offsetHeight + barraIcone.offsetHeight + (sotto ? parseFloat(getComputedStyle(sotto).marginTop) || 0 : 0)
-		}px`);
-	const fissa = () =>
-		barraIcone.classList.toggle(
-			'is-fissa',
-			scrollY > 10 && barraIcone.getBoundingClientRect().top <= (header?.offsetHeight || 76) + 1
-		);
+if (sfondo && zonaCerca) {
+	const fine = () => zonaCerca.offsetTop + zonaCerca.offsetHeight;
+	const misura = () => (sfondo.style.height = `${fine()}px`);
 	misura();
-	fissa();
 	addEventListener('resize', misura);
 	document.addEventListener('sfondo-misura', misura);
 	addEventListener('load', misura);
-	addEventListener('scroll', fissa, { passive: true });
+	$('[data-giu]')?.addEventListener('click', () =>
+		scrollTo({
+			top: fine() - (header?.offsetHeight || 0),
+			behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+		})
+	);
 }
 
 /* Home: ricerca, pulsanti dei lavori e schede */
