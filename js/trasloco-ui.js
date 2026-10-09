@@ -82,7 +82,18 @@ export function avviaTrasloco(box) {
 	const testaFoglio = document.querySelector('[data-foglio-testa]');
 	const inAlto = () => (testaFoglio && testaFoglio.offsetHeight ? testaFoglio.offsetHeight : header?.offsetHeight || 60);
 	const sopra = () => inAlto() + (barra && !barra.hidden && barra.offsetHeight ? barra.offsetHeight + 8 : 0) + 12;
+	// telefono, traslochi: i passi 1-4 si aprono come tendina da sotto (il passo 5, la stima, resta nella pagina)
+	const foglio = () => document.documentElement.classList.contains('pv-foglio') && matchMedia('(max-width: 860px)').matches;
+	const tendina = (n) => foglio() && Number(n) !== 5;
 	const scorriA = (dove) => {
+		// dentro una tendina scorre la tendina, non la pagina
+		const sez = dove.closest('[data-passo]');
+		if (sez && sez.classList.contains('is-aperto') && tendina(sez.dataset.passo)) {
+			const corpo = $('[data-passo-corpo]', sez);
+			const yc = dove === sez ? 0 : dove.getBoundingClientRect().top - corpo.getBoundingClientRect().top + corpo.scrollTop - 12;
+			corpo.scrollTo({ top: Math.max(0, yc), behavior: ridotto || dove === sez ? 'auto' : 'smooth' });
+			return;
+		}
 		const y = dove.getBoundingClientRect().top + scrollY - sopra();
 		if (Math.abs(y - scrollY) > 8) scrollTo({ top: Math.max(0, y), behavior: ridotto ? 'auto' : 'smooth' });
 	};
@@ -255,24 +266,40 @@ export function avviaTrasloco(box) {
 	function apri(n, scorri = true) {
 		visti.add(n);
 		for (const p of passi) {
+			clearTimeout(p._chiude);
+			p.classList.remove('is-chiude');
 			const si = Number(p.dataset.passo) === n;
 			p.classList.toggle('is-aperto', si);
 			$('[data-passo-corpo]', p).hidden = !si;
 			$('[data-passo-apri]', p).setAttribute('aria-expanded', String(si));
 		}
 		sintesi();
-		if (scorri && passo(n)) requestAnimationFrame(() => scorriA(passo(n)));
+		if (!scorri || !passo(n)) return;
+		// tendina: si parte dall'inizio del passo, la pagina sotto resta ferma
+		if (tendina(n)) $('[data-passo-corpo]', passo(n)).scrollTop = 0;
+		else requestAnimationFrame(() => scorriA(passo(n)));
+	}
+	/** Chiude un passo; sul telefono la tendina scende prima di sparire */
+	function chiudiPasso(p) {
+		const fine = () => {
+			p.classList.remove('is-aperto', 'is-chiude');
+			$('[data-passo-corpo]', p).hidden = true;
+			$('[data-passo-apri]', p).setAttribute('aria-expanded', 'false');
+			sintesi();
+		};
+		clearTimeout(p._chiude);
+		if (tendina(p.dataset.passo) && !ridotto) {
+			p.classList.add('is-chiude');
+			p._chiude = setTimeout(fine, 230);
+		} else fine();
 	}
 	for (const p of passi) {
 		const n = Number(p.dataset.passo);
 		$('[data-passo-apri]', p).addEventListener('click', () => {
-			if (p.classList.contains('is-aperto')) {
-				p.classList.remove('is-aperto');
-				$('[data-passo-corpo]', p).hidden = true;
-				$('[data-passo-apri]', p).setAttribute('aria-expanded', 'false');
-				sintesi();
-			} else apri(n);
+			if (p.classList.contains('is-aperto')) chiudiPasso(p);
+			else apri(n);
 		});
+		$('[data-passo-chiudi]', p)?.addEventListener('click', () => chiudiPasso(p));
 		$('[data-passo-avanti]', p)?.addEventListener('click', () => {
 			confermati.add(n);
 			if (n === 2 && aperta) {
@@ -282,6 +309,16 @@ export function avviaTrasloco(box) {
 			apri(n + 1);
 		});
 	}
+	// Esc chiude la tendina aperta (ma prima chiude l'elenco dei comuni, se è aperto)
+	document.addEventListener(
+		'keydown',
+		(e) => {
+			if (e.key !== 'Escape' || e.target.closest?.('[role="combobox"][aria-expanded="true"]')) return;
+			const p = passi.find((q) => q.classList.contains('is-aperto') && tendina(q.dataset.passo));
+			if (p) chiudiPasso(p);
+		},
+		true
+	);
 	box.addEventListener('click', (e) => {
 		const b = e.target.closest('[data-vai-passo]');
 		if (b) vaiAlCampo(Number(b.dataset.vaiPasso), b.dataset.vaiCampo);
@@ -934,6 +971,12 @@ export function avviaTrasloco(box) {
 		scrivi('[data-tr-barra-label]', pronta ? [etichetta(r), daFare].filter(Boolean).join(' · ') : r.vuoto ? 'Stima del trasloco' : base(r), barra);
 		scrivi('[data-tr-barra-cosa]', pronta ? base(r) : !comuniPronti(s) ? 'Inserisci partenza e arrivo' : 'Aggiungi cosa portiamo', barra);
 		scrivi('[data-tr-barra-cifra]', pronta ? `${euro(r.min)}–${euro(r.max)} €` : '', barra);
+
+		// in fondo a ogni tendina: prezzo e tipo di stima, oppure cosa manca per vederla
+		for (const st of $$('[data-tr-avanti-stima]', box)) {
+			scrivi('strong', pronta ? `${euro(r.min)}–${euro(r.max)} €` : '', st);
+			scrivi('small', pronta ? etichetta(r) : !comuniPronti(s) ? 'Inserisci partenza e arrivo' : 'Aggiungi cosa portiamo', st);
+		}
 
 		// riepilogo per il modulo "Richiedi un sopralluogo"
 		if (riepilogo && !box.closest('[hidden]')) {
