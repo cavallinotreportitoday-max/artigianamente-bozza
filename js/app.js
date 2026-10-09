@@ -427,10 +427,6 @@ if (contenuto) {
 
 	// modo: 'tutto' = vista iniziale, 'lavoro' = una scheda, 'ricerca' = risultato di una ricerca
 	const vista = (modo, trovati = [], testo = '') => {
-		if (modo === 'tutto' && document.documentElement.classList.contains('is-scheda')) {
-			document.documentElement.classList.remove('is-scheda');
-			document.dispatchEvent(new Event('sfondo-misura'));
-		}
 		const primo = trovati[0];
 		panoramica.hidden = modo !== 'tutto';
 		for (const s of schede) s.hidden = s.dataset.scheda !== primo;
@@ -457,15 +453,28 @@ if (contenuto) {
 	// Porta l'inizio del contenuto subito sotto i pulsanti fissi
 	// Un lavoro si apre direttamente sulla sua foto, subito sotto le icone fisse
 	const fotoDi = (slug) => $(`[data-scheda="${slug}"] .v3-scheda__img`) || contenuto;
-	// pulito = lavoro aperto: la striscia di foto sotto le icone sparisce (torna con "Tutti i lavori")
-	const scorri = (dove = contenuto, pulito = true) => {
-		document.documentElement.classList.toggle('is-scheda', pulito);
-		document.dispatchEvent(new Event('sfondo-misura'));
+	// Porta il punto giusto subito sotto le icone fisse. Sul telefono il salto è immediato e poi si ricontrolla:
+	// su iPhone lo scorrimento morbido a volte si fermava prima e restava in vista la foto della home.
+	const touch = matchMedia('(pointer: coarse)').matches;
+	let mossoDalDito = false;
+	addEventListener('touchstart', () => (mossoDalDito = true), { passive: true });
+	addEventListener('wheel', () => (mossoDalDito = true), { passive: true });
+	const puntoDi = (dove) => {
 		const sopra = (header?.offsetHeight || 0) + (barraChips?.offsetHeight || 0) + (dove === contenuto ? 0 : 14);
 		// posizione senza contare l'animazione d'entrata della scheda (che la sposta di qualche px)
 		let y = -sopra;
 		for (let el = dove; el; el = el.offsetParent) y += el.offsetTop;
-		if (Math.abs(scrollY - y) > 4) scrollTo({ top: y, behavior: ridotto ? 'auto' : 'smooth' });
+		return Math.max(0, y);
+	};
+	const scorri = (dove = contenuto) => {
+		const y = puntoDi(dove);
+		if (Math.abs(scrollY - y) <= 4) return;
+		mossoDalDito = false;
+		scrollTo({ top: y, behavior: touch || ridotto ? 'instant' : 'smooth' });
+		setTimeout(() => {
+			const giusto = puntoDi(dove);
+			if (!mossoDalDito && Math.abs(scrollY - giusto) > 4) scrollTo({ top: giusto, behavior: 'instant' });
+		}, touch ? 350 : 900);
 	};
 
 	const indirizzo = (slug, nuovo) => {
@@ -486,7 +495,7 @@ if (contenuto) {
 		if (slug === 'tutto') {
 			indirizzo('', true);
 			vista('tutto');
-			scorri(contenuto, false);
+			scorri(contenuto);
 		} else {
 			indirizzo(slug, true);
 			vista('lavoro', [slug]);
