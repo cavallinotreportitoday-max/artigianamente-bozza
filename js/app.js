@@ -1,9 +1,18 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100912';
-import { cerca } from './ricerca.js?v=2026100911';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100913';
+import { cerca } from './ricerca.js?v=2026100913';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+// Arrivati col tasto indietro o ricaricando: il browser rimette la pagina dov'era, gli script non devono scorrere
+const tornato = (() => {
+	try {
+		const t = performance.getEntriesByType('navigation')[0]?.type;
+		return t === 'back_forward' || t === 'reload';
+	} catch {
+		return false;
+	}
+})();
 const CHECK =
 	'<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" vector-effect="non-scaling-stroke"/></svg>';
 
@@ -634,7 +643,7 @@ if (contenuto) {
 		if (slugs.includes(h)) {
 			vista('lavoro', [h]);
 			// anche dal menu (L'azienda) o col tasto indietro: si va sulla foto della scheda
-			if (primaVolta) requestAnimationFrame(() => scorri(fotoDi(h)));
+			if (primaVolta) !tornato && requestAnimationFrame(() => scorri(fotoDi(h)));
 			else scorri(fotoDi(h));
 		} else if (!input.value.trim()) {
 			vista('tutto');
@@ -730,20 +739,23 @@ if (pv) {
 
 	// Arrivo da una pagina del servizio (preventivo.html#parquet): servizio già scelto, si va alle domande
 	// #ristrutturazioni:cucina → ristrutturazioni con "Cucina" già scelta
-	const daIndirizzo = () => {
+	const daIndirizzo = (primaVolta) => {
 		const [h, sub] = decodeURIComponent(location.hash.slice(1)).split(':');
 		if (h === 'dati') return;
 		if (!lavori.some((b) => b.dataset.scegli === h)) return;
-		requestAnimationFrame(() => {
+		const fai = () => {
 			if (sub) {
 				const r = $(`[data-pannello="${h}"] input[name="cosa"][value="${sub}"]`, pv);
 				if (r) r.checked = true;
 			}
-			scegli(h, true);
-		});
+			scegli(h, !(primaVolta && tornato));
+		};
+		// la prima volta subito, così la pagina è già quella giusta quando il browser la rimette dov'era
+		if (primaVolta === true) fai();
+		else requestAnimationFrame(fai);
 	};
-	addEventListener('hashchange', daIndirizzo);
-	daIndirizzo();
+	addEventListener('hashchange', () => daIndirizzo(false));
+	daIndirizzo(true);
 }
 
 /* "Stampa il riepilogo": stampa solo il riepilogo del bagno (dal menu di stampa si salva come PDF) */
@@ -891,4 +903,15 @@ if (tipi.length) {
 }
 
 /* Calcolatore del trasloco: lo script si carica solo dove serve */
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026100912');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026100913');
+
+/* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
+document.addEventListener('click', (e) => {
+	const a = e.target.closest('a[href^="#"]');
+	if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey) return;
+	const id = decodeURIComponent(a.getAttribute('href').slice(1));
+	const el = id && document.getElementById(id);
+	if (!el) return;
+	e.preventDefault();
+	el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+});

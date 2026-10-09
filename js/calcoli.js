@@ -59,7 +59,7 @@ export const aPartireDa = {
 	'risanamento-umidita': { euro: 60, unita: '/m²', dettaglio: 'Al m² di muro, con intonaco deumidificante di base. La causa va verificata al sopralluogo.' },
 	falegnameria: { euro: 60, unita: '', dettaglio: 'Piccole riparazioni a domicilio.' },
 	'montaggio-mobili': { euro: 70, unita: '', dettaglio: 'Uscita minima per mobili piccoli.' },
-	traslochi: { euro: 255, unita: '', dettaglio: 'Monolocale in zona, con ascensore, scatoloni preparati da te.' }, // dal calcolatore (trasloco.js)
+	traslochi: { euro: 300, unita: '', dettaglio: 'Monolocale in zona, con ascensore, scatoloni preparati da te.' }, // dal calcolatore (trasloco.js): esempio Monolocale, 1° piano con ascensore, 3 km, imballo io con i miei scatoloni → 300–370 €
 	parquet: { euro: 14, unita: '/m²', dettaglio: 'Sola posa di laminato, al m². Materiale escluso.' }
 };
 
