@@ -247,7 +247,7 @@ export const statoIniziale = () => ({
 	chi: '', // chi imballa: 'noi' | 'io' | 'niente'
 	scatole: '', // chi porta gli scatoloni: 'nostre' | 'mie'
 	nonSo: false,
-	quanti: '', // solo per "Imballate voi" senza stanze: numero indicativo
+	quanti: '', // solo per "Imballiamo noi" senza stanze: numero indicativo
 	formati: { piccolo: 0, medio: 0, grande: 0 },
 	altreMisure: [], // { l, p, a, q } in cm
 	smontaggio: false,
@@ -350,28 +350,32 @@ export function contaScatoloni(s) {
 
 /** Cose che mancano per una stima completa: { testo, passo } */
 export function cosaManca(s) {
+	// campo: dove portare il cliente quando tocca la voce (selettore CSS dentro il passo)
 	const m = [];
 	for (const [k, nome] of [['partenza', 'partenza'], ['arrivo', 'arrivo']]) {
 		const l = s[k];
-		if (!l.comune) m.push({ testo: `Comune di ${nome}`, passo: 1 });
-		else if (l.comune === 'Venezia' && !l.zona) m.push({ testo: `Zona di Venezia (${nome})`, passo: 1 });
+		if (!l.comune) m.push({ testo: `Comune di ${nome}`, passo: 1, campo: `[data-tr-comune="${k}"]` });
+		else if (l.comune === 'Venezia' && !l.zona) m.push({ testo: `Zona di Venezia (${nome})`, passo: 1, campo: `[name="${k}-zona"]` });
 		const p = pianoNum(l);
-		if (p == null) m.push({ testo: `Piano di ${nome}`, passo: 1 });
-		else if (p > 0 && !l.ascensore) m.push({ testo: `Ascensore (${nome})`, passo: 1 });
+		if (p == null) m.push({ testo: `Piano di ${nome}`, passo: 1, campo: `[name="${k}-piano"]` });
+		else if (p > 0 && !l.ascensore) m.push({ testo: `Ascensore (${nome})`, passo: 1, campo: `[name="${k}-ascensore"]` });
 	}
-	if (!s.cosa) m.push({ testo: 'Cosa portiamo', passo: 2 });
-	else if (s.cosa === 'casa' && !s.stanze.length) m.push({ testo: 'Le stanze', passo: 2 });
+	if (!s.cosa) m.push({ testo: 'Cosa portiamo', passo: 2, campo: '[name="cosa"]' });
+	else if (s.cosa === 'casa' && !s.stanze.length) m.push({ testo: 'Le stanze', passo: 2, campo: '[data-tipo]' });
 	const esempio = s.cosa === 'casa' ? s.stanze.filter((st) => st.esempio).length : 0;
-	if (esempio) m.push({ testo: esempio === 1 ? `Controlla la stanza d'esempio` : `Controlla le ${esempio} stanze d'esempio`, passo: 2 });
-	if ((s.personali || []).some((p) => !String(p.nome || '').trim())) m.push({ testo: "Nome dell'oggetto tuo", passo: 3 });
-	if (!s.chi) m.push({ testo: 'Chi imballa', passo: 4 });
+	if (esempio) m.push({ testo: esempio === 1 ? `Controlla la stanza d'esempio` : `Controlla le ${esempio} stanze d'esempio`, passo: 2, campo: '[data-stanza] button' });
+	if ((s.personali || []).some((p) => !String(p.nome || '').trim())) m.push({ testo: "Nome dell'oggetto tuo", passo: 3, campo: '[data-pers-nome]' });
+	if (!s.chi) m.push({ testo: 'Chi imballa', passo: 4, campo: '[name="chi"]' });
 	else if (s.chi !== 'niente') {
-		if (!s.scatole) m.push({ testo: 'Chi porta gli scatoloni', passo: 4 });
+		if (!s.scatole) m.push({ testo: 'Chi porta gli scatoloni', passo: 4, campo: '[name="scatole"]' });
 		const sc = contaScatoloni(s);
-		if (!sc.n && !sc.nonContati) m.push({ testo: 'Quanti scatoloni', passo: 4 });
+		if (!sc.n && !sc.nonContati) m.push({ testo: 'Quanti scatoloni', passo: 4, campo: s.chi === 'io' ? '[name^="f-"]' : '[name="quanti"]' });
 	}
 	return m;
 }
+
+/** Partenza e arrivo indicati: senza, la strada non si conosce e il prezzo sarebbe inventato */
+export const comuniPronti = (s) => ['partenza', 'arrivo'].every((k) => s[k].comune && !(s[k].comune === 'Venezia' && !s[k].zona));
 
 /** "Jesolo, 2° piano, ascensore piccolo" */
 function testoLato(x, z) {
@@ -454,7 +458,7 @@ export function calcolaTrasloco(s, strada) {
 			? 'nessuno scatolone'
 			: !s.chi
 				? 'chi imballa: da indicare'
-				: `${s.chi === 'noi' ? 'imballate voi' : 'imballa il cliente'}, ${s.scatole === 'nostre' ? 'scatoloni vostri' : s.scatole === 'mie' ? 'scatoloni del cliente' : 'scatoloni: da indicare'}`;
+				: `${s.chi === 'noi' ? 'lo fa ArtigianaMente' : 'lo fa il cliente'}, ${s.scatole === 'nostre' ? 'scatoloni di ArtigianaMente' : s.scatole === 'mie' ? 'scatoloni del cliente' : 'scatoloni: da indicare'}`;
 	const scatTesto =
 		s.chi === 'niente'
 			? ''
@@ -565,9 +569,9 @@ export function calcolaTrasloco(s, strada) {
 
 	// Cosa è incluso, in parole semplici
 	const mezziTesto = lungo ? `${furgoni} camion` : `${furgoni} ${furgoni === 1 ? 'furgone' : 'furgoni'}`;
-	const scatInclusi = sc.n ? ` e ${sc.stimati ? 'circa ' : ''}${sc.n} scatoloni` : '';
+	const cosaInclusa = [nOggetti && `${nOggetti} ${nOggetti === 1 ? 'oggetto' : 'oggetti'}`, sc.n && `${sc.stimati ? 'circa ' : ''}${sc.n} scatoloni`].filter(Boolean).join(' e ');
 	incluso.push(`Squadra di ${squadra} persone e ${mezziTesto}`);
-	incluso.push(`Carico, trasporto e scarico: ${nOggetti} ${nOggetti === 1 ? 'oggetto' : 'oggetti'}${scatInclusi}`);
+	incluso.push(`Carico, trasporto e scarico: ${cosaInclusa}`);
 	if (s.smontaggio && oreSmontaggio) incluso.push('Smontaggio e rimontaggio dei mobili');
 	if (s.chi === 'noi') incluso.push(s.scatole === 'mie' ? 'Imballo con i tuoi scatoloni e protezione dei mobili' : 'Imballo con scatoloni e materiali nostri');
 	else if (s.chi === 'io' && s.scatole === 'nostre') incluso.push('Scatoloni, nastro e carta, portati prima');
@@ -591,16 +595,19 @@ export function calcolaTrasloco(s, strada) {
 	const min = bello(totale * k * tt.forbice[0]);
 	const max = bello(totale * k * tt.forbice[1]);
 	const provvisoria = mancano.length > 0;
+	// Il prezzo si mostra solo con partenza e arrivo indicati; se manca altro è una stima parziale
+	const pronta = comuniPronti(s);
 	const kmStimati = Boolean(st.mancante || st.stima);
 	const riepilogo = [
 		...parti,
 		`Volume circa ${m3Testo(V)} m³ (mobili ${m3Testo(m3Mobili)} m³, scatoloni ${m3Testo(sc.m3)} m³, più il 10% di margine). ${furgoni} ${lungo ? 'camion' : furgoni === 1 ? 'furgone' : 'furgoni'}, ${giri} ${giri === 1 ? 'viaggio' : 'viaggi'}, squadra di ${squadra}, ${euro(kmFurgone)} km per mezzo${kmStimati ? ' (stimati)' : ''}.`,
-		`Stima${provvisoria ? ' provvisoria' : ''}: ${euro(min)}–${euro(max)} €, IVA 22% inclusa.`
+		pronta ? `Stima${provvisoria ? ' parziale' : ''}: ${euro(min)}–${euro(max)} €, IVA 22% inclusa.` : 'Stima: si calcola quando il cliente indica partenza e arrivo.'
 	]
 		.filter(Boolean)
 		.join('\n');
 
 	return {
+		pronta,
 		min,
 		max,
 		nettoMin: bello(totale * tt.forbice[0]),

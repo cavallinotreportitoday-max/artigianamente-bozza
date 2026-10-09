@@ -1,6 +1,6 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100913';
-import { cerca } from './ricerca.js?v=2026100913';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100914';
+import { cerca } from './ricerca.js?v=2026100914';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -707,6 +707,8 @@ if (pv) {
 		facolt.hidden = altro;
 		// nei traslochi partenza e arrivo li abbiamo già: niente terza domanda sul comune
 		const trasloco = slug === 'traslochi';
+		// traslochi: titolo più corto e meno spazio sopra, così il passo aperto arriva prima
+		document.documentElement.classList.toggle('pv-trasloco', trasloco);
 		comuneCampo.hidden = trasloco;
 		$('input', comuneCampo).required = !trasloco;
 		dati.hidden = !altro;
@@ -726,6 +728,7 @@ if (pv) {
 	$('[data-pv-cambia]', pv).addEventListener('click', () => {
 		scelta.hidden = false;
 		scelto.hidden = true;
+		document.documentElement.classList.remove('pv-trasloco');
 		vai(scelta);
 	});
 	// "Richiedi un sopralluogo", "Parliamone insieme": aprono il modulo dei dati
@@ -903,7 +906,7 @@ if (tipi.length) {
 }
 
 /* Calcolatore del trasloco: lo script si carica solo dove serve */
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026100913');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026100914');
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {
