@@ -460,6 +460,39 @@ if (visore && typeof visore.showModal === 'function') {
 	});
 }
 
+/* Pagina Lavori: pallini sotto ogni fila di foto, uno per ogni posizione in cui la fila si ferma */
+for (const riga of $$('[data-punti-riga]')) {
+	const box = riga.nextElementSibling?.matches('[data-punti]') ? riga.nextElementSibling : null;
+	if (!box) continue;
+	const lento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const passo = () => (riga.firstElementChild?.offsetWidth || riga.clientWidth) + (parseFloat(getComputedStyle(riga).columnGap) || 0);
+	const max = () => riga.scrollWidth - riga.clientWidth;
+	let punti = [];
+	const disegna = () => {
+		const n = max() > 2 ? Math.ceil(max() / passo() - 0.05) + 1 : 0;
+		if (n === punti.length) return;
+		punti = Array.from({ length: n }, (_, i) => {
+			const b = document.createElement('button');
+			b.type = 'button';
+			b.className = 'v3-galleria__punto';
+			b.tabIndex = -1;
+			b.addEventListener('click', () => riga.scrollTo({ left: Math.min(max(), i * passo()), behavior: lento ? 'auto' : 'smooth' }));
+			return b;
+		});
+		box.replaceChildren(...punti);
+		segna();
+	};
+	const segna = () => {
+		if (!punti.length) return;
+		const i = riga.scrollLeft >= max() - 2 ? punti.length - 1 : Math.round(riga.scrollLeft / passo());
+		punti.forEach((p, k) => p.classList.toggle('is-attivo', k === i));
+	};
+	riga.addEventListener('scroll', segna, { passive: true });
+	if ('ResizeObserver' in window) new ResizeObserver(disegna).observe(riga);
+	else addEventListener('resize', disegna);
+	disegna();
+}
+
 /* Galleria in cima alle pagine dei servizi: si scorre col dito, "1 / 6" segue la foto, frecce ‹ › col mouse */
 for (const g of $$('[data-galleria]')) {
 	const riga = $('[data-galleria-riga]', g);
@@ -468,13 +501,20 @@ for (const g of $$('[data-galleria]')) {
 	const succ = $('[data-galleria-succ]', g);
 	const lento = matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const quale = () => Math.round(riga.scrollLeft / (riga.clientWidth || 1));
+	// pallini sotto la galleria: quello acceso è la foto che stai guardando; toccandone uno si va a quella foto
+	const punti = $$('[data-galleria-punto]', g.parentElement);
 	const stato = () => {
 		const i = quale();
 		n.textContent = String(i + 1);
 		prec.disabled = i <= 0;
 		succ.disabled = i >= riga.children.length - 1;
+		punti.forEach((p, k) => p.classList.toggle('is-attivo', k === i));
 	};
 	const vai = (verso) => riga.scrollTo({ left: (quale() + verso) * riga.clientWidth, behavior: lento ? 'auto' : 'smooth' });
+	for (const p of punti)
+		p.addEventListener('click', () =>
+			riga.scrollTo({ left: Number(p.dataset.galleriaPunto) * riga.clientWidth, behavior: lento ? 'auto' : 'smooth' })
+		);
 	prec.addEventListener('click', () => vai(-1));
 	succ.addEventListener('click', () => vai(1));
 	riga.addEventListener('scroll', stato, { passive: true });
