@@ -605,6 +605,11 @@ if (pv) {
 	const scegli = (slug, scorri) => {
 		const btn = lavori.find((b) => b.dataset.scegli === slug);
 		if (!btn) return;
+		// una domanda già risposta dalla pagina di prima (es. "Cucina") torna visibile se si cambia lavoro
+		for (const f of $$('[data-pv-fissata]', pv)) {
+			f.hidden = false;
+			delete f.dataset.pvFissata;
+		}
 		for (const b of lavori) {
 			b.classList.toggle('is-active', b === btn);
 			b.setAttribute('aria-pressed', String(b === btn));
@@ -662,11 +667,18 @@ if (pv) {
 		if (h === 'dati') return;
 		if (!lavori.some((b) => b.dataset.scegli === h)) return;
 		const fai = () => {
-			if (sub) {
-				const r = $(`[data-pannello="${h}"] input[name="cosa"][value="${sub}"]`, pv);
-				if (r) r.checked = true;
-			}
+			const r = sub && $(`[data-pannello="${h}"] input[name="cosa"][value="${sub}"]`, pv);
+			if (r) r.checked = true;
 			scegli(h, !(primaVolta && tornato));
+			// "Parliamo della tua cucina": la cucina è già scelta, niente domanda "Quale spazio vuoi rinnovare?".
+			// Si vede in alto: "Ristrutturazioni · Cucina · Modifica"
+			if (r) {
+				const domanda = r.closest('fieldset');
+				domanda.hidden = true;
+				domanda.dataset.pvFissata = '';
+				const nome = $('[data-pv-scelto-nome]', scelto);
+				nome.textContent = `${nome.textContent} · ${r.closest('label').textContent.trim()}`;
+			}
 		};
 		// la prima volta subito, così la pagina è già quella giusta quando il browser la rimette dov'era
 		if (primaVolta === true) fai();
