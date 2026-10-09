@@ -345,44 +345,118 @@ if (sel && soloTraslochi) {
 	mostra();
 }
 
-/* Visore foto. Le foto della stessa galleria (data-visore-gruppo) si sfogliano: frecce, dito, tasti ← → */
+/* Visore foto, come Airbnb, su fondo bianco.
+   "Tutte le foto": griglia a due colonne. Una foto alla volta: si scorre col dito, "3 di 17", frecce e tasti ← → col computer.
+   La galleria in cima alle pagine apre la griglia (data-visore-apri="griglia"); le altre foto aprono subito quella toccata.
+   Le foto con lo stesso data-visore-gruppo si sfogliano insieme. */
 const visore = $('[data-visore]');
 if (visore && typeof visore.showModal === 'function') {
-	const img = $('[data-visore-img]', visore);
+	const vistaGriglia = $('[data-visore-vista="griglia"]', visore);
+	const vistaFoto = $('[data-visore-vista="foto"]', visore);
+	const griglia = $('[data-visore-griglia]', visore);
+	const riga = $('[data-visore-riga]', visore);
+	const conta = $('[data-visore-conta]', visore);
+	const tutte = $('[data-visore-tutte]', visore);
 	const prec = $('[data-visore-prec]', visore);
 	const succ = $('[data-visore-succ]', visore);
-	const conta = $('[data-visore-conta]', visore);
+	const lento = matchMedia('(prefers-reduced-motion: reduce)').matches;
 	let gruppo = [];
-	let at = 0;
-	const mostra = (i) => {
-		at = (i + gruppo.length) % gruppo.length;
-		const a = gruppo[at];
-		img.src = a.getAttribute('href');
-		img.alt = $('img', a)?.alt || '';
-		const tante = gruppo.length > 1;
-		prec.hidden = succ.hidden = conta.hidden = !tante;
-		conta.textContent = `${at + 1} / ${gruppo.length}`;
+
+	// una foto presa dal link: stessa immagine (e stesse misure) della miniatura, il link ha quella grande
+	const immagine = (a, grande) => {
+		const mini = $('img', a);
+		const img = document.createElement('img');
+		img.alt = mini?.alt || '';
+		img.decoding = 'async';
+		if (grande) {
+			img.src = a.getAttribute('href');
+			if (mini?.srcset) {
+				img.srcset = mini.srcset;
+				img.sizes = '100vw';
+			}
+		} else {
+			img.src = mini?.currentSrc || mini?.src || a.getAttribute('href');
+			img.loading = 'lazy';
+		}
+		if (mini?.width && mini?.height) {
+			img.width = mini.width;
+			img.height = mini.height;
+		}
+		return img;
+	};
+	const indice = () => Math.round(riga.scrollLeft / (riga.clientWidth || 1));
+	const segna = () => {
+		const i = Math.min(gruppo.length - 1, Math.max(0, indice()));
+		conta.textContent = `${i + 1} di ${gruppo.length}`;
+		prec.disabled = i <= 0;
+		succ.disabled = i >= gruppo.length - 1;
+	};
+	const mostraFoto = (i, morbido = false) => {
+		vistaGriglia.hidden = true;
+		vistaFoto.hidden = false;
+		// con una foto sola niente "Tutte le foto" né "1 di 1" (nascosti senza spostare la ×)
+		tutte.style.visibility = conta.style.visibility = gruppo.length < 2 ? 'hidden' : '';
+		requestAnimationFrame(() => {
+			riga.scrollTo({ left: i * riga.clientWidth, behavior: morbido && !lento ? 'smooth' : 'instant' });
+			segna();
+		});
+	};
+	const mostraGriglia = () => {
+		vistaFoto.hidden = true;
+		vistaGriglia.hidden = false;
+		vistaGriglia.scrollTop = 0;
+	};
+	const apri = (a) => {
+		const nome = a.dataset.visoreGruppo;
+		gruppo = nome ? $$(`[data-visore-gruppo="${nome}"]`) : [a];
+		griglia.replaceChildren(
+			...gruppo.map((x, i) => {
+				const b = document.createElement('button');
+				b.type = 'button';
+				b.className = 'visore__mini';
+				b.setAttribute('aria-label', `Apri la foto ${i + 1} di ${gruppo.length}`);
+				b.append(immagine(x, false));
+				b.addEventListener('click', () => mostraFoto(i));
+				return b;
+			})
+		);
+		riga.replaceChildren(
+			...gruppo.map((x) => {
+				const d = document.createElement('div');
+				d.className = 'visore__pagina';
+				d.append(immagine(x, true));
+				return d;
+			})
+		);
+		visore.showModal();
+		document.documentElement.classList.add('visore-aperto');
+		if (a.dataset.visoreApri === 'griglia' && gruppo.length > 1) mostraGriglia();
+		else mostraFoto(gruppo.indexOf(a));
 	};
 	for (const a of $$('[data-visore-link]')) {
 		a.addEventListener('click', (e) => {
 			e.preventDefault();
-			const nome = a.dataset.visoreGruppo;
-			gruppo = nome ? $$(`[data-visore-gruppo="${nome}"]`) : [a];
-			mostra(gruppo.indexOf(a));
-			visore.showModal();
+			apri(a);
 		});
 	}
-	prec.addEventListener('click', () => mostra(at - 1));
-	succ.addEventListener('click', () => mostra(at + 1));
-	scorriColDito(visore, (avanti) => gruppo.length > 1 && mostra(at + (avanti ? 1 : -1)));
-	visore.addEventListener('keydown', (e) => {
-		if (gruppo.length < 2) return;
-		if (e.key === 'ArrowRight') mostra(at + 1);
-		else if (e.key === 'ArrowLeft') mostra(at - 1);
+	const vai = (verso) => mostraFoto(Math.min(gruppo.length - 1, Math.max(0, indice() + verso)), true);
+	tutte.addEventListener('click', mostraGriglia);
+	prec.addEventListener('click', () => vai(-1));
+	succ.addEventListener('click', () => vai(1));
+	riga.addEventListener('scroll', segna, { passive: true });
+	addEventListener('resize', () => {
+		if (visore.open && !vistaFoto.hidden) mostraFoto(indice());
 	});
-	$('[data-visore-chiudi]', visore).addEventListener('click', () => visore.close());
-	visore.addEventListener('click', (e) => {
-		if (e.target === visore || e.target.hasAttribute('data-visore-chiudi-sfondo')) visore.close();
+	visore.addEventListener('keydown', (e) => {
+		if (vistaFoto.hidden || gruppo.length < 2) return;
+		if (e.key === 'ArrowRight') vai(1);
+		else if (e.key === 'ArrowLeft') vai(-1);
+	});
+	for (const b of $$('[data-visore-chiudi]', visore)) b.addEventListener('click', () => visore.close());
+	visore.addEventListener('close', () => {
+		document.documentElement.classList.remove('visore-aperto');
+		riga.replaceChildren();
+		griglia.replaceChildren();
 	});
 }
 
