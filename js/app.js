@@ -459,9 +459,8 @@ if (contenuto) {
 		}
 	};
 
-	// Porta l'inizio del contenuto subito sotto i pulsanti fissi
-	// Un lavoro si apre direttamente sulla sua foto, subito sotto le icone fisse
-	const fotoDi = (slug) => $(`[data-scheda="${slug}"] .v3-scheda__img`) || contenuto;
+	// Un lavoro si apre dal suo titolo (sopra la foto), subito sotto le icone fisse
+	const testaDi = (slug) => $(`[data-scheda="${slug}"] .v3-scheda__testa`) || contenuto;
 	// Porta il punto giusto subito sotto le icone fisse. Sul telefono il salto è immediato e poi si ricontrolla:
 	// su iPhone lo scorrimento morbido a volte si fermava prima e restava in vista la foto della home.
 	const touch = matchMedia('(pointer: coarse)').matches;
@@ -508,7 +507,7 @@ if (contenuto) {
 		} else {
 			indirizzo(slug, true);
 			vista('lavoro', [slug]);
-			scorri(fotoDi(slug));
+			scorri(testaDi(slug));
 		}
 	};
 
@@ -642,9 +641,9 @@ if (contenuto) {
 		const h = decodeURIComponent(location.hash.slice(1));
 		if (slugs.includes(h)) {
 			vista('lavoro', [h]);
-			// anche dal menu (L'azienda) o col tasto indietro: si va sulla foto della scheda
-			if (primaVolta) !tornato && requestAnimationFrame(() => scorri(fotoDi(h)));
-			else scorri(fotoDi(h));
+			// anche dal menu (L'azienda) o col tasto indietro: si va al titolo della scheda
+			if (primaVolta) !tornato && requestAnimationFrame(() => scorri(testaDi(h)));
+			else scorri(testaDi(h));
 		} else if (!input.value.trim()) {
 			vista('tutto');
 		}
