@@ -1,6 +1,6 @@
 // Calcolatore del trasloco, versione semplice: comuni, piano, casa tipo, scatoloni, due servizi.
 // La logica dei prezzi sta in trasloco.js (la stessa usata per la prima visualizzazione della pagina).
-import { calcolaTrasloco, caseTipo, zoneVenezia, magazzino, linea, euro, m3Testo, scatole } from './trasloco.js?v=2026100911';
+import { calcolaTrasloco, caseTipo, zoneVenezia, magazzino, linea, euro, m3Testo, scatole } from './trasloco.js?v=2026100912';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));

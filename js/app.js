@@ -1,5 +1,5 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100910';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100912';
 import { cerca } from './ricerca.js?v=2026100911';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -245,16 +245,16 @@ for (const calc of $$('[data-calc]')) {
 		}
 		// "Mandami il riepilogo": il testo che il cliente si tiene
 		const testo = [
-			'Budget indicativo del mio bagno, da ArtigianaMente',
+			'Stima del mio bagno, da ArtigianaMente',
 			r.riepilogo,
 			...r.voci.map((x) => `- ${x.nome}: ${x.daValutare ? 'da valutare' : `${euro(x.min)}–${euro(x.max)} €`}`),
 			`Durata indicativa: ${r.durata}.`,
-			'Stima orientativa non vincolante. Il preventivo scritto arriva dopo il sopralluogo gratuito.',
+			'Stima indicativa, non un’offerta vincolante. Il preventivo scritto arriva dopo il sopralluogo gratuito.',
 			location.href.split('#')[0] + '#ristrutturazioni'
 		].join('\n');
 		$('[data-b-whatsapp]', box).href = 'https://wa.me/?text=' + encodeURIComponent(testo);
 		$('[data-b-email]', box).href =
-			'mailto:?subject=' + encodeURIComponent('Budget del mio bagno – ArtigianaMente') + '&body=' + encodeURIComponent(testo);
+			'mailto:?subject=' + encodeURIComponent('Stima del mio bagno – ArtigianaMente') + '&body=' + encodeURIComponent(testo);
 		if (attivo()) riepilogo.value = r.riepilogo;
 	};
 
@@ -304,7 +304,7 @@ for (const calc of $$('[data-calc]')) {
 		}
 		if (attivo()) {
 			riepilogo.value =
-				(r.riepilogo || servizio) + (r.min ? ` Stima orientativa: ${euro(r.min)}–${euro(r.max)} €, IVA ${r.ivaPerc}% inclusa.` : '');
+				(r.riepilogo || servizio) + (r.min ? ` Stima indicativa: ${euro(r.min)}–${euro(r.max)} €, IVA ${r.ivaPerc}% inclusa.` : '');
 		}
 	};
 	inputs.addEventListener('submit', (e) => e.preventDefault()); // Invio in un campo non ricarica la pagina
@@ -648,54 +648,91 @@ if (contenuto) {
 	daIndirizzo(true);
 }
 
-/* Pagina Preventivo: un solo posto per tutti i lavori (1 scegli, 2 domande, 3 dati) */
+/* Pagina Preventivo: scegli il servizio, rispondi, vedi la stima; i dati solo se chiedi il sopralluogo */
 const pv = $('[data-pv]');
 if (pv) {
 	const lavori = $$('[data-scegli]', pv);
 	const pannelli = $$('[data-pannello]', pv);
+	const scelta = $('[data-pv-scelta]', pv);
+	const scelto = $('[data-pv-scelto]', pv);
 	const domande = $('[data-pv-domande]', pv);
 	const dati = $('[data-pv-dati]', pv);
 	const campoLavoro = $('[data-pv-lavoro]', pv);
 	const riepilogo = $('[data-riepilogo]', pv);
+	const riepTesto = $('[data-pv-riep]', pv);
+	const riepBox = $('[data-pv-riep-box]', pv);
+	const comuneCampo = $('[data-pv-comune-campo]', pv);
 	const msg = $('[data-pv-msg]', pv);
 	const facolt = $('[data-pv-facolt]', pv);
 	const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const vai = (el) => el.scrollIntoView({ behavior: ridotto ? 'auto' : 'smooth', block: 'start' });
+
+	// "La tua richiesta": riepilogo leggibile, niente casella da riempire
+	const mostraRiep = () => {
+		riepTesto.textContent = riepilogo.value;
+		riepBox.hidden = !riepilogo.value;
+	};
+	const apriDati = () => {
+		mostraRiep();
+		dati.hidden = false;
+		vai(dati);
+	};
 
 	const scegli = (slug, scorri) => {
-		const scelto = lavori.find((b) => b.dataset.scegli === slug);
-		if (!scelto) return;
+		const btn = lavori.find((b) => b.dataset.scegli === slug);
+		if (!btn) return;
 		for (const b of lavori) {
-			const si = b === scelto;
-			b.classList.toggle('is-active', si);
-			b.setAttribute('aria-pressed', String(si));
+			b.classList.toggle('is-active', b === btn);
+			b.setAttribute('aria-pressed', String(b === btn));
 		}
-		for (const p of pannelli) p.hidden = p.dataset.pannello !== slug;
+		for (const pan of pannelli) pan.hidden = pan.dataset.pannello !== slug;
+		const nome = $('.v3-pv__nome', btn).textContent.trim();
+		scelta.hidden = true;
+		scelto.hidden = false;
+		$('[data-pv-scelto-nome]', scelto).textContent = nome;
+		$('[data-pv-scelto-icona]', scelto).replaceChildren($('svg', btn).cloneNode(true));
 		domande.hidden = false;
-		dati.hidden = false;
-		campoLavoro.value = $('.v3-pv__nome', scelto).textContent.trim();
+		campoLavoro.value = nome;
 		const altro = slug === 'altro';
 		msg.required = altro;
 		facolt.hidden = altro;
+		// nei traslochi partenza e arrivo li abbiamo già: niente terza domanda sul comune
+		const trasloco = slug === 'traslochi';
+		comuneCampo.hidden = trasloco;
+		$('input', comuneCampo).required = !trasloco;
+		dati.hidden = !altro;
+		$('[data-conferma]', dati).hidden = true;
 		if (altro) riepilogo.value = 'Altro lavoro: vedi la descrizione.';
 		else $(`[data-pannello="${slug}"] [data-calc-inputs]`, pv)?.dispatchEvent(new Event('input', { bubbles: true }));
+		mostraRiep();
 		try {
 			history.replaceState(null, '', location.pathname + '#' + slug);
 		} catch {
 			// in alcune anteprime l'indirizzo non si può cambiare
 		}
-		if (scorri) domande.scrollIntoView({ behavior: ridotto ? 'auto' : 'smooth', block: 'start' });
+		if (scorri) vai(scelto);
 	};
 
 	for (const b of lavori) b.addEventListener('click', () => scegli(b.dataset.scegli, true));
+	$('[data-pv-cambia]', pv).addEventListener('click', () => {
+		scelta.hidden = false;
+		scelto.hidden = true;
+		vai(scelta);
+	});
+	// "Richiedi un sopralluogo", "Parliamone insieme": aprono il modulo dei dati
+	pv.addEventListener('click', (e) => {
+		const a = e.target.closest('a[href="#dati"]');
+		if (!a) return;
+		e.preventDefault();
+		apriDati();
+	});
+	for (const ev of ['input', 'change']) pv.addEventListener(ev, () => setTimeout(mostraRiep, 0));
 
-	// Arrivo da "Calcola il preventivo" (preventivo.html#parquet): lavoro già scelto
-	$('[data-pv-cambia]', pv)?.addEventListener('click', () =>
-		$('.v3-pv__passo', pv).scrollIntoView({ behavior: ridotto ? 'auto' : 'smooth', block: 'start' })
-	);
-
+	// Arrivo da una pagina del servizio (preventivo.html#parquet): servizio già scelto, si va alle domande
 	// #ristrutturazioni:cucina → ristrutturazioni con "Cucina" già scelta
 	const daIndirizzo = () => {
 		const [h, sub] = decodeURIComponent(location.hash.slice(1)).split(':');
+		if (h === 'dati') return;
 		if (!lavori.some((b) => b.dataset.scegli === h)) return;
 		requestAnimationFrame(() => {
 			if (sub) {
@@ -709,7 +746,7 @@ if (pv) {
 	daIndirizzo();
 }
 
-/* "PDF": stampa solo il riepilogo del bagno (dal menu di stampa si salva come PDF) */
+/* "Stampa il riepilogo": stampa solo il riepilogo del bagno (dal menu di stampa si salva come PDF) */
 for (const b of $$('[data-stampa]')) {
 	b.addEventListener('click', () => {
 		document.documentElement.classList.add('stampa-bagno');
@@ -854,4 +891,4 @@ if (tipi.length) {
 }
 
 /* Calcolatore del trasloco: lo script si carica solo dove serve */
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026100910');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026100912');

@@ -91,14 +91,15 @@ export const daTesto = (slug) => {
 };
 
 export const predefiniti = {
-	imbiancatura: { mq: 80, soffitti: true, pittura: 'traspirante', pareti: 'buone', stanze: 'arredate', colore: 'bianco' },
-	parquet: { lavoro: 'prefinito', mq: 40, rimozione: false, battiscopa: false },
+	// Misure vuote: il cliente scrive le sue (revisione del 9/10: niente numeri che sembrano già dati)
+	imbiancatura: { mq: '', soffitti: true, pittura: 'traspirante', pareti: 'buone', stanze: 'arredate', colore: 'bianco' },
+	parquet: { lavoro: 'prefinito', mq: '', rimozione: false, battiscopa: false },
 	montaggio: {
 		armadioPiccolo: 0,
-		armadioGrande: 1,
+		armadioGrande: 0,
 		cucinaMl: 0,
-		letto: 1,
-		cassettiera: 1,
+		letto: 0,
+		cassettiera: 0,
 		pensili: 0,
 		libreria: 0,
 		smontaggio: false
@@ -124,6 +125,7 @@ function calcolaNetto(tipo, v) {
 	const t = tariffe[tipo];
 	if (tipo === 'imbiancatura') {
 		const mq = num(v.mq, 0);
+		if (!mq) return { vuoto: true, messaggio: 'Scrivi i metri quadri di pavimento delle stanze da imbiancare.', dettaglio: '', comprende: [], esclude: [], riepilogo: 'Imbiancatura: metri quadri da indicare.' };
 		const sup = Math.round(mq * 2.6 + (si(v.soffitti) ? mq : 0));
 		const extra = t.pareti[v.pareti] ?? 0;
 		const k = (t.pittura[v.pittura] ?? 1) * (t.stanze[v.stanze] ?? 1) * (t.colore[v.colore] ?? 1);
@@ -132,14 +134,15 @@ function calcolaNetto(tipo, v) {
 		return {
 			min,
 			max,
-			dettaglio: `Circa ${euro(sup)} m² da pitturare (pareti${si(v.soffitti) ? ' e soffitti' : ''}).`,
+			dettaglio: `Circa ${euro(sup)} m² da pitturare (pareti${si(v.soffitti) ? ' e soffitti' : ''}). Stima con pittura bianca traspirante: pittura e colore li scegliamo insieme.`,
 			comprende: ['Manodopera e pittura', 'Protezione di mobili e pavimenti', 'Due mani di pittura', 'Pulizia finale'],
 			esclude: ['Riparazioni di intonaco importanti', 'Lavori in altezza oltre i 3,5 m'],
-			riepilogo: `Imbiancatura: ${mq} m² di pavimento, soffitti ${si(v.soffitti) ? 'sì' : 'no'}, pittura ${v.pittura}, pareti ${{ buone: 'in buono stato', crepe: 'con qualche crepa o buco', rasare: 'da rasare' }[v.pareti] ?? ''}, stanze ${v.stanze}, colore ${v.colore}.`
+			riepilogo: `Imbiancatura: ${mq} m² di pavimento, soffitti ${si(v.soffitti) ? 'sì' : 'no'}, pareti ${{ buone: 'in buono stato', crepe: 'con crepe o piccoli buchi', rasare: 'da lisciare completamente' }[v.pareti] ?? ''}, ${v.stanze === 'vuote' ? 'stanze vuote' : 'con mobili'}.`
 		};
 	}
 	if (tipo === 'parquet') {
 		const mq = num(v.mq, 0);
+		if (!mq) return { vuoto: true, messaggio: 'Scrivi quanti metri quadri sono.', dettaglio: '', comprende: [], esclude: [], riepilogo: 'Parquet: metri quadri da indicare.' };
 		const base = t.lavoro[v.lavoro] ?? t.lavoro.prefinito;
 		const posa = ['prefinito', 'laminato', 'massello'].includes(v.lavoro);
 		let a = base[0];
@@ -202,7 +205,7 @@ function calcolaNetto(tipo, v) {
 			min: Math.max(t.minimo, tondo(a)),
 			max: Math.max(t.minimo + 50, tondo(b)),
 			dettaglio: parti.join(', ') + (si(v.smontaggio) ? ', con smontaggio dei vecchi mobili.' : '.'),
-			comprende: ['Montaggio e messa in bolla', 'Fissaggio a muro', 'Attrezzatura e minuteria'],
+			comprende: ['Montaggio e allineamento', 'Fissaggio a muro', 'Attrezzatura e piccoli componenti'],
 			esclude: ['Allacci di acqua, gas e corrente', 'Modifiche su misura ai mobili'],
 			riepilogo: `Montaggio mobili: ${parti.join(', ')}. Smontaggio vecchi mobili ${si(v.smontaggio) ? 'sì' : 'no'}.`
 		};
