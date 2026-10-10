@@ -989,21 +989,43 @@ for (const box of $$('[data-scorri]')) {
 const tipi = $$('[data-tipo]');
 if (tipi.length) {
 	const pannelli = $$('[data-tipo-pannello]');
-	const mostra = (id) => {
+	// riquadro di lato e barra in fondo seguono il tipo scelto: prezzo (o "Prezzo dopo il sopralluogo"),
+	// condizione e pulsante che porta al preventivo di quel tipo (10/10, brief: il caso Tetti con "Da 4.000 €")
+	const base = $('[data-vivo-href]')?.getAttribute('href')?.split('#')[0] || '';
+	const vivo = (b) => {
+		const prezzo = b.dataset.tipoPrezzo;
+		for (const el of $$('[data-vivo-prezzo]'))
+			el.innerHTML = prezzo ? `<span>Da <strong>${prezzo}</strong></span><small>IVA inclusa</small>` : '<span>Prezzo dopo il sopralluogo</span>';
+		for (const el of $$('[data-vivo-nota]')) el.textContent = prezzo ? b.dataset.tipoNota : 'Lo definiamo dopo aver visto il lavoro.';
+		if (base) for (const el of $$('[data-vivo-href]')) el.setAttribute('href', `${base}#ristrutturazioni:${b.dataset.tipoSub}`);
+	};
+	const mostra = (id, segnaIndirizzo = false) => {
 		for (const b of tipi) {
 			const si = b.dataset.tipo === id;
 			b.classList.toggle('is-active', si);
 			b.setAttribute('aria-selected', String(si));
+			if (si) vivo(b);
 		}
 		for (const pn of pannelli) pn.hidden = pn.dataset.tipoPannello !== id;
+		// il tipo resta anche ricaricando o tornando indietro
+		if (segnaIndirizzo)
+			try {
+				history.replaceState(history.state, '', `${location.pathname}${location.search}#tipo-${id}`);
+			} catch {
+				// alcune anteprime non lasciano cambiare l'indirizzo
+			}
 	};
-	for (const b of tipi) b.addEventListener('click', () => mostra(b.dataset.tipo));
+	for (const b of tipi) b.addEventListener('click', () => mostra(b.dataset.tipo, true));
+	// all'apertura il riquadro porta già al preventivo del tipo mostrato (es. bagno)
+	const attivo = tipi.find((b) => b.classList.contains('is-active'));
+	if (attivo) vivo(attivo);
 	// ristrutturazioni.html#tipo-cucina apre subito la cucina
 	const daIndirizzo = () => {
 		const h = decodeURIComponent(location.hash.slice(1));
 		if (h.startsWith('tipo-') && tipi.some((b) => b.dataset.tipo === h.slice(5))) {
 			mostra(h.slice(5));
-			requestAnimationFrame(() => $('#tipi')?.scrollIntoView({ block: 'start' }));
+			// ricaricando o tornando indietro il browser rimette la pagina dov'era: niente salti
+			if (!tornato) requestAnimationFrame(() => $('#tipi')?.scrollIntoView({ block: 'start' }));
 		}
 	};
 	addEventListener('hashchange', daIndirizzo);
@@ -1051,38 +1073,44 @@ document.addEventListener('click', (e) => {
 	el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 });
 
-/* Calendario del preventivo, come Airbnb (10/10, Gian): giorno del sopralluogo e inizio dei lavori desiderato.
-   Per le ristrutturazioni calcola la fine prevista contando solo i giorni lavorativi (niente sabato, domenica
-   e festivi). Le durate stanno in data.js (durateLavori), provvisorie: da confermare con Fabri. */
-const quando = $('[data-quando]');
+/* Calendario unico, come Airbnb (10/10): giorno del sopralluogo e inizio desiderato. Sono PREFERENZE, non
+   prenotazioni. Lo aprono le caselle del riquadro di lato (pagine dei lavori, computer) e le righe di
+   "Quando ti va bene?" nel modulo. Le date scelte restano nella sessione e arrivano già scritte nel modulo.
+   Niente fine prevista finché Fabri non approva le durate (MOSTRA_FINE). Giorni esclusi: passati, sabati,
+   domeniche, festivi (Pasquetta compresa, 4 ottobre dal 2026) e ferie di Fabri (data.js, ferie). */
 const cal = $('[data-cal]');
-if (quando && cal) {
-	const durate = JSON.parse(quando.dataset.durate || '{}');
+if (cal) {
+	const MOSTRA_FINE = false;
+	const CHIAVE = 'am-date';
 	const mesiBox = $('[data-cal-mesi]', cal);
 	const titolo = $('[data-cal-titolo]', cal);
-	const sotto = $('[data-cal-sotto]', cal);
 	const sceltaTesto = $('[data-cal-scelta]', cal);
 	const salva = $('[data-cal-salva]', cal);
-	const valori = { sopralluogo: null, inizio: null };
+	const ferie = (() => {
+		try {
+			return JSON.parse(cal.dataset.ferie || '[]');
+		} catch {
+			return [];
+		}
+	})();
+	const pv = $('[data-pv]');
+	const avviso = $('[data-quando-avviso]');
 	let modo = 'sopralluogo';
 	let provvisoria = null;
 
+	// giorni civili, senza ore: niente spostamenti di un giorno col cambio dell'ora
 	const oggi = () => {
 		const d = new Date();
-		d.setHours(0, 0, 0, 0);
-		return d;
+		return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 	};
-	const piu = (d, n) => {
-		const x = new Date(d);
-		x.setDate(x.getDate() + n);
-		return x;
-	};
+	const piu = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+	const piuMesi = (d, n) => new Date(d.getFullYear(), d.getMonth() + n, d.getDate());
 	const chiave = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 	const daChiave = (k) => {
+		if (!/^\d{4}-\d{2}-\d{2}$/.test(k || '')) return null;
 		const [y, m, g] = k.split('-').map(Number);
 		return new Date(y, m - 1, g);
 	};
-	// Pasqua (calendario gregoriano): serve per il lunedì dell'Angelo
 	const pasqua = (y) => {
 		const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
 		const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
@@ -1094,81 +1122,109 @@ if (quando && cal) {
 	const festivo = (d) => {
 		const y = d.getFullYear();
 		if (!festivi.has(y)) {
-			const lunedi = chiave(piu(pasqua(y), 1)).slice(5);
-			festivi.set(y, new Set(['01-01', '01-06', '04-25', '05-01', '06-02', '08-15', '11-01', '12-08', '12-25', '12-26', lunedi]));
+			const f = new Set(['01-01', '01-06', '04-25', '05-01', '06-02', '08-15', '11-01', '12-08', '12-25', '12-26', chiave(piu(pasqua(y), 1)).slice(5)]);
+			if (y >= 2026) f.add('10-04'); // San Francesco, di nuovo festa nazionale (legge 151/2025)
+			festivi.set(y, f);
 		}
 		return festivi.get(y).has(chiave(d).slice(5));
 	};
-	const lavorativo = (d) => d.getDay() !== 0 && d.getDay() !== 6 && !festivo(d);
-	// il giorno di inizio è il primo giorno di lavoro: con 7 giorni, da lunedì 10 si finisce martedì 18
-	const fineLavori = (inizio, giorni) => {
-		let d = new Date(inizio);
-		let n = 1;
-		while (n < giorni) {
-			d = piu(d, 1);
-			if (lavorativo(d)) n++;
+	const inFerie = (d) => {
+		const k = chiave(d);
+		return ferie.some(([da, a]) => k >= da && k <= (a || da));
+	};
+	const lavorativo = (d) => d.getDay() !== 0 && d.getDay() !== 6 && !festivo(d) && !inFerie(d);
+
+	// il servizio di cui parliamo: pagina del lavoro, oppure quello scelto nel Preventivo
+	const servizio = () => cal.dataset.servizio || $('[data-scegli].is-active')?.dataset.scegli || '';
+	const trasloco = () => servizio() === 'traslochi';
+
+	// un'unica sorgente: la sessione (niente dati personali nell'indirizzo)
+	const leggi = () => {
+		try {
+			const v = JSON.parse(sessionStorage.getItem(CHIAVE) || '{}');
+			return { servizio: v.servizio || '', sopralluogo: daChiave(v.sopralluogo), inizio: daChiave(v.inizio) };
+		} catch {
+			return { servizio: '', sopralluogo: null, inizio: null };
 		}
-		return d;
 	};
-	const lungo = (d) => d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-	const corto = (d) => d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
-	const trasloco = () => document.documentElement.classList.contains('pv-trasloco');
-
-	// quanti giorni servono, in base allo spazio scelto nelle ristrutturazioni (0 = non lo sappiamo ancora)
-	const giorniLavoro = () => {
-		const pan = $('[data-pannello="ristrutturazioni"]');
-		if (!pan || pan.hidden) return 0;
-		const d = durate[$('input[name="cosa"]:checked', pan)?.value];
-		if (!d) return 0;
-		if (typeof d === 'number') return d;
-		const mq = parseFloat($('[data-se="altro"] input[name="mq"]', pan)?.value);
-		return mq > 0 ? Math.round(Math.min(d.max, Math.max(d.min, d.base + d.perMq * mq))) : d.senzaMq;
+	const valori = leggi();
+	const scrivi = () => {
+		try {
+			sessionStorage.setItem(
+				CHIAVE,
+				JSON.stringify({ servizio: valori.servizio, sopralluogo: valori.sopralluogo ? chiave(valori.sopralluogo) : '', inizio: valori.inizio ? chiave(valori.inizio) : '' })
+			);
+		} catch {
+			// sessione non disponibile (navigazione privata): le date valgono solo in questa pagina
+		}
 	};
-	const minimo = () => (modo === 'sopralluogo' ? piu(oggi(), 2) : valori.sopralluogo ? piu(valori.sopralluogo, 1) : piu(oggi(), 7));
 
-	// righe "Sopralluogo gratuito" e "Inizio dei lavori" nel modulo, e la fine prevista sotto
-	const aggiornaRighe = () => {
-		const etichetta = $('[data-quando-etichetta]', quando);
-		etichetta.textContent = trasloco() ? 'Giorno del trasloco' : 'Inizio dei lavori';
+	// limiti delle preferenze (non disponibilità reali)
+	const limiti = (k) => {
+		const o = oggi();
+		if (k === 'sopralluogo') return [piu(o, 2), piuMesi(o, 3)];
+		return [valori.sopralluogo ? piu(valori.sopralluogo, 1) : piu(o, 7), piuMesi(o, 12)];
+	};
+	const valida = (k, d) => {
+		if (!d) return false;
+		const [min, max] = limiti(k);
+		return d >= min && d <= max && lavorativo(d);
+	};
+	// ogni volta che cambia qualcosa, si ricontrollano tutte: una preferenza non più valida si toglie, non si sposta
+	const rivalida = () => {
+		if (valori.sopralluogo && !valida('sopralluogo', valori.sopralluogo)) valori.sopralluogo = null;
+		if (valori.inizio && !valida('inizio', valori.inizio)) valori.inizio = null;
+	};
+
+	const anno = (d) => (d.getFullYear() !== oggi().getFullYear() ? { year: 'numeric' } : {});
+	const lungo = (d) => d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', ...anno(d) });
+	const corto = (d) => d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short', ...anno(d) });
+
+	const aggiorna = () => {
+		for (const t of $$('[data-quando-etichetta]')) t.textContent = trasloco() ? 'Giorno del trasloco' : 'Inizio desiderato';
 		for (const k of ['sopralluogo', 'inizio']) {
-			const t = $(`[data-quando-testo="${k}"]`, quando);
 			const v = valori[k];
-			t.textContent = v ? lungo(v) : k === 'sopralluogo' ? 'Scegli un giorno' : trasloco() ? 'Quando vorresti traslocare?' : 'Quando vorresti iniziare?';
-			t.closest('button').classList.toggle('is-pieno', !!v);
-			$(`[data-quando-valore="${k}"]`, quando).value = v ? chiave(v) : '';
+			for (const t of $$(`[data-quando-testo="${k}"]`)) {
+				const mini = !!t.closest('[data-quando-mini]');
+				t.textContent = v ? (mini ? corto(v) : lungo(v)) : 'Scegli un giorno';
+				t.closest('button')?.classList.toggle('is-pieno', !!v);
+			}
+			for (const i of $$(`[data-quando-valore="${k}"]`)) i.value = v ? chiave(v) : '';
 		}
-		const giorni = giorniLavoro();
-		const fine = valori.inizio && giorni ? fineLavori(valori.inizio, giorni) : null;
-		const riga = $('[data-quando-fine]', quando);
-		riga.hidden = !fine;
-		if (fine) riga.innerHTML = `Fine prevista: <strong>${lungo(fine)}</strong> · circa ${giorni} giorni lavorativi`;
-		$('[data-quando-valore="fine"]', quando).value = fine ? chiave(fine) : '';
+	};
+
+	// cambio di lavoro: l'inizio desiderato si toglie (e lo diciamo); il sopralluogo resta se è ancora valido
+	const controllaServizio = () => {
+		const s = servizio();
+		if (!s) return;
+		if (valori.servizio && valori.servizio !== s && valori.inizio) {
+			valori.inizio = null;
+			if (avviso) {
+				avviso.textContent = 'Hai cambiato lavoro: scegli di nuovo l’inizio desiderato.';
+				avviso.hidden = false;
+			}
+		}
+		valori.servizio = s;
+		rivalida();
+		scrivi();
+		aggiorna();
 	};
 
 	const segna = () => {
-		const giorni = modo === 'inizio' ? giorniLavoro() : 0;
-		const fine = provvisoria && giorni ? fineLavori(provvisoria, giorni) : null;
 		const kp = provvisoria && chiave(provvisoria);
-		const kf = fine && chiave(fine);
 		for (const b of $$('.cal__giorno', mesiBox)) {
-			const k = b.dataset.giorno;
-			const scelto = k === kp;
+			const scelto = b.dataset.giorno === kp;
 			b.classList.toggle('is-scelto', scelto);
 			b.setAttribute('aria-pressed', String(scelto));
-			b.classList.toggle('is-fine', !!kf && k === kf && kf !== kp);
-			b.classList.toggle('is-mezzo', !!kf && k > kp && k < kf);
 		}
-		if (!provvisoria) sceltaTesto.textContent = modo === 'sopralluogo' ? 'Scegli un giorno, dal lunedì al venerdì' : 'Scegli il giorno di inizio';
-		else if (fine) sceltaTesto.textContent = `Dal ${corto(provvisoria)} al ${corto(fine)}`;
-		else sceltaTesto.textContent = lungo(provvisoria);
+		sceltaTesto.textContent = provvisoria ? lungo(provvisoria) : 'Nessuna preferenza: puoi andare avanti anche senza';
 		salva.disabled = !provvisoria && !valori[modo];
 	};
-
 	const disegna = () => {
-		const min = minimo();
+		const [min, max] = limiti(modo);
 		const o = oggi();
 		const frag = document.createDocumentFragment();
-		const mesi = modo === 'sopralluogo' ? 3 : 12;
+		const mesi = (max.getFullYear() - o.getFullYear()) * 12 + max.getMonth() - o.getMonth() + 1;
 		for (let m = 0; m < mesi; m++) {
 			const primo = new Date(o.getFullYear(), o.getMonth() + m, 1);
 			const sez = document.createElement('section');
@@ -1183,7 +1239,7 @@ if (quando && cal) {
 			const ultimo = new Date(primo.getFullYear(), primo.getMonth() + 1, 0).getDate();
 			for (let g = 1; g <= ultimo; g++) {
 				const d = new Date(primo.getFullYear(), primo.getMonth(), g);
-				const ok = d >= min && lavorativo(d);
+				const ok = d >= min && d <= max && lavorativo(d);
 				const b = document.createElement('button');
 				b.type = 'button';
 				b.className = 'cal__giorno';
@@ -1199,33 +1255,30 @@ if (quando && cal) {
 		mesiBox.replaceChildren(frag);
 	};
 
-	const apri = (k) => {
+	let daChi = null; // il pulsante che ha aperto il calendario: ci torna il fuoco alla chiusura
+	const apri = (k, chi) => {
+		controllaServizio();
 		modo = k;
+		daChi = chi;
 		provvisoria = valori[k];
-		if (k === 'sopralluogo') {
-			titolo.textContent = 'Giorno del sopralluogo';
-			sotto.textContent = 'È gratuito. Scegli il giorno: ti chiamiamo noi per l’orario.';
-		} else {
-			const giorni = giorniLavoro();
-			titolo.textContent = trasloco() ? 'Giorno del trasloco' : 'Inizio dei lavori';
-			sotto.textContent = giorni
-				? `Per questo lavoro servono circa ${giorni} giorni lavorativi: ti mostriamo quando finiremmo.`
-				: 'Scegli il giorno in cui vorresti iniziare. La durata la vediamo al sopralluogo.';
-		}
+		titolo.textContent = k === 'sopralluogo' ? 'Giorno del sopralluogo' : trasloco() ? 'Giorno del trasloco' : 'Inizio desiderato';
 		disegna();
 		segna();
 		cal.showModal();
 		document.documentElement.classList.add('cal-aperto');
-		// si parte dal mese del giorno scelto, altrimenti dal primo giorno libero
 		const vedi = $('.cal__giorno.is-scelto', mesiBox) || $('.cal__giorno:not(:disabled)', mesiBox);
 		mesiBox.scrollTop = vedi ? Math.max(0, vedi.closest('.cal__mese').offsetTop - mesiBox.offsetTop) : 0;
+		vedi?.focus({ preventScroll: true });
 	};
 	const chiudi = () => {
 		if (cal.open) cal.close();
 	};
-	cal.addEventListener('close', () => document.documentElement.classList.remove('cal-aperto'));
+	cal.addEventListener('close', () => {
+		document.documentElement.classList.remove('cal-aperto');
+		daChi?.focus({ preventScroll: true });
+	});
 	cal.addEventListener('click', (e) => {
-		if (e.target === cal) chiudi(); // tocco fuori dal calendario
+		if (e.target === cal) chiudi();
 	});
 	mesiBox.addEventListener('click', (e) => {
 		const b = e.target.closest('.cal__giorno');
@@ -1240,20 +1293,28 @@ if (quando && cal) {
 	});
 	salva.addEventListener('click', () => {
 		valori[modo] = provvisoria;
-		// un inizio lavori prima del sopralluogo non ha senso: si sceglie di nuovo
-		if (valori.sopralluogo && valori.inizio && valori.inizio <= valori.sopralluogo) valori.inizio = null;
-		aggiornaRighe();
+		valori.servizio = servizio();
+		rivalida();
+		scrivi();
+		aggiorna();
 		chiudi();
 	});
-	for (const b of $$('[data-quando-apri]', quando)) b.addEventListener('click', () => apri(b.dataset.quandoApri));
-	// se cambia lo spazio da rinnovare (o i m²) la fine prevista si ricalcola
-	for (const ev of ['input', 'change']) document.addEventListener(ev, (e) => {
-		if (e.target.closest?.('[data-pannello], [data-pv-scelta]')) aggiornaRighe();
-	});
 	document.addEventListener('click', (e) => {
-		if (e.target.closest?.('[data-scegli], a[href="#dati"]')) setTimeout(aggiornaRighe, 0);
+		const b = e.target.closest?.('[data-quando-apri]');
+		if (b) apri(b.dataset.quandoApri, b);
 	});
-	aggiornaRighe();
+	// Preventivo: quando si sceglie o cambia il lavoro
+	if (pv) {
+		document.addEventListener('click', (e) => {
+			if (e.target.closest?.('[data-scegli]')) setTimeout(controllaServizio, 0);
+		});
+		addEventListener('hashchange', () => setTimeout(controllaServizio, 0));
+	}
+	// date scadute o non più valide (es. tornando dopo qualche giorno): si tolgono
+	rivalida();
+	setTimeout(controllaServizio, 0);
+	aggiorna();
+	void MOSTRA_FINE;
 }
 
 /* Recensioni: "Mostra tutte e N le recensioni" apre le altre (sul computer se ne vedono 4) */
@@ -1266,5 +1327,29 @@ for (const sez of $$('[data-recensioni]')) {
 		b.setAttribute('aria-expanded', String(aperte));
 		b.textContent = aperte ? 'Mostra meno' : testo;
 		if (!aperte) sez.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+	});
+}
+
+/* Barre in fondo assenti quando non servono (10/10, brief): con il modulo della richiesta aperto
+   (nei Traslochi sparisce "Inserisci partenza e arrivo / Continua") e mentre si scrive (tastiera). */
+const datiPv = $('[data-pv-dati]');
+if (datiPv) {
+	const segnaModulo = () => document.documentElement.classList.toggle('pv-modulo', !datiPv.hidden);
+	new MutationObserver(segnaModulo).observe(datiPv, { attributes: true, attributeFilter: ['hidden'] });
+	segnaModulo();
+}
+{
+	const campo = (el) => el?.matches?.('input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), textarea, select');
+	let via;
+	document.addEventListener('focusin', (e) => {
+		if (!campo(e.target)) return;
+		clearTimeout(via);
+		document.documentElement.classList.add('tastiera');
+	});
+	document.addEventListener('focusout', (e) => {
+		if (!campo(e.target)) return;
+		via = setTimeout(() => {
+			if (!campo(document.activeElement)) document.documentElement.classList.remove('tastiera');
+		}, 120);
 	});
 }
