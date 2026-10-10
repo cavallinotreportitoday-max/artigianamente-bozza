@@ -1255,3 +1255,16 @@ if (quando && cal) {
 	});
 	aggiornaRighe();
 }
+
+/* Recensioni: "Mostra tutte e N le recensioni" apre le altre (sul computer se ne vedono 4) */
+for (const sez of $$('[data-recensioni]')) {
+	const b = $('[data-recensioni-tutte]', sez);
+	if (!b) continue;
+	const testo = b.textContent;
+	b.addEventListener('click', () => {
+		const aperte = sez.classList.toggle('is-tutte');
+		b.setAttribute('aria-expanded', String(aperte));
+		b.textContent = aperte ? 'Mostra meno' : testo;
+		if (!aperte) sez.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+	});
+}
