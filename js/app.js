@@ -454,7 +454,21 @@ if (visore && typeof visore.showModal === 'function') {
 		if (e.key === 'ArrowRight') vai(1);
 		else if (e.key === 'ArrowLeft') vai(-1);
 	});
-	for (const b of $$('[data-visore-chiudi]', visore)) b.addEventListener('click', () => visore.close());
+	// chiudendo, la libreria scende piano e poi sparisce (anche con Esc)
+	const chiudi = () => {
+		if (!visore.open || visore.classList.contains('is-chiude')) return;
+		if (lento) return visore.close();
+		visore.classList.add('is-chiude');
+		setTimeout(() => {
+			visore.close();
+			visore.classList.remove('is-chiude');
+		}, 250);
+	};
+	for (const b of $$('[data-visore-chiudi]', visore)) b.addEventListener('click', chiudi);
+	visore.addEventListener('cancel', (e) => {
+		e.preventDefault();
+		chiudi();
+	});
 	visore.addEventListener('close', () => {
 		document.documentElement.classList.remove('visore-aperto');
 		riga.replaceChildren();
@@ -962,7 +976,48 @@ if (tipi.length) {
 }
 
 /* Calcolatore del trasloco: lo script si carica solo dove serve */
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101013');
+/* Pagine dei lavori, telefono: come Airbnb il riquadro con prezzo e pulsante resta in fondo,
+   appena il pulsante in alto esce di vista (10/10) */
+const fondoPagina = $('[data-fondo]');
+if (fondoPagina) {
+	const cta = $('.v3-scheda__info .v3-azioni');
+	const vedi = () => {
+		const passato = cta ? cta.getBoundingClientRect().bottom < (header?.offsetHeight || 0) + 8 : scrollY > 400;
+		fondoPagina.classList.toggle('is-visibile', passato);
+	};
+	addEventListener('scroll', vedi, { passive: true });
+	addEventListener('resize', vedi);
+	vedi();
+}
+
+/* Entrata morbida (10/10): schede e sezioni che arrivano scorrendo salgono piano, solo la prima volta.
+   Quello che si vede già all'apertura resta fermo (niente lampi); col tasto indietro e con "Riduci movimento" niente. */
+if (
+	'IntersectionObserver' in window &&
+	!matchMedia('(prefers-reduced-motion: reduce)').matches &&
+	!document.documentElement.classList.contains('torna')
+) {
+	const vista = new IntersectionObserver(
+		(voci) => {
+			for (const v of voci) {
+				if (!v.isIntersecting) continue;
+				v.target.classList.add('si-vede');
+				vista.unobserve(v.target);
+				// a fine entrata si tolgono le classi: niente trasformazioni rimaste addosso
+				setTimeout(() => v.target.classList.remove('entra', 'si-vede'), 900);
+			}
+		},
+		{ rootMargin: '0px 0px -6% 0px' }
+	);
+	const candidati = $$('.v3-card, .v3-sezione:not(:has(.v3-griglia)):not(.v3-pv__passo)').filter((e) => !e.closest('.v3-pv'));
+	for (const e of candidati) {
+		if (e.getBoundingClientRect().top < innerHeight) continue;
+		e.classList.add('entra');
+		vista.observe(e);
+	}
+}
+
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101014');
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {
