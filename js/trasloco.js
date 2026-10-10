@@ -1,3 +1,4 @@
+import datiRevisione from './revisione-dati.js';
 // Calcolatore del trasloco: catalogo degli oggetti per stanza, volumi standard, tariffe e calcolo.
 // Lo stesso file serve alla pagina (prima visualizzazione) e allo script nel browser (copiato in static/js).
 // ATTENZIONE: tutte le tariffe sono PROVVISORIE (bozza ottobre 2026), da approvare con Fabri.
@@ -693,4 +694,10 @@ export function conParametri(p, fn) {
 	} finally {
 		metti(prima);
 	}
+}
+
+// Sito costruito da una revisione pubblicata: le sue tariffe valgono per tutta la pagina (consegna B)
+if (datiRevisione?.parametri?.trasloco?.tt) {
+	for (const k of Object.keys(tt)) delete tt[k];
+	Object.assign(tt, JSON.parse(JSON.stringify(datiRevisione.parametri.trasloco.tt)));
 }

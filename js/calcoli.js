@@ -1,4 +1,5 @@
 // Stime orientative per il preventivo guidato.
+import datiRevisione from './revisione-dati.js';
 // ATTENZIONE: tutte le tariffe sono PROVVISORIE (bozza ottobre 2026), da approvare con il titolare.
 // Lo stesso file serve sia alla pagina (prima visualizzazione) sia allo script nel browser.
 
@@ -402,7 +403,8 @@ export const bagnoPredefinito = {
 };
 
 // Il prezzo "da" delle ristrutturazioni è il caso più piccolo del simulatore (senza IVA: daTesto la aggiunge)
-aPartireDa.ristrutturazioni.euro = calcolaBagno({ intervento: 'rinnovo', misura: 'piccolo', doccia: 'doccia', pareti: 'meta', disposizione: 'uguale', livello: 'base', dove: 'terraferma' }).nettoMin;
+const prezzoDaBagno = () => calcolaBagno({ intervento: 'rinnovo', misura: 'piccolo', doccia: 'doccia', pareti: 'meta', disposizione: 'uguale', livello: 'base', dove: 'terraferma' }).nettoMin;
+aPartireDa.ristrutturazioni.euro = prezzoDaBagno();
 
 /* ---------------------------------------------------------------------------
    REVISIONI (backend, Fase 1)
@@ -421,21 +423,25 @@ const sostituisci = (dove, da) => {
 /** I parametri attuali (quelli scritti in questo file), da salvare in una revisione */
 export const parametri = () => copia({ tariffe, iva, bagno, aPartireDa, notaMateriali });
 
+// Mette i numeri di una revisione al posto di quelli scritti qui (il prezzo "da" del bagno si ricalcola)
+function applica(p) {
+	sostituisci(tariffe, p.tariffe);
+	sostituisci(iva, p.iva);
+	sostituisci(bagno, p.bagno);
+	sostituisci(aPartireDa, p.aPartireDa);
+	aPartireDa.ristrutturazioni.euro = prezzoDaBagno();
+}
+
 /** Esegue fn con i parametri di una revisione, poi rimette quelli di prima. fn deve essere sincrona. */
 export function conParametri(p, fn) {
 	const prima = parametri();
 	try {
-		if (p) {
-			sostituisci(tariffe, p.tariffe);
-			sostituisci(iva, p.iva);
-			sostituisci(bagno, p.bagno);
-			sostituisci(aPartireDa, p.aPartireDa);
-		}
+		if (p) applica(p);
 		return fn();
 	} finally {
-		sostituisci(tariffe, prima.tariffe);
-		sostituisci(iva, prima.iva);
-		sostituisci(bagno, prima.bagno);
-		sostituisci(aPartireDa, prima.aPartireDa);
+		applica(prima);
 	}
 }
+
+// Sito costruito da una revisione pubblicata: i suoi numeri valgono per tutta la pagina (consegna B)
+if (datiRevisione?.parametri?.calcoli) applica(datiRevisione.parametri.calcoli);
