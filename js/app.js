@@ -1050,3 +1050,208 @@ document.addEventListener('click', (e) => {
 	e.preventDefault();
 	el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 });
+
+/* Calendario del preventivo, come Airbnb (10/10, Gian): giorno del sopralluogo e inizio dei lavori desiderato.
+   Per le ristrutturazioni calcola la fine prevista contando solo i giorni lavorativi (niente sabato, domenica
+   e festivi). Le durate stanno in data.js (durateLavori), provvisorie: da confermare con Fabri. */
+const quando = $('[data-quando]');
+const cal = $('[data-cal]');
+if (quando && cal) {
+	const durate = JSON.parse(quando.dataset.durate || '{}');
+	const mesiBox = $('[data-cal-mesi]', cal);
+	const titolo = $('[data-cal-titolo]', cal);
+	const sotto = $('[data-cal-sotto]', cal);
+	const sceltaTesto = $('[data-cal-scelta]', cal);
+	const salva = $('[data-cal-salva]', cal);
+	const valori = { sopralluogo: null, inizio: null };
+	let modo = 'sopralluogo';
+	let provvisoria = null;
+
+	const oggi = () => {
+		const d = new Date();
+		d.setHours(0, 0, 0, 0);
+		return d;
+	};
+	const piu = (d, n) => {
+		const x = new Date(d);
+		x.setDate(x.getDate() + n);
+		return x;
+	};
+	const chiave = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+	const daChiave = (k) => {
+		const [y, m, g] = k.split('-').map(Number);
+		return new Date(y, m - 1, g);
+	};
+	// Pasqua (calendario gregoriano): serve per il lunedì dell'Angelo
+	const pasqua = (y) => {
+		const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
+		const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+		const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+		const mese = Math.floor((h + l - 7 * m + 114) / 31), giorno = ((h + l - 7 * m + 114) % 31) + 1;
+		return new Date(y, mese - 1, giorno);
+	};
+	const festivi = new Map();
+	const festivo = (d) => {
+		const y = d.getFullYear();
+		if (!festivi.has(y)) {
+			const lunedi = chiave(piu(pasqua(y), 1)).slice(5);
+			festivi.set(y, new Set(['01-01', '01-06', '04-25', '05-01', '06-02', '08-15', '11-01', '12-08', '12-25', '12-26', lunedi]));
+		}
+		return festivi.get(y).has(chiave(d).slice(5));
+	};
+	const lavorativo = (d) => d.getDay() !== 0 && d.getDay() !== 6 && !festivo(d);
+	// il giorno di inizio è il primo giorno di lavoro: con 7 giorni, da lunedì 10 si finisce martedì 18
+	const fineLavori = (inizio, giorni) => {
+		let d = new Date(inizio);
+		let n = 1;
+		while (n < giorni) {
+			d = piu(d, 1);
+			if (lavorativo(d)) n++;
+		}
+		return d;
+	};
+	const lungo = (d) => d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+	const corto = (d) => d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+	const trasloco = () => document.documentElement.classList.contains('pv-trasloco');
+
+	// quanti giorni servono, in base allo spazio scelto nelle ristrutturazioni (0 = non lo sappiamo ancora)
+	const giorniLavoro = () => {
+		const pan = $('[data-pannello="ristrutturazioni"]');
+		if (!pan || pan.hidden) return 0;
+		const d = durate[$('input[name="cosa"]:checked', pan)?.value];
+		if (!d) return 0;
+		if (typeof d === 'number') return d;
+		const mq = parseFloat($('[data-se="altro"] input[name="mq"]', pan)?.value);
+		return mq > 0 ? Math.round(Math.min(d.max, Math.max(d.min, d.base + d.perMq * mq))) : d.senzaMq;
+	};
+	const minimo = () => (modo === 'sopralluogo' ? piu(oggi(), 2) : valori.sopralluogo ? piu(valori.sopralluogo, 1) : piu(oggi(), 7));
+
+	// righe "Sopralluogo gratuito" e "Inizio dei lavori" nel modulo, e la fine prevista sotto
+	const aggiornaRighe = () => {
+		const etichetta = $('[data-quando-etichetta]', quando);
+		etichetta.textContent = trasloco() ? 'Giorno del trasloco' : 'Inizio dei lavori';
+		for (const k of ['sopralluogo', 'inizio']) {
+			const t = $(`[data-quando-testo="${k}"]`, quando);
+			const v = valori[k];
+			t.textContent = v ? lungo(v) : k === 'sopralluogo' ? 'Scegli un giorno' : trasloco() ? 'Quando vorresti traslocare?' : 'Quando vorresti iniziare?';
+			t.closest('button').classList.toggle('is-pieno', !!v);
+			$(`[data-quando-valore="${k}"]`, quando).value = v ? chiave(v) : '';
+		}
+		const giorni = giorniLavoro();
+		const fine = valori.inizio && giorni ? fineLavori(valori.inizio, giorni) : null;
+		const riga = $('[data-quando-fine]', quando);
+		riga.hidden = !fine;
+		if (fine) riga.innerHTML = `Fine prevista: <strong>${lungo(fine)}</strong> · circa ${giorni} giorni lavorativi`;
+		$('[data-quando-valore="fine"]', quando).value = fine ? chiave(fine) : '';
+	};
+
+	const segna = () => {
+		const giorni = modo === 'inizio' ? giorniLavoro() : 0;
+		const fine = provvisoria && giorni ? fineLavori(provvisoria, giorni) : null;
+		const kp = provvisoria && chiave(provvisoria);
+		const kf = fine && chiave(fine);
+		for (const b of $$('.cal__giorno', mesiBox)) {
+			const k = b.dataset.giorno;
+			const scelto = k === kp;
+			b.classList.toggle('is-scelto', scelto);
+			b.setAttribute('aria-pressed', String(scelto));
+			b.classList.toggle('is-fine', !!kf && k === kf && kf !== kp);
+			b.classList.toggle('is-mezzo', !!kf && k > kp && k < kf);
+		}
+		if (!provvisoria) sceltaTesto.textContent = modo === 'sopralluogo' ? 'Scegli un giorno, dal lunedì al venerdì' : 'Scegli il giorno di inizio';
+		else if (fine) sceltaTesto.textContent = `Dal ${corto(provvisoria)} al ${corto(fine)}`;
+		else sceltaTesto.textContent = lungo(provvisoria);
+		salva.disabled = !provvisoria && !valori[modo];
+	};
+
+	const disegna = () => {
+		const min = minimo();
+		const o = oggi();
+		const frag = document.createDocumentFragment();
+		const mesi = modo === 'sopralluogo' ? 3 : 12;
+		for (let m = 0; m < mesi; m++) {
+			const primo = new Date(o.getFullYear(), o.getMonth() + m, 1);
+			const sez = document.createElement('section');
+			sez.className = 'cal__mese';
+			const nome = document.createElement('h3');
+			nome.className = 'cal__nome';
+			const testo = primo.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+			nome.textContent = testo.charAt(0).toUpperCase() + testo.slice(1);
+			const griglia = document.createElement('div');
+			griglia.className = 'cal__griglia';
+			for (let i = 0; i < (primo.getDay() + 6) % 7; i++) griglia.append(document.createElement('span'));
+			const ultimo = new Date(primo.getFullYear(), primo.getMonth() + 1, 0).getDate();
+			for (let g = 1; g <= ultimo; g++) {
+				const d = new Date(primo.getFullYear(), primo.getMonth(), g);
+				const ok = d >= min && lavorativo(d);
+				const b = document.createElement('button');
+				b.type = 'button';
+				b.className = 'cal__giorno';
+				b.textContent = g;
+				b.disabled = !ok;
+				b.dataset.giorno = chiave(d);
+				b.setAttribute('aria-label', lungo(d) + (ok ? '' : ', non disponibile'));
+				griglia.append(b);
+			}
+			sez.append(nome, griglia);
+			frag.append(sez);
+		}
+		mesiBox.replaceChildren(frag);
+	};
+
+	const apri = (k) => {
+		modo = k;
+		provvisoria = valori[k];
+		if (k === 'sopralluogo') {
+			titolo.textContent = 'Giorno del sopralluogo';
+			sotto.textContent = 'È gratuito. Scegli il giorno: ti chiamiamo noi per l’orario.';
+		} else {
+			const giorni = giorniLavoro();
+			titolo.textContent = trasloco() ? 'Giorno del trasloco' : 'Inizio dei lavori';
+			sotto.textContent = giorni
+				? `Per questo lavoro servono circa ${giorni} giorni lavorativi: ti mostriamo quando finiremmo.`
+				: 'Scegli il giorno in cui vorresti iniziare. La durata la vediamo al sopralluogo.';
+		}
+		disegna();
+		segna();
+		cal.showModal();
+		document.documentElement.classList.add('cal-aperto');
+		// si parte dal mese del giorno scelto, altrimenti dal primo giorno libero
+		const vedi = $('.cal__giorno.is-scelto', mesiBox) || $('.cal__giorno:not(:disabled)', mesiBox);
+		mesiBox.scrollTop = vedi ? Math.max(0, vedi.closest('.cal__mese').offsetTop - mesiBox.offsetTop) : 0;
+	};
+	const chiudi = () => {
+		if (cal.open) cal.close();
+	};
+	cal.addEventListener('close', () => document.documentElement.classList.remove('cal-aperto'));
+	cal.addEventListener('click', (e) => {
+		if (e.target === cal) chiudi(); // tocco fuori dal calendario
+	});
+	mesiBox.addEventListener('click', (e) => {
+		const b = e.target.closest('.cal__giorno');
+		if (!b || b.disabled) return;
+		provvisoria = daChiave(b.dataset.giorno);
+		segna();
+	});
+	$('[data-cal-chiudi]', cal).addEventListener('click', chiudi);
+	$('[data-cal-annulla]', cal).addEventListener('click', () => {
+		provvisoria = null;
+		segna();
+	});
+	salva.addEventListener('click', () => {
+		valori[modo] = provvisoria;
+		// un inizio lavori prima del sopralluogo non ha senso: si sceglie di nuovo
+		if (valori.sopralluogo && valori.inizio && valori.inizio <= valori.sopralluogo) valori.inizio = null;
+		aggiornaRighe();
+		chiudi();
+	});
+	for (const b of $$('[data-quando-apri]', quando)) b.addEventListener('click', () => apri(b.dataset.quandoApri));
+	// se cambia lo spazio da rinnovare (o i m²) la fine prevista si ricalcola
+	for (const ev of ['input', 'change']) document.addEventListener(ev, (e) => {
+		if (e.target.closest?.('[data-pannello], [data-pv-scelta]')) aggiornaRighe();
+	});
+	document.addEventListener('click', (e) => {
+		if (e.target.closest?.('[data-scegli], a[href="#dati"]')) setTimeout(aggiornaRighe, 0);
+	});
+	aggiornaRighe();
+}
