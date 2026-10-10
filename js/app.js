@@ -976,20 +976,6 @@ if (tipi.length) {
 }
 
 /* Calcolatore del trasloco: lo script si carica solo dove serve */
-/* Pagine dei lavori, telefono: come Airbnb il riquadro con prezzo e pulsante resta in fondo,
-   appena il pulsante in alto esce di vista (10/10) */
-const fondoPagina = $('[data-fondo]');
-if (fondoPagina) {
-	const cta = $('.v3-scheda__info .v3-azioni');
-	const vedi = () => {
-		const passato = cta ? cta.getBoundingClientRect().bottom < (header?.offsetHeight || 0) + 8 : scrollY > 400;
-		fondoPagina.classList.toggle('is-visibile', passato);
-	};
-	addEventListener('scroll', vedi, { passive: true });
-	addEventListener('resize', vedi);
-	vedi();
-}
-
 /* Entrata morbida (10/10): schede e sezioni che arrivano scorrendo salgono piano, solo la prima volta.
    Quello che si vede già all'apertura resta fermo (niente lampi); col tasto indietro e con "Riduci movimento" niente. */
 if (
