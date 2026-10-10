@@ -1,6 +1,7 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026100914';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021';
 import { cerca } from './ricerca.js?v=2026100914';
+import { attivaModuli } from './invio.js?v=2026101021';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -226,6 +227,10 @@ for (const calc of $$('[data-calc]')) {
 	const conCalcolo = Boolean(cifra);
 	// Nella pagina Preventivo ci sono tutti i lavori: scrive il riepilogo solo quello scelto
 	const attivo = () => riepilogo && !calc.closest('[hidden]');
+	// Le scelte del calcolatore vanno al server, che rifà il conto (backend, Fase 1)
+	const segna = (lavoro, calcolo) => {
+		if (riepilogo?.form) riepilogo.form._am = { lavoro, calcolo };
+	};
 
 	// Ristrutturazioni: simulatore del bagno, oppure prezzo dopo il sopralluogo per gli altri lavori
 	const aggiornaRistr = () => {
@@ -239,6 +244,7 @@ for (const calc of $$('[data-calc]')) {
 			if (attivo()) {
 				const cosa = $('input[name="cosa"]:checked', inputs)?.closest('label').textContent.trim();
 				riepilogo.value = riepilogoLibero(`${servizio}: ${cosa}`, $('[data-se="altro"]', calc));
+				segna(v.cosa || null, null);
 			}
 			return;
 		}
@@ -297,14 +303,20 @@ for (const calc of $$('[data-calc]')) {
 		$('[data-b-whatsapp]', box).href = 'https://wa.me/?text=' + encodeURIComponent(testo);
 		$('[data-b-email]', box).href =
 			'mailto:?subject=' + encodeURIComponent('Stima del mio bagno – ArtigianaMente') + '&body=' + encodeURIComponent(testo);
-		if (attivo()) riepilogo.value = r.riepilogo;
+		if (attivo()) {
+			riepilogo.value = r.riepilogo;
+			segna('bagno', { input: v, mostrato: { min: r.min, max: r.max } });
+		}
 	};
 
 	const aggiorna = () => {
 		if (tipo === 'ristrutturazioni') return aggiornaRistr();
 		const v = leggi(inputs);
 		if (!conCalcolo) {
-			if (attivo()) riepilogo.value = riepilogoLibero(servizio, inputs);
+			if (attivo()) {
+				riepilogo.value = riepilogoLibero(servizio, inputs);
+				segna(null, null);
+			}
 			return;
 		}
 		const r = calcola(tipo, v);
@@ -347,6 +359,7 @@ for (const calc of $$('[data-calc]')) {
 		if (attivo()) {
 			riepilogo.value =
 				(r.riepilogo || servizio) + (r.min ? ` Stima indicativa: ${euro(r.min)}–${euro(r.max)} €, IVA ${r.ivaPerc}% inclusa.` : '');
+			segna(null, { input: v, mostrato: r.min ? { min: r.min, max: r.max } : null });
 		}
 	};
 	inputs.addEventListener('submit', (e) => e.preventDefault()); // Invio in un campo non ricarica la pagina
@@ -355,19 +368,8 @@ for (const calc of $$('[data-calc]')) {
 	aggiorna();
 }
 
-/* Moduli: nella bozza non inviano, mostrano solo la conferma */
-for (const form of $$('[data-richiesta]')) {
-	form.addEventListener('submit', (e) => {
-		e.preventDefault();
-		if (!form.checkValidity()) {
-			form.reportValidity();
-			return;
-		}
-		const ok = $('[data-conferma]', form);
-		ok.hidden = false;
-		ok.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-	});
-}
+/* Moduli: con il server collegato inviano davvero (invio.js); nella bozza senza server mostrano solo la prova */
+attivaModuli($$('[data-richiesta]'));
 
 /* Modulo generale: campi del trasloco solo quando servono */
 const sel = $('[data-servizio-select]');
@@ -802,6 +804,10 @@ if (pv) {
 		$('[data-pv-scelto-icona]', scelto).replaceChildren($('svg', btn).cloneNode(true));
 		domande.hidden = false;
 		campoLavoro.value = nome;
+		if (campoLavoro.form) {
+			campoLavoro.form.dataset.servizio = slug;
+			if (slug === 'altro') campoLavoro.form._am = null;
+		}
 		const altro = slug === 'altro';
 		msg.required = altro;
 		facolt.hidden = altro;
@@ -1060,7 +1066,7 @@ if (
 	}
 }
 
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101014');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101021');
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {

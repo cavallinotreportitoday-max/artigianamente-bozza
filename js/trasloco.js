@@ -674,3 +674,23 @@ export function cercaOggetti(testo, max = 8) {
 		.slice(0, max)
 		.map((r) => r[2]);
 }
+
+/* REVISIONI (backend, Fase 1): le tariffe tt sono i parametri; catalogo e formule restano nel codice.
+   versioneFormule: da aumentare quando si cambia il modo di calcolare. */
+export const versioneFormule = 1;
+const copiaTt = () => JSON.parse(JSON.stringify(tt));
+export const parametri = () => ({ tt: copiaTt() });
+/** Esegue fn con le tariffe di una revisione, poi rimette quelle di prima. fn deve essere sincrona. */
+export function conParametri(p, fn) {
+	const prima = copiaTt();
+	const metti = (x) => {
+		for (const k of Object.keys(tt)) delete tt[k];
+		Object.assign(tt, JSON.parse(JSON.stringify(x)));
+	};
+	try {
+		if (p?.tt) metti(p.tt);
+		return fn();
+	} finally {
+		metti(prima);
+	}
+}

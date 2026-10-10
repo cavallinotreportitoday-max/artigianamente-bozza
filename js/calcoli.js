@@ -403,3 +403,39 @@ export const bagnoPredefinito = {
 
 // Il prezzo "da" delle ristrutturazioni è il caso più piccolo del simulatore (senza IVA: daTesto la aggiunge)
 aPartireDa.ristrutturazioni.euro = calcolaBagno({ intervento: 'rinnovo', misura: 'piccolo', doccia: 'doccia', pareti: 'meta', disposizione: 'uguale', livello: 'base', dove: 'terraferma' }).nettoMin;
+
+/* ---------------------------------------------------------------------------
+   REVISIONI (backend, Fase 1)
+   Le formule restano qui; i numeri (tariffe, IVA, bagno, prezzi "da") sono i "parametri" di una revisione.
+   Il server ricalcola ogni stima con i parametri della revisione pubblicata, usando queste stesse funzioni.
+   versioneFormule: da aumentare quando si cambia il modo di calcolare (non quando cambiano i numeri).
+--------------------------------------------------------------------------- */
+export const versioneFormule = 1;
+
+const copia = (x) => JSON.parse(JSON.stringify(x));
+const sostituisci = (dove, da) => {
+	for (const k of Object.keys(dove)) delete dove[k];
+	Object.assign(dove, copia(da));
+};
+
+/** I parametri attuali (quelli scritti in questo file), da salvare in una revisione */
+export const parametri = () => copia({ tariffe, iva, bagno, aPartireDa, notaMateriali });
+
+/** Esegue fn con i parametri di una revisione, poi rimette quelli di prima. fn deve essere sincrona. */
+export function conParametri(p, fn) {
+	const prima = parametri();
+	try {
+		if (p) {
+			sostituisci(tariffe, p.tariffe);
+			sostituisci(iva, p.iva);
+			sostituisci(bagno, p.bagno);
+			sostituisci(aPartireDa, p.aPartireDa);
+		}
+		return fn();
+	} finally {
+		sostituisci(tariffe, prima.tariffe);
+		sostituisci(iva, prima.iva);
+		sostituisci(bagno, prima.bagno);
+		sostituisci(aPartireDa, prima.aPartireDa);
+	}
+}

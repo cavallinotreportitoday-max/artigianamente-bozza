@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="it">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<meta name="robots" content="noindex, nofollow" />
+		<!-- Carattere Hanken Grotesk (licenza OFL) caricato dal sito stesso: nessuna chiamata a Google -->
+		<link rel="preload" href="./fonts/hanken-grotesk-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin />
+		<style>
+			@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 200; font-display: swap; src: url('./fonts/hanken-grotesk-latin-200-normal.woff2') format('woff2'); }
+			@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 300; font-display: swap; src: url('./fonts/hanken-grotesk-latin-300-normal.woff2') format('woff2'); }
+			@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 400; font-display: swap; src: url('./fonts/hanken-grotesk-latin-400-normal.woff2') format('woff2'); }
+			@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 500; font-display: swap; src: url('./fonts/hanken-grotesk-latin-500-normal.woff2') format('woff2'); }
+			@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 600; font-display: swap; src: url('./fonts/hanken-grotesk-latin-600-normal.woff2') format('woff2'); }
+			@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 700; font-display: swap; src: url('./fonts/hanken-grotesk-latin-700-normal.woff2') format('woff2'); }
+		</style>
+		<script>
+			// Col tasto indietro o ricaricando: niente animazioni d'entrata (tolto subito dopo il primo disegno)
+			try {
+				var nav = performance.getEntriesByType('navigation')[0];
+				if (nav && (nav.type === 'back_forward' || nav.type === 'reload')) {
+					var h = document.documentElement;
+					h.classList.add('torna');
+					addEventListener('load', function () { requestAnimationFrame(function () { requestAnimationFrame(function () { h.classList.remove('torna'); }); }); });
+				}
+			} catch (e) {}
+			// Home con #tutto (icona "Tutto" da un'altra pagina): intestazione bianca senza sfumare dallo scuro (tolto dopo il primo disegno)
+			if (location.hash === '#tutto' && !document.documentElement.classList.contains('torna')) {
+				var ht = document.documentElement;
+				ht.classList.add('a-tutto');
+				addEventListener('load', function () { requestAnimationFrame(function () { requestAnimationFrame(function () { ht.classList.remove('a-tutto'); }); }); });
+			}
+			// Preventivo dei traslochi (preventivo.html#traslochi): titolo corto già al primo disegno, niente lampo
+			if (/^#traslochi/.test(location.hash)) document.documentElement.classList.add('pv-trasloco');
+			// …e sul telefono la stima del trasloco si apre già come tendina (pv-foglio), senza lampi
+			if (/^#traslochi/.test(location.hash) && /preventivo(\.html)?$/.test(location.pathname)) document.documentElement.classList.add('pv-foglio');
+		</script>
+		<link href="./app/immutable/entry/start.C1g_fIRP.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/DpYRVzXQ.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/BnGCI4mE.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/C96WWYhN.js" rel="modulepreload">
+		<link href="./app/immutable/entry/app.fuDWUAU8.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/DfvkHz-h.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/Dz7aOIAZ.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/BhVzTPIU.js" rel="modulepreload">
+		<link href="./app/immutable/nodes/0.DFWBzbyN.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/GxGPoufG.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/DeOSuiYj.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/DPE19chb.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/CXLXFF3B.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/C9We3kHV.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/Bzcd29iT.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/B8csJior.js" rel="modulepreload">
+		<link href="./app/immutable/nodes/6.DgyLkZIq.js" rel="modulepreload">
+		<link href="./app/env.js" rel="modulepreload">
+		
+		<link href="./app/immutable/assets/0.C_KdlyV7.css" rel="stylesheet">
+		<link href="./app/immutable/assets/6.CU6nngzH.css" rel="stylesheet">
+	</head>
+	<body>
+		<div style="display: contents">
+			<script>
+				{
+					__sveltekit_1k7696e = {
+						base: new URL(".", location).pathname.slice(0, -1),
+						env: null
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("./app/env.js").then(({ env }) => {
+						__sveltekit_1k7696e.env = env;
+
+						Promise.all([
+							import("./app/immutable/entry/start.C1g_fIRP.js"),
+							import("./app/immutable/entry/app.fuDWUAU8.js")
+						]).then(([kit, app]) => {
+							kit.start(app, element);
+						});
+					});
+				}
+			</script>
+		</div>
+		<script>
+			// Prima del primo disegno, così passando da una pagina all'altra niente scatti (10/10)
+			(function () {
+				try {
+					// home con #tutto: per prima cosa l'intestazione bianca, prima di misurare qualsiasi cosa
+					var aTutto = location.hash === '#tutto' && !document.documentElement.classList.contains('torna') && document.querySelector('[data-sfondo]');
+					var hd = document.querySelector('[data-header]');
+					if (aTutto && hd) hd.classList.add('is-scrolled');
+					// icone dei lavori: l'icona attiva si centra solo se non si vede già intera
+					var a = document.querySelector('[data-chips] .v3-chip.is-active');
+					if (a) {
+						var r = a.parentElement;
+						if (a.offsetLeft + a.offsetWidth > r.clientWidth - 8) r.scrollLeft = Math.max(0, a.offsetLeft - r.clientWidth / 2 + a.offsetWidth / 2);
+					}
+					// home con #tutto (icona "Tutto" da un'altra pagina): già sotto le icone, con l'intestazione bianca
+					if (aTutto) {
+						var c = document.querySelector('[data-contenuto]');
+						var ch = document.querySelector('[data-chips]');
+						var hh = hd ? hd.offsetHeight : 0, chh = ch ? ch.offsetHeight : 0;
+						// computer: icone nella riga dell'intestazione; telefono: intestazione nascosta, solo le icone
+						if (c) scrollTo(0, Math.max(0, c.getBoundingClientRect().top + scrollY - (innerWidth > 860 ? chh : hh + chh)));
+					}
+				} catch (e) {}
+			})();
+		</script>
+		<script type="module" src="./js/app.js?v=2026101021"></script>
+	</body>
+</html>

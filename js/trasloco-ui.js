@@ -21,7 +21,7 @@ import {
 	scatoloniStimati,
 	inventario,
 	comuniPronti
-} from './trasloco.js?v=2026101007';
+} from './trasloco.js?v=2026101021';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -1275,6 +1275,11 @@ export function avviaTrasloco(box) {
 		// riepilogo per il modulo "Richiedi un sopralluogo"
 		if (riepilogo && !box.closest('[hidden]')) {
 			riepilogo.value = r.riepilogo || '';
+			// scelte per il server, che rifà il conto (le foto vanno a parte, non nelle scelte)
+			if (riepilogo.form) {
+				const input = JSON.parse(JSON.stringify(s, (k, x) => (k === 'files' ? undefined : x)));
+				riepilogo.form._am = { lavoro: null, calcolo: { input, strada: km, mostrato: pronta ? { min: r.min, max: r.max } : null } };
+			}
 			riepilogo.dispatchEvent(new Event('change', { bubbles: true }));
 		}
 		sintesi();
