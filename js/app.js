@@ -540,12 +540,14 @@ if (sfondo && zonaCerca) {
 	);
 }
 
-/* Icone dei lavori (in ogni pagina): l'icona attiva si vede subito, anche quando la riga scorre di lato */
+/* Icone dei lavori (in ogni pagina): l'icona attiva si vede subito, anche quando la riga scorre di lato.
+   Si centra solo se non si vede già intera (lo fa già lo script in fondo alla pagina, prima del primo disegno). */
 const barraChips = $('[data-chips]');
 const chipAttiva = barraChips && $('.v3-chip.is-active', barraChips);
 if (chipAttiva) {
 	const riga = chipAttiva.parentElement;
-	riga.scrollLeft = Math.max(0, chipAttiva.offsetLeft - riga.clientWidth / 2 + chipAttiva.offsetWidth / 2);
+	const fuori = chipAttiva.offsetLeft + chipAttiva.offsetWidth > riga.scrollLeft + riga.clientWidth - 8 || chipAttiva.offsetLeft < riga.scrollLeft;
+	if (fuori) riga.scrollLeft = Math.max(0, chipAttiva.offsetLeft - riga.clientWidth / 2 + chipAttiva.offsetWidth / 2);
 }
 
 /* Home: la vetrina. La ricerca e le icone portano alla pagina di ogni lavoro */
