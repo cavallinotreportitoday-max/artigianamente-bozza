@@ -429,6 +429,8 @@ if (visore && typeof visore.showModal === 'function') {
 			})
 		);
 		visore.showModal();
+		// il fuoco va sulla finestra, non sul primo pulsante: niente cerchio intorno alla × all'apertura
+		visore.focus({ preventScroll: true });
 		document.documentElement.classList.add('visore-aperto');
 		if (a.dataset.visoreApri === 'griglia' && gruppo.length > 1) mostraGriglia();
 		else mostraFoto(gruppo.indexOf(a));
