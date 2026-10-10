@@ -60,11 +60,14 @@ if (header) {
 	const icone = $('[data-sfondo]') && $('[data-chips]');
 	// sul telefono, scendendo alle icone, logo e menu spariscono (10/10): le icone vanno in cima
 	const telefono = matchMedia('(max-width: 860px)');
+	// computer: si confronta con l'altezza piena dell'intestazione (76 px), non con quella del momento,
+	// che scendendo diventa 64: così non salta avanti e indietro
+	const altezzaPiena = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hh')) || header.offsetHeight;
 	const aggiornaHeader = () =>
 		header.classList.toggle(
 			'is-scrolled',
 			icone
-				? scrollY > 10 && icone.getBoundingClientRect().top <= (telefono.matches ? 0 : header.offsetHeight) + 1
+				? scrollY > 10 && icone.getBoundingClientRect().top <= (telefono.matches ? 0 : altezzaPiena()) + 1
 				: window.scrollY > soglia()
 		);
 	addEventListener('scroll', aggiornaHeader, { passive: true });
@@ -615,7 +618,7 @@ if (contenuto) {
 	// Porta la vetrina subito sotto le icone fisse
 	const scorriAiLavori = (morbido) => {
 		// telefono: in cima solo le icone; computer: icone e intestazione stanno nella stessa riga
-		const alto = matchMedia('(max-width: 860px)').matches ? barraChips?.offsetHeight || 0 : Math.max(header?.offsetHeight || 0, barraChips?.offsetHeight || 0);
+		const alto = barraChips?.offsetHeight || 0; // in cima restano solo le icone (sul computer nella riga dell'intestazione)
 		const y = contenuto.getBoundingClientRect().top + scrollY - alto;
 		scrollTo({ top: Math.max(0, y), behavior: morbido && !ridotto ? 'smooth' : 'instant' });
 	};
