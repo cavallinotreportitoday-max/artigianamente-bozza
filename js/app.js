@@ -1,7 +1,7 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r8';
-import { cerca } from './ricerca.js?v=2026100914-r8';
-import { attivaModuli } from './invio.js?v=2026101021-r8';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r9';
+import { cerca } from './ricerca.js?v=2026100914-r9';
+import { attivaModuli } from './invio.js?v=2026101021-r9';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -1066,7 +1066,7 @@ if (
 	}
 }
 
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101021-r8');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101021-r9');
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {

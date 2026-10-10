@@ -176,7 +176,8 @@ export function attivaModuli(moduli) {
 				else mostra('errore', j?.messaggio || 'Non siamo riusciti a inviare la richiesta. Riprova tra poco oppure chiamaci.');
 			} catch (e) {
 				bott('Riprova', true);
-				mostra('errore', e?.messaggio || 'Connessione assente o lenta: la richiesta non è partita. Controlla la rete e riprova, i dati restano qui.');
+				// Senza risposta non si sa se la richiesta è arrivata: il reinvio usa la stessa chiave, quindi niente doppioni
+				mostra('errore', e?.messaggio || 'Connessione assente o lenta: non sappiamo se la richiesta è arrivata. Premi Riprova quando la rete torna: se era già arrivata non si crea un doppione. I dati restano qui.');
 			} finally {
 				occupato = false;
 			}
