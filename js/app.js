@@ -71,6 +71,34 @@ if (header) {
 	aggiornaHeader();
 }
 
+/* Barra in fondo alle pagine dei lavori (10/10): scendendo nella pagina si restringe, risalendo torna estesa.
+   Cambia solo dopo un movimento di almeno 24 px nella stessa direzione: niente cambi continui per piccoli
+   aggiustamenti o per il rimbalzo di Safari in cima e in fondo. */
+const fondoBarra = $('[data-fondo]');
+if (fondoBarra) {
+	let ultimo = scrollY;
+	let corsa = 0;
+	const SOGLIA = 24;
+	const segui = () => {
+		const y = scrollY;
+		const max = document.documentElement.scrollHeight - innerHeight;
+		const d = y - ultimo;
+		ultimo = y;
+		if (y <= 40) {
+			corsa = 0;
+			fondoBarra.classList.remove('is-compatta');
+			return;
+		}
+		if (y < 0 || y > max - 2) return; // rimbalzo in fondo: resta com'è
+		if (d === 0) return;
+		if (Math.sign(d) !== Math.sign(corsa)) corsa = 0;
+		corsa += d;
+		if (corsa > SOGLIA) fondoBarra.classList.add('is-compatta');
+		else if (corsa < -SOGLIA) fondoBarra.classList.remove('is-compatta');
+	};
+	addEventListener('scroll', segui, { passive: true });
+}
+
 /* Slider a tutto schermo */
 for (const slider of $$('[data-slider]')) {
 	const track = $('[data-track]', slider);
@@ -553,7 +581,7 @@ if (sfondo && zonaCerca) {
 	addEventListener('load', misura);
 	$('[data-giu]')?.addEventListener('click', () =>
 		scrollTo({
-			top: fine() - (matchMedia('(max-width: 860px)').matches ? 0 : header?.offsetHeight || 0),
+			top: fine(), // le icone salgono in cima (sul computer nella riga dell'intestazione)
 			behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
 		})
 	);
@@ -586,7 +614,9 @@ if (contenuto) {
 
 	// Porta la vetrina subito sotto le icone fisse
 	const scorriAiLavori = (morbido) => {
-		const y = contenuto.getBoundingClientRect().top + scrollY - (matchMedia('(max-width: 860px)').matches ? 0 : header?.offsetHeight || 0) - (barraChips?.offsetHeight || 0);
+		// telefono: in cima solo le icone; computer: icone e intestazione stanno nella stessa riga
+		const alto = matchMedia('(max-width: 860px)').matches ? barraChips?.offsetHeight || 0 : Math.max(header?.offsetHeight || 0, barraChips?.offsetHeight || 0);
+		const y = contenuto.getBoundingClientRect().top + scrollY - alto;
 		scrollTo({ top: Math.max(0, y), behavior: morbido && !ridotto ? 'smooth' : 'instant' });
 	};
 
