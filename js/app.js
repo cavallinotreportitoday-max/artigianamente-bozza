@@ -58,11 +58,13 @@ if (header) {
 	const soglia = () => (chiaro ? 4 : Math.max(80, ($('[data-slider], [data-copertina], [data-sfondo]')?.offsetHeight || 400) - 90));
 	// In home l'intestazione diventa bianca insieme alle icone dei lavori, quando restano fisse in alto
 	const icone = $('[data-sfondo]') && $('[data-chips]');
+	// sul telefono, scendendo alle icone, logo e menu spariscono (10/10): le icone vanno in cima
+	const telefono = matchMedia('(max-width: 860px)');
 	const aggiornaHeader = () =>
 		header.classList.toggle(
 			'is-scrolled',
 			icone
-				? scrollY > 10 && icone.getBoundingClientRect().top <= header.offsetHeight + 1
+				? scrollY > 10 && icone.getBoundingClientRect().top <= (telefono.matches ? 0 : header.offsetHeight) + 1
 				: window.scrollY > soglia()
 		);
 	addEventListener('scroll', aggiornaHeader, { passive: true });
@@ -551,7 +553,7 @@ if (sfondo && zonaCerca) {
 	addEventListener('load', misura);
 	$('[data-giu]')?.addEventListener('click', () =>
 		scrollTo({
-			top: fine() - (header?.offsetHeight || 0),
+			top: fine() - (matchMedia('(max-width: 860px)').matches ? 0 : header?.offsetHeight || 0),
 			behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
 		})
 	);
@@ -584,7 +586,7 @@ if (contenuto) {
 
 	// Porta la vetrina subito sotto le icone fisse
 	const scorriAiLavori = (morbido) => {
-		const y = contenuto.getBoundingClientRect().top + scrollY - (header?.offsetHeight || 0) - (barraChips?.offsetHeight || 0);
+		const y = contenuto.getBoundingClientRect().top + scrollY - (matchMedia('(max-width: 860px)').matches ? 0 : header?.offsetHeight || 0) - (barraChips?.offsetHeight || 0);
 		scrollTo({ top: Math.max(0, y), behavior: morbido && !ridotto ? 'smooth' : 'instant' });
 	};
 
