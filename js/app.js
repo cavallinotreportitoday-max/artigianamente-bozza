@@ -962,7 +962,7 @@ if (tipi.length) {
 }
 
 /* Calcolatore del trasloco: lo script si carica solo dove serve */
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101008');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101013');
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {

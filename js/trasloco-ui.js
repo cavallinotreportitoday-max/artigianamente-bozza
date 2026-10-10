@@ -101,11 +101,18 @@ export function avviaTrasloco(box) {
 	};
 
 	/** + e − con il numero in mezzo */
-	function stepper({ valore = 0, min = 0, max = 99, passo = 1, unita = '', etichetta, cambia }) {
+	const dito = matchMedia('(pointer: coarse)').matches;
+	function stepper({ valore = 0, min = 0, max = 99, passo = 1, unita = '', etichetta, cambia, tastiera = true }) {
 		const wrap = el('div', 'numero');
 		const inp = el('input');
 		inp.type = 'number';
 		inp.inputMode = passo % 1 ? 'decimal' : 'numeric';
+		// telefono, oggetti da portare: niente tastiera che si apre e sposta tutto, bastano − e + (10/10)
+		if (!tastiera && dito) {
+			inp.readOnly = true;
+			inp.inputMode = 'none';
+			inp.tabIndex = -1;
+		}
 		Object.assign(inp, { min, max, step: passo });
 		inp.value = String(valore || 0);
 		inp.setAttribute('aria-label', etichetta);
@@ -291,10 +298,14 @@ export function avviaTrasloco(box) {
 	const passo = (n) => passi.find((p) => Number(p.dataset.passo) === n);
 	function apri(n, scorri = true) {
 		visti.add(n);
+		// da una tendina all'altra (Avanti, ‹, indietro): niente risalita da sotto, cambia solo il contenuto
+		const daTendina = passi.some((q) => q.classList.contains('is-aperto') && !q.classList.contains('is-chiude') && tendina(q.dataset.passo));
+		if (aperta && n !== 2) chiudiStanza(false);
 		for (const p of passi) {
 			clearTimeout(p._chiude);
 			p.classList.remove('is-chiude');
 			const si = Number(p.dataset.passo) === n;
+			p.classList.toggle('senza-salita', si && daTendina);
 			p.classList.toggle('is-aperto', si);
 			$('[data-passo-corpo]', p).hidden = !si;
 			$('[data-passo-apri]', p).setAttribute('aria-expanded', String(si));
@@ -307,7 +318,7 @@ export function avviaTrasloco(box) {
 		else requestAnimationFrame(() => scorriA(passo(n)));
 	}
 	/** Chiude un passo; sul telefono la tendina scende prima di sparire */
-	function chiudiPasso(p) {
+	function chiudiPasso(p, subito = false) {
 		const fine = () => {
 			p.classList.remove('is-aperto', 'is-chiude');
 			$('[data-passo-corpo]', p).hidden = true;
@@ -316,13 +327,73 @@ export function avviaTrasloco(box) {
 		};
 		clearTimeout(p._chiude);
 		if (tendina(p.dataset.passo)) togliSegno();
-		if (tendina(p.dataset.passo) && !ridotto) {
+		if (tendina(p.dataset.passo) && !ridotto && !subito) {
 			p.classList.add('is-chiude');
 			p._chiude = setTimeout(fine, 230);
 		} else fine();
 	}
+	/** Tendina tirata giù col dito: segue il dito; oltre un certo punto si chiude, altrimenti torna su (10/10) */
+	function tiraGiu(foglio, scorre, chiudi, vale = () => true) {
+		let y0 = null;
+		let dy = 0;
+		let tira = false;
+		const inCima = () => !scorre || scorre.scrollTop <= 0;
+		foglio.addEventListener(
+			'touchstart',
+			(e) => {
+				y0 = e.touches.length === 1 && vale() ? e.touches[0].clientY : null;
+				dy = 0;
+				tira = false;
+			},
+			{ passive: true }
+		);
+		foglio.addEventListener(
+			'touchmove',
+			(e) => {
+				if (y0 == null) return;
+				dy = e.touches[0].clientY - y0;
+				if (!tira) {
+					// si tira solo verso il basso e solo se la parte che scorre è già in cima (o se si tiene la testa)
+					const daTesta = !scorre || !scorre.contains(e.target);
+					if (dy > 8 && (daTesta || inCima())) {
+						tira = true;
+						foglio.style.transition = 'none';
+					} else if (dy < -4 || (dy > 8 && !inCima())) {
+						y0 = null;
+						return;
+					} else return;
+				}
+				e.preventDefault();
+				foglio.style.transform = `translateY(${Math.max(0, dy)}px)`;
+			},
+			{ passive: false }
+		);
+		const fine = () => {
+			if (y0 == null) return;
+			y0 = null;
+			if (!tira) return;
+			tira = false;
+			foglio.style.transition = 'transform 200ms ease';
+			if (dy > Math.min(140, foglio.offsetHeight * 0.18)) {
+				foglio.style.transform = 'translateY(100%)';
+				setTimeout(() => {
+					foglio.style.transition = '';
+					foglio.style.transform = '';
+					chiudi();
+				}, 190);
+			} else {
+				foglio.style.transform = '';
+				setTimeout(() => (foglio.style.transition = ''), 210);
+			}
+		};
+		foglio.addEventListener('touchend', fine);
+		foglio.addEventListener('touchcancel', fine);
+	}
+
 	for (const p of passi) {
 		const n = Number(p.dataset.passo);
+		// telefono: la tendina del passo si chiude tirandola giù
+		tiraGiu(p, $('[data-passo-corpo]', p), () => chiudiPasso(p, true), () => p.classList.contains('is-aperto') && tendina(n) && !aperta);
 		$('[data-passo-apri]', p).addEventListener('click', () => {
 			if (p.classList.contains('is-aperto')) chiudiPasso(p);
 			else apri(n);
@@ -345,6 +416,14 @@ export function avviaTrasloco(box) {
 			apri(dopo);
 		});
 	}
+	box.addEventListener('click', (e) => {
+		const st = e.target.closest('[data-tr-avanti-stima]');
+		if (!st) return;
+		const a = st.dataset.azione;
+		if (a === 'comuni') vaiAlCampo(1, '[data-tr-comune]');
+		else if (a === 'cose') vaiAlCampo(2, s.cosa === 'poche' ? '[data-gruppo="poche"] input' : s.cosa ? '[data-tipo]' : '[name="cosa"]');
+		else apri(6);
+	});
 	// Esc chiude la tendina aperta (ma prima chiude l'elenco dei comuni, se è aperto)
 	document.addEventListener(
 		'keydown',
@@ -523,6 +602,7 @@ export function avviaTrasloco(box) {
 
 	/* ---------- Stanze ---------- */
 	const listaStanze = $('[data-tr-stanze]', box);
+	const foglioStanza = $('[data-tr-stanza-foglio]', box);
 	function nuovaStanza(t, ogg = {}, esempio = false) {
 		const st = { uid: `s${++uid}`, tipo: t, oggetti: { ...ogg }, esempio };
 		s.stanze.push(st);
@@ -531,7 +611,7 @@ export function avviaTrasloco(box) {
 	function apriStanza(id) {
 		aperta = id;
 		disegnaStanze();
-		const ed = $(`[data-stanza="${id}"]`, listaStanze);
+		const ed = $(`.tr2-stanza.is-aperta[data-stanza="${id}"]`, box);
 		if (ed) {
 			$('.tr2-stanza__nome', ed)?.focus({ preventScroll: true });
 			if (tendina(2)) ed.scrollTop = 0;
@@ -550,13 +630,18 @@ export function avviaTrasloco(box) {
 		const chiusa = chiudiStanza(controllata);
 		aggiorna();
 		const card = chiusa && $(`[data-stanza="${chiusa.uid}"]`, listaStanze);
-		if (card) {
-			$('button', card)?.focus({ preventScroll: true });
-			requestAnimationFrame(() => scorriA(card));
-		}
+		if (!card) return;
+		$('button', card)?.focus({ preventScroll: true });
+		// telefono: la lista resta ferma dov'era (prima scorreva da sola fino alla stanza)
+		if (!tendina(2)) requestAnimationFrame(() => scorriA(card));
 	}
 	function disegnaStanze() {
-		listaStanze.replaceChildren(...s.stanze.map((st) => (st.uid === aperta ? editorStanza(st) : schedaStanza(st))));
+		const sopra = tendina(2) && foglioStanza;
+		listaStanze.replaceChildren(...s.stanze.map((st) => (st.uid === aperta && !sopra ? editorStanza(st) : schedaStanza(st))));
+		if (foglioStanza) {
+			const st = sopra && aperta ? s.stanze.find((x) => x.uid === aperta) : null;
+			foglioStanza.replaceChildren(...(st ? [editorStanza(st)] : []));
+		}
 		mostra();
 	}
 	function schedaStanza(st) {
@@ -590,6 +675,7 @@ export function avviaTrasloco(box) {
 		x.append(icona('close', 20));
 		x.addEventListener('click', () => chiudiEditor(false));
 		t.append(x);
+		if (tendina(2)) tiraGiu(ed, ed, () => chiudiEditor(false));
 		if (st.esempio) t.append(el('span', 'tr2-badge', 'Esempio da controllare'));
 		ed.append(t);
 		if (st.esempio) ed.append(el('p', 'tr2-aiuto', "Sono quantità d'esempio: correggile con le tue."));
@@ -674,6 +760,7 @@ export function avviaTrasloco(box) {
 					passo: o.passo ?? 1,
 					unita: o.unita === 'm' ? 'm' : '',
 					etichetta: o.nome,
+					tastiera: false,
 					cambia: (v) => {
 						if (v > 0) mappa[id] = v;
 						else delete mappa[id];
@@ -1127,6 +1214,9 @@ export function avviaTrasloco(box) {
 		for (const st of $$('[data-tr-avanti-stima]', box)) {
 			scrivi('strong', pronta ? `${euro(r.min)}–${euro(r.max)} €` : '', st);
 			scrivi('small', pronta ? etichetta(r) : !comuniPronti(s) ? 'Inserisci partenza e arrivo' : 'Aggiungi cosa portiamo', st);
+			// toccandola: senza comuni si va ai comuni, senza cose a "Cosa portiamo", col prezzo alla stima
+			st.dataset.azione = pronta ? 'stima' : !comuniPronti(s) ? 'comuni' : 'cose';
+			st.setAttribute('aria-label', pronta ? `Stima ${euro(r.min)}–${euro(r.max)} euro: vedi i dettagli` : st.textContent.trim());
 		}
 
 		// riepilogo per il modulo "Richiedi un sopralluogo"
