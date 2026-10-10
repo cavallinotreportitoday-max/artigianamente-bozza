@@ -1,4 +1,6 @@
-// Calcolatore del trasloco, una stanza alla volta: 5 passi, uno aperto alla volta.
+// Calcolatore del trasloco, una stanza alla volta: 6 passi, uno aperto alla volta.
+// Dal 10/10: 1 comuni (si può saltare), 2 cosa portiamo, 3 altri oggetti, 4 scatoloni, 5 piano e ascensore, 6 stima.
+// "Avanti" va avanti solo se il passo ha i dati che servono (tranne il passo 1).
 // La logica dei prezzi sta in trasloco.js (la stessa usata per la prima visualizzazione della pagina).
 import {
 	calcolaTrasloco,
@@ -19,7 +21,7 @@ import {
 	scatoloniStimati,
 	inventario,
 	comuniPronti
-} from './trasloco.js?v=2026100914';
+} from './trasloco.js?v=2026101007';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -84,7 +86,7 @@ export function avviaTrasloco(box) {
 	const sopra = () => inAlto() + (barra && !barra.hidden && barra.offsetHeight ? barra.offsetHeight + 8 : 0) + 12;
 	// telefono, traslochi: i passi 1-4 si aprono come tendina da sotto (il passo 5, la stima, resta nella pagina)
 	const foglio = () => document.documentElement.classList.contains('pv-foglio') && matchMedia('(max-width: 860px)').matches;
-	const tendina = (n) => foglio() && Number(n) !== 5;
+	const tendina = (n) => foglio() && Number(n) !== 6;
 	const scorriA = (dove) => {
 		// dentro una tendina scorre la tendina, non la pagina
 		const sez = dove.closest('[data-passo]');
@@ -161,14 +163,31 @@ export function avviaTrasloco(box) {
 			input.setAttribute('aria-expanded', 'false');
 			attiva = -1;
 		};
+		const pulisci = $(`[data-tr-pulisci="${lato}"]`, box);
+		const vedi = () => pulisci && (pulisci.hidden = !input.value);
 		const scegli = (c) => {
 			scelti[lato] = c;
 			input.value = c.nome;
 			input.classList.add('is-ok');
+			vedi();
 			chiudi();
 			strada();
 			aggiorna();
 		};
+		// × nel campo: si svuota e si riscrive
+		pulisci?.addEventListener('mousedown', (e) => e.preventDefault());
+		pulisci?.addEventListener('click', () => {
+			input.value = '';
+			vedi();
+			if (scelti[lato]) {
+				scelti[lato] = null;
+				input.classList.remove('is-ok');
+				strada();
+				aggiorna();
+			}
+			chiudi();
+			input.focus();
+		});
 		const mostra = () => {
 			voci = trova(input.value);
 			lista.replaceChildren(
@@ -186,8 +205,15 @@ export function avviaTrasloco(box) {
 			input.setAttribute('aria-expanded', String(voci.length > 0));
 			attiva = -1;
 		};
-		input.addEventListener('focus', () => caricaComuni().then(() => input.value && document.activeElement === input && mostra()));
+		input.addEventListener('focus', () => {
+			// comune già scelto: toccandolo il nome si seleziona, scrivendo si cambia subito
+			if (scelti[lato]) setTimeout(() => document.activeElement === input && input.select(), 0);
+			// telefono: il campo sale in cima alla tendina, così i suggerimenti restano sopra la tastiera
+			if (tendina(1)) setTimeout(() => document.activeElement === input && scorriA(input.closest('.tr__lato') || input), 260);
+			caricaComuni().then(() => input.value && !scelti[lato] && document.activeElement === input && mostra());
+		});
 		input.addEventListener('input', () => {
+			vedi();
 			if (scelti[lato] && norm(input.value) !== scelti[lato].k) {
 				scelti[lato] = null;
 				input.classList.remove('is-ok');
@@ -301,12 +327,17 @@ export function avviaTrasloco(box) {
 		});
 		$('[data-passo-chiudi]', p)?.addEventListener('click', () => chiudiPasso(p));
 		$('[data-passo-avanti]', p)?.addEventListener('click', () => {
+			// mancano dati: niente passo dopo, si porta al campo da completare
+			if (bloccato(n)) return mostraCosaManca(n);
 			confermati.add(n);
 			if (n === 2 && aperta) {
 				// la stanza aperta si chiude e resta com'è
 				chiudiStanza(false);
 			}
-			apri(n + 1);
+			// si va al primo passo dopo non ancora fatto; se si stava solo correggendo, si torna alla stima
+			let dopo = n + 1;
+			while (dopo < 6 && visti.has(dopo) && !bloccato(dopo)) dopo++;
+			apri(dopo);
 		});
 	}
 	// Esc chiude la tendina aperta (ma prima chiude l'elenco dei comuni, se è aperto)
@@ -323,8 +354,23 @@ export function avviaTrasloco(box) {
 		const b = e.target.closest('[data-vai-passo]');
 		if (b) vaiAlCampo(Number(b.dataset.vaiPasso), b.dataset.vaiCampo);
 	});
-	/** Apre il passo e porta al campo che manca, visibile sotto la barra */
-	function vaiAlCampo(n, sel) {
+	/** Il passo n ha i dati per andare avanti? Il passo 1 (comuni) si può saltare: il prezzo poi si vede solo inserendoli */
+	function primoMancante(n) {
+		const r = ultimo;
+		if (!r || n === 1 || n >= 6) return null;
+		const m = (r.mancano || []).find((x) => x.passo === n && !(n === 2 && /esempio/.test(x.testo)));
+		if (m) return m;
+		// passo 2: serve almeno qualcosa da portare (le stanze d'esempio vanno bene, si controllano dopo)
+		if (n === 2 && r.vuoto) return { testo: 'Aggiungi cosa portiamo', passo: 2, campo: s.cosa === 'poche' ? '[data-gruppo="poche"] input' : s.cosa ? '[data-tipo]' : '[name="cosa"]' };
+		return null;
+	}
+	const bloccato = (n) => Boolean(primoMancante(n));
+	function mostraCosaManca(n) {
+		const m = primoMancante(n);
+		if (m) vaiAlCampo(n, m.campo, true);
+	}
+	/** Apre il passo e porta al campo che manca, visibile sotto la barra (evidenzia = un attimo in risalto) */
+	function vaiAlCampo(n, sel, evidenzia = false) {
 		apri(n, !sel);
 		if (!sel) return;
 		if (n === 2 && sel === '[data-tipo]') tipiAperti = true;
@@ -334,9 +380,16 @@ export function avviaTrasloco(box) {
 			const tutti = $$(sel, p).filter((x) => !x.closest('[hidden]'));
 			const campo = tutti.find((x) => 'value' in x && !x.value && x.type !== 'radio') || tutti[0];
 			if (!campo) return scorriA(p);
-			const dove = campo.closest('fieldset.campo, .tr__lato .campo, .tr2-pers, .tr2-tipi-box, .tr2-stanza, .tr__ogg') || campo;
+			const dove = campo.closest('fieldset.campo, .tr__lato .campo, .tr2-pers, .tr2-tipi-box, .tr2-stanza, .tr__ogg, .tr2-gruppo') || campo;
 			scorriA(dove);
-			campo.focus({ preventScroll: true });
+			if (evidenzia) {
+				dove.classList.remove('tr2-evidenzia');
+				void dove.offsetWidth;
+				dove.classList.add('tr2-evidenzia');
+				setTimeout(() => dove.classList.remove('tr2-evidenzia'), 1700);
+				// sul telefono la tastiera non si apre da sola: si mette in risalto e basta
+				if (campo.matches('input[type="radio"], select, button') || !foglio()) campo.focus({ preventScroll: true });
+			} else campo.focus({ preventScroll: true });
 		});
 	}
 
@@ -355,11 +408,15 @@ export function avviaTrasloco(box) {
 		const daCompletare = (n) => (visti.has(n) && chiuso(n) ? 'Da completare' : '');
 		const maiuscola = (t) => (t ? t[0].toUpperCase() + t.slice(1) : t);
 		// 1 · da dove a dove
-		const lato = (l) => (l.comune ? [l.comune, pianoTesto(l.piano)].filter(Boolean).join(', ') : '');
+		const lato = (l) => {
+			if (!l.comune) return '';
+			const z = l.comune === 'Venezia' ? zoneVenezia.find((x) => x.id === l.zona) : null;
+			return z ? `${l.comune} (${z.nome})` : l.comune;
+		};
 		const a = lato(s.partenza);
 		const b = lato(s.arrivo);
 		if (!manca(1)) metti(1, `${a} → ${b}`, true);
-		else metti(1, a || b ? `${a || '…'} → ${b || '…'} · da completare` : daCompletare(1), false);
+		else metti(1, a || b ? `${a || '…'} → ${b || '…'} · da completare` : visti.has(1) && chiuso(1) ? 'Serve per il prezzo · da completare' : '', false);
 		// 2 · cosa portiamo
 		const righe = inventario(s);
 		const conta = (dove) => righe.filter((x) => (dove ? x.dove !== 'Altri oggetti' : x.dove === 'Altri oggetti')).reduce((t, x) => t + (oggetti[x.id].unita === 'm' ? 1 : x.q), 0);
@@ -392,7 +449,14 @@ export function avviaTrasloco(box) {
 			if (manca(4)) t4 += ' · da completare';
 		} else t4 = daCompletare(4);
 		metti(4, t4, Boolean(s.chi) && !manca(4));
-		metti(5, '', false);
+		// 5 · piano e ascensore
+		const asc = { no: 'senza ascensore', piccolo: 'ascensore piccolo', grande: 'ascensore grande' };
+		const piano = (l) => (l.piano === '' ? '' : `${pianoTesto(l.piano)}${Number(l.piano) > 0 && l.ascensore ? `, ${asc[l.ascensore]}` : ''}`);
+		const pa = piano(s.partenza);
+		const pb = piano(s.arrivo);
+		if (!manca(5)) metti(5, maiuscola(`${pa} → ${pb}`), true);
+		else metti(5, pa || pb ? maiuscola(`${pa || '…'} → ${pb || '…'} · da completare`) : daCompletare(5), false);
+		metti(6, '', false);
 	}
 
 	/* ---------- Stanze ---------- */
@@ -910,7 +974,7 @@ export function avviaTrasloco(box) {
 		const pronta = !r.vuoto && comuniPronti(s);
 		const nManca = r.mancano.length;
 		const daFare = nManca ? `${nManca} ${nManca === 1 ? 'dato da completare' : 'dati da completare'}` : '';
-		// passo 5
+		// passo 6 (la stima)
 		cifra($('[data-tr-cifra]', box), pronta ? r : { vuoto: true });
 		scrivi('[data-tr-stima-label]', pronta ? etichetta(r) : 'La tua stima');
 		const mezzi = pronta ? (r.lungo ? `${r.furgoni} camion` : `${r.furgoni} ${r.furgoni === 1 ? 'furgone' : 'furgoni'}`) : '';
@@ -972,6 +1036,19 @@ export function avviaTrasloco(box) {
 		scrivi('[data-tr-barra-cosa]', pronta ? base(r) : !comuniPronti(s) ? 'Inserisci partenza e arrivo' : 'Aggiungi cosa portiamo', barra);
 		scrivi('[data-tr-barra-cifra]', pronta ? `${euro(r.min)}–${euro(r.max)} €` : '', barra);
 
+		// passo 5: accanto a "Partenza" e "Arrivo" il comune scelto
+		for (const k of ['partenza', 'arrivo']) scrivi(`[data-tr-lato-comune="${k}"]`, s[k].comune ? ` · ${s[k].comune}` : '');
+		// stima senza comuni: si chiede di inserirli per vedere il prezzo
+		const chiedi = $('[data-tr-chiedi-comuni]', box);
+		if (chiedi) chiedi.hidden = comuniPronti(s);
+		// "Avanti": grigio finché mancano dati; il passo 1 dice "Salta" se i comuni non ci sono
+		for (const p of passi) {
+			const n = Number(p.dataset.passo);
+			const av = $('[data-passo-avanti]', p);
+			if (!av) continue;
+			av.setAttribute('aria-disabled', String(bloccato(n)));
+			if (n === 1) av.textContent = comuniPronti(s) ? 'Avanti' : 'Salta';
+		}
 		// in fondo a ogni tendina: prezzo e tipo di stima, oppure cosa manca per vederla
 		for (const st of $$('[data-tr-avanti-stima]', box)) {
 			scrivi('strong', pronta ? `${euro(r.min)}–${euro(r.max)} €` : '', st);
@@ -1001,10 +1078,10 @@ export function avviaTrasloco(box) {
 	/* ---------- Barretta sul telefono: porta alla stima, o al dato che manca per vederla ---------- */
 	const vaiStima = () => {
 		const r = ultimo;
-		if (r && !r.vuoto && comuniPronti(s)) return apri(5);
+		if (r && !r.vuoto && comuniPronti(s)) return apri(6);
 		const m = (r?.mancano || []).find((x) => x.passo === 1) || (r?.vuoto ? r.mancano.find((x) => x.passo === 2) : null);
 		if (m) vaiAlCampo(m.passo, m.campo);
-		else apri(r?.vuoto ? 2 : 5);
+		else apri(r?.vuoto ? 2 : 6);
 	};
 	barra.addEventListener('click', vaiStima);
 	barra.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), vaiStima()));

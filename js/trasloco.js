@@ -357,8 +357,8 @@ export function cosaManca(s) {
 		if (!l.comune) m.push({ testo: `Comune di ${nome}`, passo: 1, campo: `[data-tr-comune="${k}"]` });
 		else if (l.comune === 'Venezia' && !l.zona) m.push({ testo: `Zona di Venezia (${nome})`, passo: 1, campo: `[name="${k}-zona"]` });
 		const p = pianoNum(l);
-		if (p == null) m.push({ testo: `Piano di ${nome}`, passo: 1, campo: `[name="${k}-piano"]` });
-		else if (p > 0 && !l.ascensore) m.push({ testo: `Ascensore (${nome})`, passo: 1, campo: `[name="${k}-ascensore"]` });
+		if (p == null) m.push({ testo: `Piano di ${nome}`, passo: 5, campo: `[name="${k}-piano"]` });
+		else if (p > 0 && !l.ascensore) m.push({ testo: `Ascensore (${nome})`, passo: 5, campo: `[name="${k}-ascensore"]` });
 	}
 	if (!s.cosa) m.push({ testo: 'Cosa portiamo', passo: 2, campo: '[name="cosa"]' });
 	else if (s.cosa === 'casa' && !s.stanze.length) m.push({ testo: 'Le stanze', passo: 2, campo: '[data-tipo]' });
