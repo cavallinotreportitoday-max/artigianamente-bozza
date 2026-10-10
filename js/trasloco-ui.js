@@ -300,6 +300,7 @@ export function avviaTrasloco(box) {
 			$('[data-passo-apri]', p).setAttribute('aria-expanded', String(si));
 		}
 		sintesi();
+		if (tendina(n)) segna();
 		if (!scorri || !passo(n)) return;
 		// tendina: si parte dall'inizio del passo, la pagina sotto resta ferma
 		if (tendina(n)) $('[data-passo-corpo]', passo(n)).scrollTop = 0;
@@ -314,6 +315,7 @@ export function avviaTrasloco(box) {
 			sintesi();
 		};
 		clearTimeout(p._chiude);
+		if (tendina(p.dataset.passo)) togliSegno();
 		if (tendina(p.dataset.passo) && !ridotto) {
 			p.classList.add('is-chiude');
 			p._chiude = setTimeout(fine, 230);
@@ -326,6 +328,8 @@ export function avviaTrasloco(box) {
 			else apri(n);
 		});
 		$('[data-passo-chiudi]', p)?.addEventListener('click', () => chiudiPasso(p));
+		// ‹ in alto a sinistra: il passo prima
+		$('[data-passo-indietro]', p)?.addEventListener('click', () => n > 1 && apri(n - 1));
 		$('[data-passo-avanti]', p)?.addEventListener('click', () => {
 			// mancano dati: niente passo dopo, si porta al campo da completare
 			if (bloccato(n)) return mostraCosaManca(n);
@@ -334,9 +338,10 @@ export function avviaTrasloco(box) {
 				// la stanza aperta si chiude e resta com'è
 				chiudiStanza(false);
 			}
-			// si va al primo passo dopo non ancora fatto; se si stava solo correggendo, si torna alla stima
+			// la prima volta i passi vanno in fila; se la stima si è già vista e si stava solo correggendo,
+			// si salta ai passi ancora da fare, o si torna alla stima
 			let dopo = n + 1;
-			while (dopo < 6 && visti.has(dopo) && !bloccato(dopo)) dopo++;
+			if (visti.has(6)) while (dopo < 6 && visti.has(dopo) && !bloccato(dopo)) dopo++;
 			apri(dopo);
 		});
 	}
@@ -346,7 +351,8 @@ export function avviaTrasloco(box) {
 		(e) => {
 			if (e.key !== 'Escape' || e.target.closest?.('[role="combobox"][aria-expanded="true"]')) return;
 			const p = passi.find((q) => q.classList.contains('is-aperto') && tendina(q.dataset.passo));
-			if (p) chiudiPasso(p);
+			if (p && aperta && p.dataset.passo === '2') chiudiEditor(false);
+			else if (p) chiudiPasso(p);
 		},
 		true
 	);
@@ -354,6 +360,62 @@ export function avviaTrasloco(box) {
 		const b = e.target.closest('[data-vai-passo]');
 		if (b) vaiAlCampo(Number(b.dataset.vaiPasso), b.dataset.vaiCampo);
 	});
+	/* ---------- Tasto indietro del telefono: con le tendine porta al passo prima, non fuori dalla pagina ---------- */
+	let segno = false; // nella cronologia c'è una voce in più per le tendine
+	let ignora = false;
+	let dopoIgnora = null;
+	const apertoOra = () => Number(passi.find((q) => q.classList.contains('is-aperto'))?.dataset.passo || 0);
+	function segna() {
+		if (segno || !foglio()) return;
+		try {
+			if (!history.state?.trTendina) history.pushState({ ...(history.state || {}), trTendina: 1 }, '');
+			segno = true;
+		} catch {
+			// in alcune anteprime la cronologia non si può toccare
+		}
+	}
+	function togliSegno(poi = null) {
+		if (!segno) return poi?.();
+		segno = false;
+		ignora = true;
+		dopoIgnora = poi;
+		history.back();
+	}
+	addEventListener('popstate', () => {
+		if (ignora) {
+			ignora = false;
+			const f = dopoIgnora;
+			dopoIgnora = null;
+			return f?.();
+		}
+		if (!segno) return;
+		segno = false;
+		const n = apertoOra();
+		// stanza aperta: si chiude la stanza e si resta nel passo
+		if (n === 2 && aperta && tendina(2)) {
+			chiudiEditor(false);
+			return segna();
+		}
+		if (n && tendina(n)) return n > 1 ? apri(n - 1) : chiudiPasso(passo(1));
+		// dalla stima (o dalla pagina dopo i passi) si torna all'ultimo passo
+		apri(5);
+	});
+	// × della pagina con la voce in più: prima si toglie la voce, poi la × fa il suo lavoro (torna alla pagina di prima)
+	document.querySelector('[data-foglio-chiudi]')?.addEventListener(
+		'click',
+		(e) => {
+			if (!segno) return;
+			e.stopImmediatePropagation();
+			togliSegno(() => e.currentTarget?.click?.() ?? document.querySelector('[data-foglio-chiudi]').click());
+		},
+		true
+	);
+	// la tendina si apre anche scegliendo Traslochi dalla pagina (la classe arriva dopo)
+	new MutationObserver(() => {
+		const n = apertoOra();
+		if (n && tendina(n)) segna();
+	}).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
 	/** Il passo n ha i dati per andare avanti? Il passo 1 (comuni) si può saltare: il prezzo poi si vede solo inserendoli */
 	function primoMancante(n) {
 		const r = ultimo;
@@ -472,7 +534,8 @@ export function avviaTrasloco(box) {
 		const ed = $(`[data-stanza="${id}"]`, listaStanze);
 		if (ed) {
 			$('.tr2-stanza__nome', ed)?.focus({ preventScroll: true });
-			requestAnimationFrame(() => scorriA(ed));
+			if (tendina(2)) ed.scrollTop = 0;
+			else requestAnimationFrame(() => scorriA(ed));
 		}
 	}
 	function chiudiStanza(controllata) {
@@ -481,6 +544,16 @@ export function avviaTrasloco(box) {
 		aperta = null;
 		disegnaStanze();
 		return st;
+	}
+	/** Chiude la stanza aperta e torna alla sua scheda (controllata = l'esempio è stato visto) */
+	function chiudiEditor(controllata) {
+		const chiusa = chiudiStanza(controllata);
+		aggiorna();
+		const card = chiusa && $(`[data-stanza="${chiusa.uid}"]`, listaStanze);
+		if (card) {
+			$('button', card)?.focus({ preventScroll: true });
+			requestAnimationFrame(() => scorriA(card));
+		}
 	}
 	function disegnaStanze() {
 		listaStanze.replaceChildren(...s.stanze.map((st) => (st.uid === aperta ? editorStanza(st) : schedaStanza(st))));
@@ -510,21 +583,20 @@ export function avviaTrasloco(box) {
 		const h = el('h3', 'tr2-stanza__nome', nome);
 		h.tabIndex = -1;
 		t.append(icona(tipo[st.tipo].icona, 30), h);
+		// × (solo sul telefono, dove la stanza è una tendina sopra il passo): si chiude e resta com'è
+		const x = bottone('tr2-stanza__chiudi');
+		x.dataset.stanzaChiudi = '';
+		x.setAttribute('aria-label', `Chiudi ${nome.toLowerCase()}`);
+		x.append(icona('close', 20));
+		x.addEventListener('click', () => chiudiEditor(false));
+		t.append(x);
 		if (st.esempio) t.append(el('span', 'tr2-badge', 'Esempio da controllare'));
 		ed.append(t);
 		if (st.esempio) ed.append(el('p', 'tr2-aiuto', "Sono quantità d'esempio: correggile con le tue."));
 		ed.append(gruppo({ chiave: st.uid, mappa: st.oggetti, base: tipo[st.tipo].oggetti }));
 		const az = el('div', 'tr2-stanza__azioni');
-		const fine = bottone('btn', `Termina ${nome.toLowerCase()}`);
-		fine.addEventListener('click', () => {
-			const chiusa = chiudiStanza(true);
-			aggiorna();
-			const card = chiusa && $(`[data-stanza="${chiusa.uid}"]`, listaStanze);
-			if (card) {
-				$('button', card)?.focus({ preventScroll: true });
-				requestAnimationFrame(() => scorriA(card));
-			}
-		});
+		const fine = bottone('btn', tendina(2) ? 'Fatto' : `Termina ${nome.toLowerCase()}`);
+		fine.addEventListener('click', () => chiudiEditor(true));
 		const togli = bottone('tr2-link', 'Togli la stanza');
 		togli.addEventListener('click', () => {
 			s.stanze = s.stanze.filter((x) => x !== st);
@@ -920,9 +992,11 @@ export function avviaTrasloco(box) {
 		$('[data-tr-poche]', box).hidden = s.cosa !== 'poche';
 		$('[data-tr-esempi]', box).hidden = s.stanze.length > 0;
 		const conStanze = s.stanze.length > 0;
-		$('[data-tr-tipi-titolo]', box).textContent = conStanze ? 'Quale stanza aggiungi?' : 'Aggiungi le stanze da traslocare';
-		$('[data-tr-tipi]', box).hidden = conStanze && !tipiAperti;
-		$('[data-tr-tipi-apri]', box).hidden = !conStanze || tipiAperti;
+		// telefono (tendina): l'elenco delle stanze resta sempre in vista, così se ne aggiunge un'altra con un tocco
+		const sempre = tendina(2);
+		$('[data-tr-tipi-titolo]', box).textContent = conStanze ? (sempre ? "Aggiungi un'altra stanza" : 'Quale stanza aggiungi?') : 'Aggiungi le stanze da traslocare';
+		$('[data-tr-tipi]', box).hidden = conStanze && !tipiAperti && !sempre;
+		$('[data-tr-tipi-apri]', box).hidden = !conStanze || tipiAperti || sempre;
 		const stimati = scatoloniStimati(s);
 		$('[data-tr-q2]', box).hidden = !(s.chi === 'noi' || s.chi === 'io');
 		$('[data-testo="nostre"]', box).textContent = s.chi === 'io' ? 'Ve li portiamo prima del trasloco' : 'Scatoloni, nastro e carta nostri';
@@ -1089,6 +1163,7 @@ export function avviaTrasloco(box) {
 		new IntersectionObserver(([e]) => barra.classList.toggle('is-nascosta', e.isIntersecting), { threshold: 0.05 }).observe(stimaBox);
 
 	aggiorna();
+	if (tendina(apertoOra())) segna();
 }
 
 for (const box of $$('[data-trasloco]')) avviaTrasloco(box);
