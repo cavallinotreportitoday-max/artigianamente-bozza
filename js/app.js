@@ -493,7 +493,8 @@ for (const riga of $$('[data-punti-riga]')) {
 	disegna();
 }
 
-/* Galleria in cima alle pagine dei servizi: si scorre col dito, "1 / 6" segue la foto, frecce ‹ › col mouse */
+/* Gallerie (in cima alle pagine, schede della home, tipi di ristrutturazione…): si scorrono col dito,
+   "1 / 6" segue la foto (dove c'è), frecce ‹ › col mouse, pallini sotto */
 for (const g of $$('[data-galleria]')) {
 	const riga = $('[data-galleria-riga]', g);
 	const n = $('[data-galleria-n]', g);
@@ -505,9 +506,9 @@ for (const g of $$('[data-galleria]')) {
 	const punti = $$('[data-galleria-punto]', g.parentElement);
 	const stato = () => {
 		const i = quale();
-		n.textContent = String(i + 1);
-		prec.disabled = i <= 0;
-		succ.disabled = i >= riga.children.length - 1;
+		if (n) n.textContent = String(i + 1);
+		if (prec) prec.disabled = i <= 0;
+		if (succ) succ.disabled = i >= riga.children.length - 1;
 		punti.forEach((p, k) => p.classList.toggle('is-attivo', k === i));
 	};
 	const vai = (verso) => riga.scrollTo({ left: (quale() + verso) * riga.clientWidth, behavior: lento ? 'auto' : 'smooth' });
@@ -515,8 +516,8 @@ for (const g of $$('[data-galleria]')) {
 		p.addEventListener('click', () =>
 			riga.scrollTo({ left: Number(p.dataset.galleriaPunto) * riga.clientWidth, behavior: lento ? 'auto' : 'smooth' })
 		);
-	prec.addEventListener('click', () => vai(-1));
-	succ.addEventListener('click', () => vai(1));
+	prec?.addEventListener('click', () => vai(-1));
+	succ?.addEventListener('click', () => vai(1));
 	riga.addEventListener('scroll', stato, { passive: true });
 	stato();
 }
