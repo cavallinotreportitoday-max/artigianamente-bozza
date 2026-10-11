@@ -1,4 +1,4 @@
-import datiRevisione from './revisione-dati.js?r=22';
+import datiRevisione from './revisione-dati.js?r=23';
 // Calcolatore del trasloco: catalogo degli oggetti per stanza, volumi standard, tariffe e calcolo.
 // Lo stesso file serve alla pagina (prima visualizzazione) e allo script nel browser (copiato in static/js).
 // ATTENZIONE: tutte le tariffe sono PROVVISORIE (bozza ottobre 2026), da approvare con Fabri.
