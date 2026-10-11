@@ -139,6 +139,7 @@ export function attivaModuli(moduli) {
 				const j = await r.json().catch(() => null);
 				if (r.ok && j?.ok) {
 					inviata = true;
+					document.dispatchEvent(new CustomEvent('am:richiesta-inviata')); // le date preferite si usano una volta sola
 					nascondi();
 					if (ok) {
 						const t = $('span', ok);

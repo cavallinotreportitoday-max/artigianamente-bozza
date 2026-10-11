@@ -35,34 +35,33 @@
 			// …e sul telefono la stima del trasloco si apre già come tendina (pv-foglio), senza lampi
 			if (/^#traslochi/.test(location.hash) && /preventivo(\.html)?$/.test(location.pathname)) document.documentElement.classList.add('pv-foglio');
 		</script>
-		<link href="./app/immutable/entry/start.BhRPHnUv.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/DFp7iJhk.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/q-uDFJop.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/B7dnkvKo.js" rel="modulepreload">
-		<link href="./app/immutable/entry/app.BR5Y3Wqq.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/zZLpERS4.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/Cja8rH7-.js" rel="modulepreload">
-		<link href="./app/immutable/nodes/0.DjYHeNhe.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/CWaVnZRm.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/DrzqfyGf.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/BskoaidC.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/vaNmL7pZ.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/BEkpTMyw.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/DhCE7G55.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/f4nIfw0A.js" rel="modulepreload">
-		<link href="./app/immutable/nodes/6.CjhNMoSp.js" rel="modulepreload">
+		<link href="./app/immutable/entry/start.B3nA6viA.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/DKzqjRG7.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/eQd659rD.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/Dl9CHjVJ.js" rel="modulepreload">
+		<link href="./app/immutable/entry/app.DgeuYLGb.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/BoD-Ve4G.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/BdlOpPca.js" rel="modulepreload">
+		<link href="./app/immutable/nodes/0.Bs0TDUNS.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/IKVPOvA_.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/8ljPEz-r.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/DdCZwV6H.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/B8Sfilhj.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/CFdAFnRT.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/CBnbV30n.js" rel="modulepreload">
+		<link href="./app/immutable/nodes/6.B1YI70-N.js" rel="modulepreload">
 		<link href="./app/immutable/chunks/C0LK5Rdq.js" rel="modulepreload">
 		<link href="./app/immutable/chunks/DM5ATfM5.js" rel="modulepreload">
 		<link href="./app/env.js" rel="modulepreload">
 		
-		<link href="./app/immutable/assets/0.C_KdlyV7.css" rel="stylesheet">
+		<link href="./app/immutable/assets/0.COw5kesp.css" rel="stylesheet">
 		<link href="./app/immutable/assets/6._F5KnlIa.css" rel="stylesheet">
 	</head>
 	<body>
 		<div style="display: contents">
 			<script>
 				{
-					__sveltekit_3n1um = {
+					__sveltekit_u9kji2 = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: null
 					};
@@ -70,11 +69,11 @@
 					const element = document.currentScript.parentElement;
 
 					import("./app/env.js").then(({ env }) => {
-						__sveltekit_3n1um.env = env;
+						__sveltekit_u9kji2.env = env;
 
 						Promise.all([
-							import("./app/immutable/entry/start.BhRPHnUv.js"),
-							import("./app/immutable/entry/app.BR5Y3Wqq.js")
+							import("./app/immutable/entry/start.B3nA6viA.js"),
+							import("./app/immutable/entry/app.DgeuYLGb.js")
 						]).then(([kit, app]) => {
 							kit.start(app, element);
 						});
@@ -90,23 +89,21 @@
 					var aTutto = location.hash === '#tutto' && !document.documentElement.classList.contains('torna') && document.querySelector('[data-sfondo]');
 					var hd = document.querySelector('[data-header]');
 					if (aTutto && hd) hd.classList.add('is-scrolled');
-					// icone dei lavori: l'icona attiva si centra solo se non si vede già intera
-					var a = document.querySelector('[data-chips] .v3-chip.is-active');
+					// sezioni nella testata: la voce attiva si centra solo se non si vede già intera
+					var a = document.querySelector('[data-chips] .mm-sezione.is-active');
 					if (a) {
 						var r = a.parentElement;
 						if (a.offsetLeft + a.offsetWidth > r.clientWidth - 8) r.scrollLeft = Math.max(0, a.offsetLeft - r.clientWidth / 2 + a.offsetWidth / 2);
 					}
-					// home con #tutto (icona "Tutto" da un'altra pagina): già sotto le icone, con l'intestazione bianca
+					// home con #tutto (voce "Tutto" da un'altra pagina): già alla vetrina, sotto la testata bianca
 					if (aTutto) {
 						var c = document.querySelector('[data-contenuto]');
-						var ch = document.querySelector('[data-chips]');
-						var hh = hd ? hd.offsetHeight : 0, chh = ch ? ch.offsetHeight : 0;
-						// computer: icone nella riga dell'intestazione; telefono: intestazione nascosta, solo le icone
-						if (c) scrollTo(0, Math.max(0, c.getBoundingClientRect().top + scrollY - (innerWidth > 860 ? chh : hh + chh)));
+						var hh = hd ? hd.offsetHeight : 0;
+						if (c) scrollTo(0, Math.max(0, c.getBoundingClientRect().top + scrollY - hh));
 					}
 				} catch (e) {}
 			})();
 		</script>
-		<script type="module" src="./js/app.js?v=2026101021-r28"></script>
+		<script type="module" src="./js/app.js?v=2026101118-r29"></script>
 	</body>
 </html>

@@ -1,7 +1,7 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r28';
-import { cerca } from './ricerca.js?v=2026100914-r28';
-import { attivaModuli } from './invio.js?v=2026101021-r28';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r29';
+import { cerca } from './ricerca.js?v=2026100914-r29';
+import { attivaModuli } from './invio.js?v=2026101118-r29';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -35,43 +35,16 @@ function scorriColDito(el, fai) {
 	});
 }
 
-/* Menu a tutto schermo */
-const toggle = $('[data-menu-toggle]');
-const menu = $('[data-menu]');
-if (toggle && menu) {
-	const apri = (si) => {
-		toggle.setAttribute('aria-expanded', String(si));
-		menu.hidden = !si;
-		document.documentElement.style.overflow = si ? 'hidden' : '';
-		$('.sr-only', toggle).textContent = si ? 'Chiudi il menu' : 'Apri il menu';
-	};
-	toggle.addEventListener('click', () => apri(toggle.getAttribute('aria-expanded') !== 'true'));
-	document.addEventListener('keydown', (e) => {
-		if (e.key === 'Escape' && !menu.hidden) apri(false);
-	});
-	for (const a of $$('a', menu)) a.addEventListener('click', () => apri(false));
-}
-
-/* Intestazione: fondo scuro dopo la copertina */
+/* Testata (11/10): in home è trasparente sulla foto grande e diventa bianca quando la foto passa sotto di lei;
+   nelle altre pagine è bianca da subito (riga sottile appena si scorre). Le sezioni stanno dentro la testata. */
 const header = $('[data-header]');
 if (header) {
 	const chiaro = header.classList.contains('mm-header--chiaro');
-	const soglia = () => (chiaro ? 4 : Math.max(80, ($('[data-slider], [data-copertina], [data-sfondo]')?.offsetHeight || 400) - 90));
-	// In home l'intestazione diventa bianca insieme alle icone dei lavori, quando restano fisse in alto
-	const icone = $('[data-sfondo]') && $('[data-chips]');
-	// sul telefono, scendendo alle icone, logo e menu spariscono (10/10): le icone vanno in cima
-	const telefono = matchMedia('(max-width: 860px)');
-	// computer: si confronta con l'altezza piena dell'intestazione (76 px), non con quella del momento,
-	// che scendendo diventa 64: così non salta avanti e indietro
-	const altezzaPiena = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hh')) || header.offsetHeight;
-	const aggiornaHeader = () =>
-		header.classList.toggle(
-			'is-scrolled',
-			icone
-				? scrollY > 10 && icone.getBoundingClientRect().top <= (telefono.matches ? 0 : altezzaPiena()) + 1
-				: window.scrollY > soglia()
-		);
+	const sopra = () => $('[data-sfondo]') || $('[data-slider], [data-copertina]');
+	const soglia = () => (chiaro ? 4 : Math.max(40, (sopra()?.offsetHeight || 400) - header.offsetHeight));
+	const aggiornaHeader = () => header.classList.toggle('is-scrolled', window.scrollY > soglia());
 	addEventListener('scroll', aggiornaHeader, { passive: true });
+	addEventListener('resize', aggiornaHeader, { passive: true });
 	aggiornaHeader();
 }
 
@@ -555,9 +528,12 @@ for (const g of $$('[data-galleria]')) {
 	const quale = () => Math.round(riga.scrollLeft / (riga.clientWidth || 1));
 	// pallini sotto la galleria: quello acceso è la foto che stai guardando; toccandone uno si va a quella foto
 	const punti = $$('[data-galleria-punto]', g.parentElement);
+	// scritta che vale solo per la prima foto (L'azienda: «Immagine dimostrativa» sui furgoni, non sui lavori veri)
+	const soloPrima = $('[data-galleria-solo-prima]', g);
 	const stato = () => {
 		const i = quale();
 		if (n) n.textContent = String(i + 1);
+		if (soloPrima) soloPrima.hidden = i > 0;
 		if (prec) prec.disabled = i <= 0;
 		if (succ) succ.disabled = i >= riga.children.length - 1;
 		punti.forEach((p, k) => p.classList.toggle('is-attivo', k === i));
@@ -592,10 +568,10 @@ if (sfondo && zonaCerca) {
 	);
 }
 
-/* Icone dei lavori (in ogni pagina): l'icona attiva si vede subito, anche quando la riga scorre di lato.
+/* Sezioni nella testata (in ogni pagina): la voce attiva si vede subito, anche quando la riga scorre di lato.
    Si centra solo se non si vede già intera (lo fa già lo script in fondo alla pagina, prima del primo disegno). */
 const barraChips = $('[data-chips]');
-const chipAttiva = barraChips && $('.v3-chip.is-active', barraChips);
+const chipAttiva = barraChips && $('.mm-sezione.is-active', barraChips);
 if (chipAttiva) {
 	const riga = chipAttiva.parentElement;
 	const fuori = chipAttiva.offsetLeft + chipAttiva.offsetWidth > riga.scrollLeft + riga.clientWidth - 8 || chipAttiva.offsetLeft < riga.scrollLeft;
@@ -619,8 +595,8 @@ if (contenuto) {
 
 	// Porta la vetrina subito sotto le icone fisse
 	const scorriAiLavori = (morbido) => {
-		// telefono: in cima solo le icone; computer: icone e intestazione stanno nella stessa riga
-		const alto = barraChips?.offsetHeight || 0; // in cima restano solo le icone (sul computer nella riga dell'intestazione)
+		// le sezioni stanno nella testata: la vetrina parte subito sotto di lei
+		const alto = header?.offsetHeight || 0;
 		const y = contenuto.getBoundingClientRect().top + scrollY - alto;
 		scrollTo({ top: Math.max(0, y), behavior: morbido && !ridotto ? 'smooth' : 'instant' });
 	};
@@ -1066,7 +1042,7 @@ if (
 	}
 }
 
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101021-r28');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101021-r29');
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {
@@ -1079,9 +1055,13 @@ document.addEventListener('click', (e) => {
 	el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 });
 
-/* Calendario unico, come Airbnb (10/10): giorno del sopralluogo e inizio desiderato. Sono PREFERENZE, non
-   prenotazioni. Lo aprono le caselle del riquadro di lato (pagine dei lavori, computer) e le righe di
-   "Quando ti va bene?" nel modulo. Le date scelte restano nella sessione e arrivano già scritte nel modulo.
+/* Calendario unico, guidato in due passi (lotto 11/10, S6): «Sopralluogo» → «Avanti» → «Inizio desiderato»
+   (Traslochi: «Giorno del trasloco») → «Salva le preferenze». Sono PREFERENZE, non prenotazioni, e tutte e due
+   facoltative («Nessuna preferenza», «Non lo so ancora»). Lo aprono le caselle del riquadro di lato (pagine dei
+   lavori, computer: al centro) e le righe di "Quando ti va bene?" nel modulo (telefono: sale dal basso).
+   Aprendo la seconda casella si parte dal secondo passo; «Indietro» torna al primo. Le scelte restano in una bozza:
+   chiudere (×, Esc, clic fuori) non cambia niente; solo «Salva le preferenze» le scrive, in un'unica sorgente
+   (la sessione), e le ricontrolla senza spostarle. Giorni civili sul calendario di Roma (Europe/Rome).
    Niente fine prevista finché Fabri non approva le durate (MOSTRA_FINE). Giorni esclusi: passati, sabati,
    domeniche, festivi (Pasquetta compresa, 4 ottobre dal 2026) e ferie di Fabri (data.js, ferie). */
 const cal = $('[data-cal]');
@@ -1090,8 +1070,13 @@ if (cal) {
 	const CHIAVE = 'am-date';
 	const mesiBox = $('[data-cal-mesi]', cal);
 	const titolo = $('[data-cal-titolo]', cal);
+	const sotto = $('[data-cal-sotto]', cal);
+	const passoTesto = $('[data-cal-passo]', cal);
 	const sceltaTesto = $('[data-cal-scelta]', cal);
-	const salva = $('[data-cal-salva]', cal);
+	const cancella = $('[data-cal-cancella]', cal);
+	const salta = $('[data-cal-salta]', cal);
+	const avanti = $('[data-cal-avanti]', cal);
+	const indietro = $('[data-cal-indietro]', cal);
 	const ferie = (() => {
 		try {
 			return JSON.parse(cal.dataset.ferie || '[]');
@@ -1102,10 +1087,21 @@ if (cal) {
 	const pv = $('[data-pv]');
 	const avviso = $('[data-quando-avviso]');
 	let modo = 'sopralluogo';
-	let provvisoria = null;
+	let bozza = { sopralluogo: null, inizio: null }; // le scelte di questa apertura, non ancora salvate
 
-	// giorni civili, senza ore: niente spostamenti di un giorno col cambio dell'ora
+	// «oggi» è il giorno civile a Roma, qualunque sia il fuso del dispositivo; giorni senza ore (niente salti col cambio dell'ora)
 	const oggi = () => {
+		try {
+			const parti = Object.fromEntries(
+				new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Rome', year: 'numeric', month: 'numeric', day: 'numeric' })
+					.formatToParts(new Date())
+					.map((x) => [x.type, x.value])
+			);
+			const d = new Date(Number(parti.year), Number(parti.month) - 1, Number(parti.day));
+			if (!Number.isNaN(d.getTime())) return d;
+		} catch {
+			// fuso orario non disponibile: si usa quello del dispositivo
+		}
 		const d = new Date();
 		return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 	};
@@ -1117,6 +1113,7 @@ if (cal) {
 		const [y, m, g] = k.split('-').map(Number);
 		return new Date(y, m - 1, g);
 	};
+	const stesso = (a, b) => (a ? chiave(a) : '') === (b ? chiave(b) : '');
 	const pasqua = (y) => {
 		const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
 		const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
@@ -1143,6 +1140,7 @@ if (cal) {
 	// il servizio di cui parliamo: pagina del lavoro, oppure quello scelto nel Preventivo
 	const servizio = () => cal.dataset.servizio || $('[data-scegli].is-active')?.dataset.scegli || '';
 	const trasloco = () => servizio() === 'traslochi';
+	const nomeInizio = () => (trasloco() ? 'Giorno del trasloco' : 'Inizio desiderato');
 
 	// un'unica sorgente: la sessione (niente dati personali nell'indirizzo)
 	const leggi = () => {
@@ -1165,21 +1163,21 @@ if (cal) {
 		}
 	};
 
-	// limiti delle preferenze (non disponibilità reali)
-	const limiti = (k) => {
+	// limiti delle preferenze (non disponibilità reali): l'inizio dipende dal sopralluogo della stessa serie di scelte
+	const limiti = (k, v = valori) => {
 		const o = oggi();
 		if (k === 'sopralluogo') return [piu(o, 2), piuMesi(o, 3)];
-		return [valori.sopralluogo ? piu(valori.sopralluogo, 1) : piu(o, 7), piuMesi(o, 12)];
+		return [v.sopralluogo ? piu(v.sopralluogo, 1) : piu(o, 7), piuMesi(o, 12)];
 	};
-	const valida = (k, d) => {
+	const valida = (k, d, v = valori) => {
 		if (!d) return false;
-		const [min, max] = limiti(k);
+		const [min, max] = limiti(k, v);
 		return d >= min && d <= max && lavorativo(d);
 	};
-	// ogni volta che cambia qualcosa, si ricontrollano tutte: una preferenza non più valida si toglie, non si sposta
-	const rivalida = () => {
-		if (valori.sopralluogo && !valida('sopralluogo', valori.sopralluogo)) valori.sopralluogo = null;
-		if (valori.inizio && !valida('inizio', valori.inizio)) valori.inizio = null;
+	// una preferenza non più valida si toglie, non si sposta
+	const rivalida = (v = valori) => {
+		if (v.sopralluogo && !valida('sopralluogo', v.sopralluogo, v)) v.sopralluogo = null;
+		if (v.inizio && !valida('inizio', v.inizio, v)) v.inizio = null;
 	};
 
 	const anno = (d) => (d.getFullYear() !== oggi().getFullYear() ? { year: 'numeric' } : {});
@@ -1187,12 +1185,12 @@ if (cal) {
 	const corto = (d) => d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short', ...anno(d) });
 
 	const aggiorna = () => {
-		for (const t of $$('[data-quando-etichetta]')) t.textContent = trasloco() ? 'Giorno del trasloco' : 'Inizio desiderato';
+		for (const t of $$('[data-quando-etichetta]')) t.textContent = nomeInizio();
 		for (const k of ['sopralluogo', 'inizio']) {
 			const v = valori[k];
 			for (const t of $$(`[data-quando-testo="${k}"]`)) {
 				const mini = !!t.closest('[data-quando-mini]');
-				t.textContent = v ? (mini ? corto(v) : lungo(v)) : 'Scegli un giorno';
+				t.textContent = v ? (mini ? corto(v) : lungo(v)) : t.dataset.quandoVuoto || 'Scegli un giorno';
 				t.closest('button')?.classList.toggle('is-pieno', !!v);
 			}
 			for (const i of $$(`[data-quando-valore="${k}"]`)) i.value = v ? chiave(v) : '';
@@ -1217,17 +1215,19 @@ if (cal) {
 	};
 
 	const segna = () => {
-		const kp = provvisoria && chiave(provvisoria);
+		const d = bozza[modo];
+		const kp = d && chiave(d);
 		for (const b of $$('.cal__giorno', mesiBox)) {
 			const scelto = b.dataset.giorno === kp;
 			b.classList.toggle('is-scelto', scelto);
 			b.setAttribute('aria-pressed', String(scelto));
 		}
-		sceltaTesto.textContent = provvisoria ? lungo(provvisoria) : 'Nessuna preferenza: puoi andare avanti anche senza';
-		salva.disabled = !provvisoria && !valori[modo];
+		sceltaTesto.textContent = d ? lungo(d) : 'Nessun giorno scelto';
+		cancella.hidden = !d;
+		avanti.disabled = !d;
 	};
 	const disegna = () => {
-		const [min, max] = limiti(modo);
+		const [min, max] = limiti(modo, bozza);
 		const o = oggi();
 		const frag = document.createDocumentFragment();
 		const mesi = (max.getFullYear() - o.getFullYear()) * 12 + max.getMonth() - o.getMonth() + 1;
@@ -1261,20 +1261,52 @@ if (cal) {
 		mesiBox.replaceChildren(frag);
 	};
 
+	// mostra un passo nella stessa finestra: titolo, testi, pulsanti, giorni possibili
+	const mostra = (k, nota = '') => {
+		modo = k;
+		const primo = k === 'sopralluogo';
+		passoTesto.textContent = primo ? 'Passo 1 di 2' : 'Passo 2 di 2';
+		titolo.textContent = primo ? 'Sopralluogo' : nomeInizio();
+		sotto.textContent =
+			nota ||
+			(primo
+				? 'Scegli il giorno che preferisci, se ne hai uno. Ti contattiamo per concordare giorno e orario.'
+				: trasloco()
+					? 'Facoltativo. Scegli il giorno in cui vorresti traslocare.'
+					: 'Facoltativo. Scegli quando vorresti iniziare i lavori.');
+		salta.textContent = primo ? 'Nessuna preferenza' : 'Non lo so ancora';
+		avanti.textContent = primo ? 'Avanti' : 'Salva le preferenze';
+		indietro.hidden = primo;
+		disegna();
+		segna();
+		const vedi = $('.cal__giorno.is-scelto', mesiBox) || $('.cal__giorno:not(:disabled)', mesiBox);
+		mesiBox.scrollTop = vedi ? Math.max(0, vedi.closest('.cal__mese').offsetTop - mesiBox.offsetTop) : 0;
+		(vedi || avanti).focus({ preventScroll: true });
+	};
+	// dal primo al secondo passo: se il nuovo sopralluogo rende impossibile l'inizio scelto, l'inizio si toglie (e lo diciamo)
+	const alSecondo = () => {
+		const prima = bozza.inizio;
+		if (bozza.inizio && !valida('inizio', bozza.inizio, bozza)) bozza.inizio = null;
+		mostra('inizio', prima && !bozza.inizio ? `Con il nuovo sopralluogo il giorno scelto prima non va più bene: scegline un altro, se vuoi.` : '');
+	};
+	const salvaTutto = () => {
+		valori.sopralluogo = bozza.sopralluogo;
+		valori.inizio = bozza.inizio;
+		valori.servizio = servizio();
+		rivalida();
+		scrivi();
+		aggiorna();
+		chiudi();
+	};
+
 	let daChi = null; // il pulsante che ha aperto il calendario: ci torna il fuoco alla chiusura
 	const apri = (k, chi) => {
 		controllaServizio();
-		modo = k;
 		daChi = chi;
-		provvisoria = valori[k];
-		titolo.textContent = k === 'sopralluogo' ? 'Giorno del sopralluogo' : trasloco() ? 'Giorno del trasloco' : 'Inizio desiderato';
-		disegna();
-		segna();
-		cal.showModal();
+		bozza = { sopralluogo: valori.sopralluogo, inizio: valori.inizio };
+		cal.showModal(); // la pagina sotto resta inerte finché la finestra è aperta
 		document.documentElement.classList.add('cal-aperto');
-		const vedi = $('.cal__giorno.is-scelto', mesiBox) || $('.cal__giorno:not(:disabled)', mesiBox);
-		mesiBox.scrollTop = vedi ? Math.max(0, vedi.closest('.cal__mese').offsetTop - mesiBox.offsetTop) : 0;
-		vedi?.focus({ preventScroll: true });
+		mostra(k === 'inizio' ? 'inizio' : 'sopralluogo');
 	};
 	const chiudi = () => {
 		if (cal.open) cal.close();
@@ -1284,26 +1316,30 @@ if (cal) {
 		daChi?.focus({ preventScroll: true });
 	});
 	cal.addEventListener('click', (e) => {
-		if (e.target === cal) chiudi();
+		if (e.target === cal) chiudi(); // clic fuori: chiude senza salvare
 	});
 	mesiBox.addEventListener('click', (e) => {
 		const b = e.target.closest('.cal__giorno');
 		if (!b || b.disabled) return;
-		provvisoria = daChiave(b.dataset.giorno);
+		const d = daChiave(b.dataset.giorno);
+		bozza[modo] = stesso(bozza[modo], d) ? null : d; // toccare di nuovo il giorno scelto lo toglie
 		segna();
 	});
 	$('[data-cal-chiudi]', cal).addEventListener('click', chiudi);
-	$('[data-cal-annulla]', cal).addEventListener('click', () => {
-		provvisoria = null;
+	cancella.addEventListener('click', () => {
+		bozza[modo] = null;
 		segna();
+		($('.cal__giorno:not(:disabled)', mesiBox) || avanti).focus({ preventScroll: true });
 	});
-	salva.addEventListener('click', () => {
-		valori[modo] = provvisoria;
-		valori.servizio = servizio();
-		rivalida();
-		scrivi();
-		aggiorna();
-		chiudi();
+	indietro.addEventListener('click', () => mostra('sopralluogo'));
+	salta.addEventListener('click', () => {
+		bozza[modo] = null;
+		if (modo === 'sopralluogo') alSecondo();
+		else salvaTutto();
+	});
+	avanti.addEventListener('click', () => {
+		if (modo === 'sopralluogo') alSecondo();
+		else salvaTutto();
 	});
 	document.addEventListener('click', (e) => {
 		const b = e.target.closest?.('[data-quando-apri]');
@@ -1316,11 +1352,54 @@ if (cal) {
 		});
 		addEventListener('hashchange', () => setTimeout(controllaServizio, 0));
 	}
+	// richiesta arrivata: le preferenze sono state usate una volta, non passano a una richiesta nuova
+	document.addEventListener('am:richiesta-inviata', () => {
+		try {
+			sessionStorage.removeItem(CHIAVE);
+		} catch {
+			// sessione non disponibile
+		}
+	});
 	// date scadute o non più valide (es. tornando dopo qualche giorno): si tolgono
 	rivalida();
 	setTimeout(controllaServizio, 0);
 	aggiorna();
 	void MOSTRA_FINE;
+}
+
+/* Esempi di intervento (11/10, S5): i titoli scelgono il caso; foto e testi cambiano insieme. Niente rotazione
+   automatica. Tastiera come le schede: frecce ← → (e Home/Fine) tra i titoli, Invio o Spazio li sceglie. */
+for (const box of $$('[data-esempi]')) {
+	const voci = $$('[data-esempio-voce]', box);
+	const casi = $$('[data-esempio-caso]', box);
+	const scegli = (i, fuoco) => {
+		voci.forEach((v, k) => {
+			const si = k === i;
+			v.classList.toggle('is-attiva', si);
+			v.setAttribute('aria-selected', String(si));
+			v.tabIndex = si ? 0 : -1;
+		});
+		casi.forEach((c, k) => (c.hidden = k !== i));
+		// la galleria del caso riparte dalla prima foto
+		const riga = $('[data-galleria-riga]', casi[i]);
+		if (riga) riga.scrollLeft = 0;
+		if (fuoco) voci[i].focus({ preventScroll: true });
+		// sul telefono la fila dei titoli scorre di lato fino al titolo scelto (la pagina non si muove)
+		const fila = voci[i].parentElement;
+		const v = voci[i];
+		if (v.offsetLeft < fila.scrollLeft || v.offsetLeft + v.offsetWidth > fila.scrollLeft + fila.clientWidth)
+			fila.scrollTo({ left: Math.max(0, v.offsetLeft - 16), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+	};
+	voci.forEach((v, i) => {
+		v.addEventListener('click', () => scegli(i, false));
+		v.addEventListener('keydown', (e) => {
+			const n = voci.length;
+			const dove = { ArrowRight: (i + 1) % n, ArrowLeft: (i - 1 + n) % n, Home: 0, End: n - 1 }[e.key];
+			if (dove === undefined) return;
+			e.preventDefault();
+			scegli(dove, true);
+		});
+	});
 }
 
 /* Recensioni: "Mostra tutte e N le recensioni" apre le altre (sul computer se ne vedono 4) */
