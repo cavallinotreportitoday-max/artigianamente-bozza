@@ -21,7 +21,7 @@ import {
 	scatoloniStimati,
 	inventario,
 	comuniPronti
-} from './trasloco.js?v=2026101021-r21';
+} from './trasloco.js?v=2026101021-r22';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
