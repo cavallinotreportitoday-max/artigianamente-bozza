@@ -1,0 +1,19 @@
+{
+	"name": "ArtigianaMente Gestione",
+	"short_name": "Gestione",
+	"description": "Pratiche e agenda di ArtigianaMente. Serve la connessione: sul telefono non restano dati salvati.",
+	"id": "./gestione",
+	"start_url": "./gestione",
+	"scope": "./gestione",
+	"display": "standalone",
+	"orientation": "any",
+	"background_color": "#ffffff",
+	"theme_color": "#ffffff",
+	"lang": "it",
+	"dir": "ltr",
+	"icons": [
+		{ "src": "icone/gestione-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+		{ "src": "icone/gestione-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+		{ "src": "icone/gestione-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+	]
+}
