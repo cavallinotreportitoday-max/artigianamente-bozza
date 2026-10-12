@@ -21,7 +21,7 @@ import {
 	scatoloniStimati,
 	inventario,
 	comuniPronti
-} from './trasloco.js?v=2026101021-r37';
+} from './trasloco.js?v=2026101021-r38';
 import { durata, finisciArrivo, tieniPosto, rigaChiusa, liberaPosti, daTastiera, ravviva } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
