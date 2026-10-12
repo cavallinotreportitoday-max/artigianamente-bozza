@@ -1,7 +1,7 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r35';
-import { cerca } from './ricerca.js?v=2026100914-r35';
-import { attivaModuli } from './invio.js?v=2026101118-r35';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r36';
+import { cerca } from './ricerca.js?v=2026100914-r36';
+import { attivaModuli } from './invio.js?v=2026101118-r36';
 import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -371,14 +371,211 @@ for (const calc of $$('[data-calc]')) {
 	aggiorna();
 }
 
+/* Richiesta rapida (12/10, mandato «Richiesta rapida in tutte le sezioni»): lo stesso modulo breve nel Preventivo e nei
+   Contatti (src/lib/components/RichiestaRapida.svelte). Qui: foto con miniature, dettagli a scomparsa, recapiti già
+   scritti in questa scheda, suggerimenti dei comuni, errori nelle parti chiuse. Il riepilogo lo scrive la pagina
+   Preventivo; le date il calendario. Prima di attivaModuli: un errore in una parte chiusa la apre prima dell'invio. */
+for (const form of $$('[data-rapida]')) {
+	const pannello = $('[data-rr-pannello]', form);
+	const apriB = $('[data-rr-apri]', form);
+	const rigaDett = $('[data-rr-dettagli-riga]', form);
+	const titoloDett = $('[data-rr-dettagli-titolo]', form);
+	const testoDett = $('[data-rr-dettagli-testo]', form);
+	const vuotoDett = testoDett?.textContent || '';
+	const msg = $('textarea[name="messaggio"]', pannello);
+	const email = $('input[name="email"]', form);
+
+	// dettagli (messaggio ed email): chiusi, ma se c'è scritto qualcosa si vede anche da chiusi
+	const sintesiDettagli = () => {
+		if (!testoDett) return;
+		const parti = [msg?.value.trim() && 'messaggio', email?.value.trim() && 'email'].filter(Boolean);
+		testoDett.textContent = parti.length ? `Aggiunti: ${parti.join(' ed ')}` : vuotoDett;
+		rigaDett?.classList.toggle('is-pieno', parti.length > 0);
+		if (titoloDett) titoloDett.textContent = parti.length ? 'Dettagli' : 'Aggiungi dettagli';
+	};
+	const apriDettagli = (si, fuoco = false) => {
+		if (!pannello || !apriB) return;
+		pannello.hidden = !si;
+		apriB.setAttribute('aria-expanded', String(si));
+		rigaDett?.classList.toggle('is-aperta', si);
+		if (si && fuoco) ($('textarea, input', pannello))?.focus({ preventScroll: false });
+	};
+	apriB?.addEventListener('click', () => apriDettagli(pannello.hidden, true));
+	for (const c of [msg, email]) c?.addEventListener('input', sintesiDettagli);
+
+	// un errore in una parte chiusa: la parte si apre e il browser porta lì il fuoco (anche un campo facoltativo
+	// scritto male, come l'email); un campo nascosto che non serve non è mai obbligatorio
+	form.addEventListener(
+		'invalid',
+		(e) => {
+			if (pannello?.hidden && pannello.contains(e.target)) apriDettagli(true);
+		},
+		true
+	);
+
+	// recapiti già scritti in questa scheda (anche nell'altro modulo): tornano, e si possono cambiare
+	const CHIAVE_REC = 'am-recapiti';
+	const ricorda = $$('[data-rr-ricorda]', form);
+	try {
+		const v = JSON.parse(sessionStorage.getItem(CHIAVE_REC) || '{}');
+		for (const c of ricorda) if (!c.value && typeof v[c.name] === 'string') c.value = v[c.name];
+	} catch {
+		// sessione non disponibile (navigazione privata)
+	}
+	form.addEventListener('input', (e) => {
+		if (!e.target.matches?.('[data-rr-ricorda]')) return;
+		try {
+			const v = JSON.parse(sessionStorage.getItem(CHIAVE_REC) || '{}');
+			v[e.target.name] = e.target.value;
+			sessionStorage.setItem(CHIAVE_REC, JSON.stringify(v));
+		} catch {
+			// niente
+		}
+	});
+
+	// foto: «Aggiungi foto» apre la scelta; poi miniature, quante sono e × per toglierle. Si possono aggiungere a più
+	// riprese (restano tutte nel campo «foto», come prima). Al massimo 12 in tutto (con le foto degli oggetti del trasloco)
+	const fotoRiga = $('[data-rr-foto]', form);
+	const fotoIn = $('[data-rr-foto-input]', form);
+	const mini = $('[data-rr-miniature]', form);
+	const fotoTesto = $('[data-rr-foto-testo]', form);
+	const fotoAvviso = $('[data-rr-foto-avviso]', form);
+	const vuotoFoto = fotoTesto?.textContent || '';
+	const MAX_FOTO = 12;
+	let scelte = [];
+	let indirizzi = [];
+	const oggetti = () => $('[data-pv-foto-oggetti]', form)?.files?.length || 0;
+	const metti = () => {
+		try {
+			const dt = new DataTransfer();
+			for (const f of scelte) dt.items.add(f);
+			fotoIn.files = dt.files;
+			return true;
+		} catch {
+			return false; // browser vecchio: restano solo le foto dell'ultima scelta
+		}
+	};
+	const disegnaFoto = () => {
+		for (const u of indirizzi) URL.revokeObjectURL(u);
+		indirizzi = [];
+		mini.replaceChildren(
+			...scelte.map((f, i) => {
+				const li = document.createElement('li');
+				const img = document.createElement('img');
+				const u = URL.createObjectURL(f);
+				indirizzi.push(u);
+				img.src = u;
+				img.alt = '';
+				img.addEventListener('error', () => li.classList.add('is-senza'));
+				const via = document.createElement('button');
+				via.type = 'button';
+				via.className = 'rr-miniature__via';
+				via.setAttribute('aria-label', `Togli la foto ${i + 1} (${f.name})`);
+				via.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg>';
+				via.addEventListener('click', () => {
+					scelte.splice(i, 1);
+					metti();
+					disegnaFoto();
+					fotoAvviso.hidden = true;
+					// il fuoco va alla foto dopo (o al pulsante per aggiungerne)
+					($$('.rr-miniature__via', mini)[Math.min(i, scelte.length - 1)] || fotoIn).focus({ preventScroll: true });
+					form.dispatchEvent(new Event('input', { bubbles: true }));
+				});
+				li.append(img, via);
+				return li;
+			})
+		);
+		mini.hidden = !scelte.length;
+		fotoRiga.classList.toggle('is-pieno', scelte.length > 0);
+		fotoTesto.textContent = scelte.length ? `${scelte.length === 1 ? '1 foto aggiunta' : `${scelte.length} foto aggiunte`} · aggiungine altre` : vuotoFoto;
+	};
+	fotoIn?.addEventListener('change', () => {
+		const nuove = [...fotoIn.files].filter((f) => !scelte.some((x) => x.name === f.name && x.size === f.size && x.lastModified === f.lastModified));
+		const posto = Math.max(0, MAX_FOTO - oggetti() - scelte.length);
+		scelte = scelte.concat(nuove.slice(0, posto));
+		// (scelta annullata: il campo si svuota, ma le foto di prima si rimettono)
+		if (!metti()) scelte = [...fotoIn.files].slice(0, Math.max(0, MAX_FOTO - oggetti()));
+		fotoAvviso.textContent = `Puoi allegare al massimo ${MAX_FOTO} foto in tutto.`;
+		fotoAvviso.hidden = nuove.length <= posto;
+		disegnaFoto();
+	});
+
+	// suggerimenti dei comuni: l'elenco arriva solo quando serve; prima quelli che iniziano così, i più vicini a noi
+	const lista = $('[data-rr-comuni]', form);
+	let comuni = null;
+	let carica = null;
+	const norm = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+	const vicino = (lat, lon) => (lat - 45.45568) ** 2 + ((lon - 12.45478) * 0.7) ** 2;
+	const suggerisci = (q) => {
+		if (!lista || !comuni) return;
+		const t = norm(q);
+		if (t.length < 2) return lista.replaceChildren();
+		const inizio = [];
+		const dentro = [];
+		for (const c of comuni) {
+			if (c.k.startsWith(t)) inizio.push(c);
+			else if (c.k.includes(' ' + t)) dentro.push(c);
+		}
+		const ordina = (a, b) => a.d - b.d;
+		const scelti = [...inizio.sort(ordina), ...dentro.sort(ordina)].slice(0, 8);
+		lista.replaceChildren(
+			...scelti.map((c) => {
+				const o = document.createElement('option');
+				o.value = c.nome;
+				o.label = c.sigla;
+				return o;
+			})
+		);
+	};
+	for (const c of $$('[data-rr-comune]', form)) {
+		c.addEventListener('focus', () => {
+			carica ??= fetch(new URL('../data/comuni.json', import.meta.url))
+				.then((r) => r.json())
+				.then((l) => (comuni = l.map(([nome, sigla, lat, lon]) => ({ nome, sigla, k: norm(nome), d: vicino(lat, lon) }))))
+				.then(() => suggerisci(c.value))
+				.catch(() => (comuni = []));
+		});
+		c.addEventListener('input', () => suggerisci(c.value));
+	}
+
+	// dopo l'invio riuscito i campi restano come sono (il modulo appena mandato non cambia)
+	form._rr = {
+		apriDettagli,
+		/** Il lavoro scelto nel Preventivo: per «Altro lavoro» il messaggio serve, quindi i dettagli si aprono */
+		servizio(slug) {
+			const altro = slug === 'altro';
+			const etichetta = $('[data-rr-msg-etichetta]', form);
+			if (etichetta) etichetta.textContent = altro ? 'Raccontaci cosa ti serve' : 'Messaggio';
+			if (testoDett) testoDett.textContent = altro ? 'Il messaggio serve, l’email è facoltativa' : vuotoDett;
+			if (altro) apriDettagli(true);
+			sintesiDettagli();
+		}
+	};
+	sintesiDettagli();
+}
+
 /* Moduli: con il server collegato inviano davvero (invio.js); nella bozza senza server mostrano solo la prova */
 attivaModuli($$('[data-richiesta]'));
 
-/* Modulo generale: campi del trasloco solo quando servono */
+/* Modulo generale (Contatti): nei Traslochi da dove a dove al posto del comune; il resto è uguale per tutti */
 const sel = $('[data-servizio-select]');
 const soloTraslochi = $('[data-solo-traslochi]');
 if (sel && soloTraslochi) {
-	const mostra = () => (soloTraslochi.hidden = sel.value !== 'Traslochi');
+	const comuneG = $('[data-pv-comune-campo]', sel.form);
+	const mostra = () => {
+		const tr = sel.value === 'Traslochi';
+		soloTraslochi.hidden = !tr;
+		// i campi nascosti non partono e non bloccano l'invio
+		for (const c of $$('input', soloTraslochi)) {
+			c.disabled = !tr;
+			if (c.name === 'partenza' || c.name === 'arrivo') c.required = tr;
+		}
+		if (comuneG) {
+			comuneG.hidden = tr;
+			$('input', comuneG).required = !tr;
+			$('input', comuneG).disabled = tr;
+		}
+	};
 	sel.addEventListener('change', mostra);
 	mostra();
 }
@@ -565,15 +762,56 @@ for (const g of $$('[data-galleria]')) {
 	const punti = $$('[data-galleria-punto]', g.parentElement);
 	// scritta che vale solo per la prima foto (L'azienda: «Immagine dimostrativa» sui furgoni, non sui lavori veri)
 	const soloPrima = $('[data-galleria-solo-prima]', g);
+	const ultima = () => riga.children.length - 1;
 	const stato = () => {
 		const i = quale();
 		if (n) n.textContent = String(i + 1);
 		if (soloPrima) soloPrima.hidden = i > 0;
 		if (prec) prec.disabled = i <= 0;
-		if (succ) succ.disabled = i >= riga.children.length - 1;
+		// 12/10 (Gian): la freccia a destra c'è sempre; sull'ultima foto riporta alla prima (niente stop)
+		if (succ) {
+			succ.disabled = ultima() < 1;
+			const fine = i >= ultima();
+			if (fine !== succ._fine) {
+				succ._fine = fine;
+				if (!succ._nome) succ._nome = succ.getAttribute('aria-label') || '';
+				succ.setAttribute('aria-label', fine ? 'Torna alla prima' : succ._nome);
+			}
+		}
 		punti.forEach((p, k) => p.classList.toggle('is-attivo', k === i));
 	};
-	const vai = (verso) => riga.scrollTo({ left: (quale() + verso) * riga.clientWidth, behavior: lento ? 'auto' : 'smooth' });
+	// dall'ultima si riparte dalla prima di colpo (un riavvolgimento lungo farebbe passare tutte le foto, e negli
+	// esempi anche tutti i testi)
+	const daCapo = () => riga.scrollTo({ left: 0, behavior: 'auto' });
+	const vai = (verso) => {
+		const i = quale() + verso;
+		if (i > ultima()) return daCapo();
+		riga.scrollTo({ left: i * riga.clientWidth, behavior: lento ? 'auto' : 'smooth' });
+	};
+	// col dito (sul telefono le frecce non ci sono): sull'ultima foto, strisciando ancora verso sinistra si riparte dalla prima
+	let x0 = null;
+	let y0 = 0;
+	let inFondo = false;
+	riga.addEventListener(
+		'touchstart',
+		(e) => {
+			x0 = e.touches.length === 1 ? e.touches[0].clientX : null;
+			y0 = e.touches[0]?.clientY ?? 0;
+			inFondo = riga.scrollLeft >= riga.scrollWidth - riga.clientWidth - 2;
+		},
+		{ passive: true }
+	);
+	riga.addEventListener(
+		'touchend',
+		(e) => {
+			if (x0 === null) return;
+			const dx = e.changedTouches[0].clientX - x0;
+			const dy = e.changedTouches[0].clientY - y0;
+			x0 = null;
+			if (inFondo && ultima() > 0 && dx < -50 && Math.abs(dx) > Math.abs(dy) * 1.5) daCapo();
+		},
+		{ passive: true }
+	);
 	for (const p of punti)
 		p.addEventListener('click', () =>
 			riga.scrollTo({ left: Number(p.dataset.galleriaPunto) * riga.clientWidth, behavior: lento ? 'auto' : 'smooth' })
@@ -774,11 +1012,102 @@ if (pv) {
 	const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const vai = (el) => el.scrollIntoView({ behavior: ridotto ? 'auto' : 'smooth', block: 'start' });
 
-	// "La tua richiesta": riepilogo leggibile, niente casella da riempire
-	const mostraRiep = () => {
-		riepTesto.textContent = riepilogo.value;
-		riepBox.hidden = !riepilogo.value;
+	// "La tua richiesta" (12/10, richiesta rapida): riepilogo compatto, niente casella da riempire. Lavoro, la quantità
+	// che conta con la sua unità, la stima solo se il calcolatore l'ha fatta (mai importi inventati); «Vedi dettagli»
+	// mostra il riepilogo intero, «Modifica» riapre le scelte (restano tutte, anche quello che hai scritto qui)
+	const formDati = riepilogo.form;
+	const rr = {
+		icona: $('[data-rr-icona]', riepBox),
+		servizio: $('[data-rr-servizio]', riepBox),
+		cosa: $('[data-rr-cosa]', riepBox),
+		stima: $('[data-rr-stima]', riepBox),
+		cifra: $('[data-rr-cifra]', riepBox),
+		nota: $('[data-rr-nota]', riepBox),
+		vedi: $('[data-rr-vedi]', riepBox),
+		tutto: riepTesto.parentElement
 	};
+	const etichetta = (i) => ($('.livello__nome', i.closest('label')) || i.closest('label'))?.textContent.trim() || '';
+	const scelti = (pan, nome) => $$(`input[name="${nome}"]:checked`, pan).map(etichetta).join(', ');
+	const numeroDi = (pan, nome) => Number(String($(`[name="${nome}"]`, pan)?.value || '').replace(',', '.')) || 0;
+	const essenziale = (slug) => {
+		const pan = $(`[data-pannello="${slug}"]`, pv);
+		if (!pan) return '';
+		const mq = numeroDi(pan, 'mq');
+		if (slug === 'imbiancatura') return mq ? `${mq} m² di pavimento${$('[name="soffitti"]', pan)?.checked ? ', soffitti compresi' : ''}` : 'Metri quadri da indicare';
+		if (slug === 'parquet') return [scelti(pan, 'lavoro'), mq ? `${mq} m²` : 'metri quadri da indicare'].filter(Boolean).join(' · ');
+		if (slug === 'montaggio-mobili') {
+			let pezzi = 0;
+			let cucina = 0;
+			for (const i of $$('[data-somma] input[type="number"]', pan)) {
+				const n = Number(i.value) || 0;
+				if (i.name === 'cucinaMl') cucina = n;
+				else pezzi += n;
+			}
+			return [pezzi ? `${pezzi} ${pezzi === 1 ? 'mobile' : 'mobili'}` : '', cucina ? `cucina ${cucina} m` : ''].filter(Boolean).join(' · ') || 'Mobili da indicare';
+		}
+		if (slug === 'ristrutturazioni') {
+			if ($('input[name="cosa"]:checked', pan)?.value === 'bagno') return [scelti(pan, 'misura'), scelti(pan, 'livello') && `stile ${scelti(pan, 'livello')}`].filter(Boolean).join(' · ');
+			return mq ? `${mq} m²` : '';
+		}
+		if (slug === 'risanamento-umidita') return numeroDi(pan, 'metri') ? `${numeroDi(pan, 'metri')} m di muro` : scelti(pan, 'dove');
+		if (slug === 'falegnameria') return scelti(pan, 'tipo');
+		if (slug === 'traslochi') {
+			// partenza e arrivo restano due cose distinte (e non si chiedono di nuovo)
+			const s = formDati._am?.calcolo?.input;
+			const da = s?.partenza?.comune;
+			const a = s?.arrivo?.comune;
+			return da && a ? `Da ${da} a ${a}` : da ? `Partenza da ${da}, arrivo da indicare` : a ? `Arrivo a ${a}, partenza da indicare` : 'Partenza e arrivo da indicare';
+		}
+		return '';
+	};
+	const mostraRiep = () => {
+		const slug = formDati.dataset.servizio || '';
+		const btn = lavori.find((b) => b.dataset.scegli === slug);
+		riepBox.hidden = !btn;
+		if (!btn) return;
+		let nome = $('[data-pv-scelto-nome]', scelto).textContent.trim() || $('.v3-pv__nome', btn).textContent.trim();
+		const cosa = slug === 'ristrutturazioni' && $(`[data-pannello="${slug}"] input[name="cosa"]:checked`, pv);
+		if (cosa && !nome.includes('·')) nome = `${nome} · ${etichetta(cosa)}`;
+		rr.servizio.textContent = nome;
+		if (rr.icona.dataset.per !== slug) {
+			rr.icona.dataset.per = slug;
+			rr.icona.replaceChildren($('svg', btn).cloneNode(true));
+		}
+		const riga = essenziale(slug);
+		rr.cosa.textContent = riga;
+		rr.cosa.hidden = !riga;
+		const m = slug === 'altro' ? null : formDati._am?.calcolo?.mostrato;
+		rr.stima.hidden = !m;
+		if (m) rr.cifra.textContent = `${euro(m.min)}–${euro(m.max)} €`;
+		rr.nota.textContent = m
+			? 'Importo indicativo. Il preventivo definitivo segue il sopralluogo gratuito. Prezzi provvisori.'
+			: slug === 'altro'
+				? 'Raccontaci qui sotto cosa ti serve. Sopralluogo e preventivo sono gratuiti.'
+				: 'Il prezzo lo definiamo dopo il sopralluogo gratuito.';
+		riepTesto.textContent = riepilogo.value;
+		const vedi = slug !== 'altro' && !!riepilogo.value;
+		rr.vedi.hidden = !vedi;
+		if (!vedi) {
+			rr.tutto.hidden = true;
+			rr.vedi.setAttribute('aria-expanded', 'false');
+		}
+	};
+	rr.vedi.addEventListener('click', () => {
+		const si = rr.tutto.hidden;
+		rr.tutto.hidden = !si;
+		rr.vedi.setAttribute('aria-expanded', String(si));
+		rr.vedi.textContent = si ? 'Nascondi dettagli' : 'Vedi dettagli';
+	});
+	// «Modifica»: si torna alle scelte del lavoro (sul telefono il primo passo sale come tendina); per «Altro lavoro» alla lista
+	$('[data-rr-modifica]', riepBox).addEventListener('click', () => {
+		const slug = formDati.dataset.servizio;
+		const pan = slug && slug !== 'altro' && $(`[data-pannello="${slug}"]`, pv);
+		if (!pan) return $('[data-pv-cambia]', pv).click();
+		const primo = $$('.tr2-passo', pan).find((q) => !q.hidden && !q.classList.contains('is-saltato') && !q.matches('[data-passo-stima], [data-passo="6"]'));
+		if (!primo) return vai(pan);
+		if (!primo.classList.contains('is-aperto')) $('[data-passo-apri]', primo)?.click();
+		if (!telefono()) requestAnimationFrame(() => vai(primo));
+	});
 	const apriDati = () => {
 		mostraRiep();
 		dati.hidden = false;
@@ -834,6 +1163,7 @@ if (pv) {
 		const altro = slug === 'altro';
 		msg.required = altro;
 		facolt.hidden = altro;
+		campoLavoro.form?._rr?.servizio(slug);
 		// nei traslochi partenza e arrivo li abbiamo già: niente terza domanda sul comune
 		const trasloco = slug === 'traslochi';
 		// calcolatori a passi (tutti tranne «Altro lavoro», 11/10): titolo più corto e meno spazio sopra, così il passo
@@ -846,6 +1176,8 @@ if (pv) {
 		$('[data-foglio-chiudi]')?.setAttribute('aria-label', `Chiudi: ${titolo.toLowerCase()}`);
 		comuneCampo.hidden = trasloco;
 		$('input', comuneCampo).required = !trasloco;
+		// un campo nascosto non parte e non blocca l'invio (nei Traslochi il comune non serve: ci sono partenza e arrivo)
+		$('input', comuneCampo).disabled = trasloco;
 		dati.hidden = !altro;
 		$('[data-conferma]', dati).hidden = true;
 		if (altro) riepilogo.value = 'Altro lavoro: vedi la descrizione.';
@@ -1138,7 +1470,7 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101214-r35').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101214-r36').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
 if ($('[data-passi]')) import('./passi.js?v=2026101214').catch(senzaTendine);
 
@@ -1293,7 +1625,26 @@ if (cal) {
 			}
 			for (const i of $$(`[data-quando-valore="${k}"]`)) i.value = v ? chiave(v) : '';
 		}
+		// richiesta rapida (12/10): una riga sola «Preferenze sulle date» con quelle scelte, «Modifica» e × per toglierle
+		const parti = [valori.sopralluogo && `Sopralluogo: ${corto(valori.sopralluogo)}`, valori.inizio && `${nomeInizio()}: ${corto(valori.inizio)}`].filter(Boolean);
+		for (const t of $$('[data-rr-date]')) {
+			t.textContent = parti.length ? parti.join(' · ') : 'Facoltative: puoi inviare anche senza';
+			const riga = t.closest('[data-rr-date-riga]');
+			riga?.classList.toggle('is-pieno', parti.length > 0);
+			const az = riga && $('[data-rr-date-azione]', riga);
+			if (az) az.textContent = parti.length ? 'Modifica' : 'Scegli';
+			const via = riga && $('[data-rr-date-togli]', riga);
+			if (via) via.hidden = !parti.length;
+		}
 	};
+	for (const b of $$('[data-rr-date-togli]'))
+		b.addEventListener('click', () => {
+			valori.sopralluogo = null;
+			valori.inizio = null;
+			scrivi();
+			aggiorna();
+			$('[data-quando-apri]', b.closest('[data-rr-date-riga]'))?.focus({ preventScroll: true });
+		});
 
 	// cambio di lavoro: l'inizio desiderato si toglie (e lo diciamo); il sopralluogo resta se è ancora valido
 	const controllaServizio = () => {
