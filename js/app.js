@@ -1,7 +1,7 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r41';
-import { cerca } from './ricerca.js?v=2026100914-r41';
-import { attivaModuli } from './invio.js?v=2026101118-r41';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r42';
+import { cerca } from './ricerca.js?v=2026100914-r42';
+import { attivaModuli } from './invio.js?v=2026101216-r42';
 import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -190,11 +190,11 @@ for (const box of $$('[data-stepper]')) {
 	}
 }
 
-/* Lettura dei valori del preventivo */
+/* Lettura dei valori del preventivo (le domande nascoste per le risposte date sono disattivate: non contano) */
 function leggi(box) {
 	const v = {};
 	for (const el of $$('input', box)) {
-		if (!el.name) continue;
+		if (!el.name || el.disabled) continue;
 		if (el.type === 'radio') {
 			if (el.checked) v[el.name] = el.value;
 		} else if (el.type === 'checkbox' && el.closest('.scelta')) {
@@ -209,20 +209,59 @@ function leggi(box) {
 	return v;
 }
 
+// le domande nascoste per le risposte date non finiscono nel riepilogo (i passi chiusi sì: le risposte restano)
+const nascosto = (el) => Boolean(el.closest('[data-mostra-se][hidden]'));
+const senzaFacolt = (t) => t.replace(/\s*\(facoltativ[oiae]\)/i, '').trim();
 function riepilogoLibero(servizio, box) {
 	const parti = [servizio + '.'];
 	for (const fs of $$('fieldset', box)) {
+		if (nascosto(fs)) continue;
 		const leg = $('legend', fs)?.textContent.trim();
 		const sel = $$('input:checked', fs).map((i) => i.closest('label').textContent.trim());
 		if (leg && sel.length) parti.push(`${leg} ${sel.join(', ')}.`);
 	}
-	for (const st of $$('[data-stepper]', box)) {
-		const lab = st.parentElement.querySelector('label')?.textContent.trim();
-		const inp = $('input', st);
-		const un = $('.numero__unita', st)?.textContent.trim() ?? '';
-		if (lab && inp.value) parti.push(`${lab}: ${inp.value} ${un}.`);
+	// numeri: superficie, metri di muro, misure indicative (con l'unità)
+	for (const c of $$('.campo', box)) {
+		if (nascosto(c) || c.closest('fieldset')) continue;
+		const nums = $$('input[type="number"]', c).filter((i) => i.value && !i.disabled);
+		if (!nums.length) continue;
+		const lab = senzaFacolt(($('.campo__label', c) || $('label', c))?.textContent || '');
+		const unita = (i) => $('.numero__unita', i.parentElement)?.textContent.trim() ?? '';
+		const val = nums.map((i) => `${nums.length > 1 && i.placeholder ? i.placeholder + ' ' : ''}${i.value} ${unita(i)}`.trim()).join(', ');
+		if (lab) parti.push(`${lab}: ${val}.`);
 	}
-	return parti.join(' ');
+	return parti.join(' ') + riepExtra(box, true);
+}
+/* Domande che non cambiano la stima ma servono a Fabri (data-riep-extra): vanno in fondo al riepilogo.
+   soloTesto: nei riepiloghi liberi i gruppi di scelte ci sono già, qui restano solo i campi di testo */
+function riepExtra(box, soloTesto = false) {
+	const parti = [];
+	for (const el of $$('[data-riep-extra]', box)) {
+		if (nascosto(el)) continue;
+		if (el.matches('fieldset')) {
+			if (soloTesto) continue;
+			const sel = $$('input:checked', el).map((i) => i.closest('label').textContent.trim());
+			if (sel.length) parti.push(`${$('legend', el)?.textContent.trim()} ${sel.join(', ')}.`);
+		} else {
+			const i = $('input[type="text"], textarea', el);
+			if (i?.value.trim()) parti.push(`${senzaFacolt($('label', el)?.textContent || '')}: ${i.value.trim()}.`);
+		}
+	}
+	return parti.length ? ' ' + parti.join(' ') : '';
+}
+/* Domande che compaiono solo per certe risposte (data-mostra-se="nome=valore,valore", 12/10 «percorsi più chiari»):
+   nascoste e disattivate quando non servono, così non contano né nella stima né nel riepilogo */
+function condizioni(box) {
+	for (const el of $$('[data-mostra-se]', box)) {
+		const [nome, vals = ''] = el.dataset.mostraSe.split('=');
+		const ammessi = vals.split(',');
+		const scelti = $$(`input[name="${nome}"]`, box)
+			.filter((i) => (i.type === 'radio' || i.type === 'checkbox' ? i.checked : i.value))
+			.map((i) => i.value);
+		const si = scelti.some((x) => ammessi.includes(x));
+		if (el.hidden !== !si) el.hidden = !si;
+		for (const i of $$('input, select, textarea', el)) i.disabled = !si;
+	}
 }
 
 for (const calc of $$('[data-calc]')) {
@@ -243,6 +282,7 @@ for (const calc of $$('[data-calc]')) {
 
 	// Ristrutturazioni: simulatore del bagno, oppure prezzo dopo il sopralluogo per gli altri lavori
 	const aggiornaRistr = () => {
+		condizioni(inputs);
 		const v = leggi(inputs);
 		const isBagno = v.cosa === 'bagno';
 		for (const g of $$('[data-se]', calc)) g.hidden = g.dataset.se !== (isBagno ? 'bagno' : 'altro');
@@ -317,6 +357,15 @@ for (const calc of $$('[data-calc]')) {
 
 	const aggiorna = () => {
 		if (tipo === 'ristrutturazioni') return aggiornaRistr();
+		condizioni(inputs);
+		// Imbiancatura, «Non so i m²»: i metri li misuriamo al sopralluogo; il campo si spegne (niente numero inventato)
+		const nonso = tipo === 'imbiancatura' && $('input[name="nonso"]', inputs)?.checked;
+		const campoMq = tipo === 'imbiancatura' && $('input[name="mq"]', inputs);
+		if (campoMq && campoMq.disabled !== Boolean(nonso)) {
+			campoMq.disabled = Boolean(nonso);
+			if (nonso) campoMq.value = '';
+			for (const b of $$('[data-step]', campoMq.parentElement)) b.disabled = Boolean(nonso);
+		}
 		const v = leggi(inputs);
 		if (!conCalcolo) {
 			if (attivo()) {
@@ -325,7 +374,35 @@ for (const calc of $$('[data-calc]')) {
 			}
 			return;
 		}
+		// Montaggio: «smontare e rimontare» usa lo smontaggio che c'era già; «solo smontare» si valuta al sopralluogo
+		const operazione = tipo === 'montaggio' ? v.operazione || 'nuovi' : '';
+		if (operazione === 'rimontare') v.smontaggio = true;
 		const r = calcola(tipo, v);
+		if (operazione === 'rimontare' && !r.vuoto) {
+			r.dettaglio = r.dettaglio.replace(', con smontaggio dei vecchi mobili.', ', da smontare e rimontare.');
+			r.riepilogo = r.riepilogo.replace('Smontaggio vecchi mobili sì.', 'Da smontare e rimontare (es. dopo un trasloco).');
+		}
+		const daValutare = nonso || (operazione === 'smontare' && !r.vuoto);
+		if (daValutare) {
+			const primaCifra = cifra.textContent;
+			cifra.textContent = 'Su sopralluogo';
+			if (cifra.textContent !== primaCifra) ravviva(cifra);
+			dettaglio.textContent = nonso
+				? 'Misuriamo noi le stanze al sopralluogo gratuito, poi ricevi il preventivo.'
+				: 'Per il solo smontaggio la stima la facciamo al sopralluogo gratuito.';
+			liste.hidden = true;
+			if (attivo()) {
+				if (nonso) {
+					const scelte = [$('input[name="soffitti"]', inputs)?.checked && 'anche i soffitti', ...$$('input[type="radio"]:checked', inputs).map((i) => i.closest('label').textContent.trim().toLowerCase())].filter(Boolean);
+					riepilogo.value = `Imbiancatura: metri quadri da misurare al sopralluogo${scelte.length ? ', ' + scelte.join(', ') : ''}.` + riepExtra(inputs);
+					segna(null, { input: v, mostrato: null });
+				} else {
+					riepilogo.value = `Montaggio mobili: solo smontaggio, senza rimontare: ${r.dettaglio.replace(/\.$/, '')}.` + riepExtra(inputs);
+					segna(null, null);
+				}
+			}
+			return;
+		}
 		// la cifra è subito quella nuova; compare solo con una dissolvenza breve (12/10)
 		const primaCifra = cifra.textContent;
 		queueMicrotask(() => cifra.textContent !== primaCifra && ravviva(cifra));
@@ -361,7 +438,7 @@ for (const calc of $$('[data-calc]')) {
 		}
 		if (attivo()) {
 			riepilogo.value =
-				(r.riepilogo || servizio) + (r.min ? ` Stima indicativa: ${euro(r.min)}–${euro(r.max)} €, IVA ${r.ivaPerc}% inclusa.` : '');
+				(r.riepilogo || servizio) + (r.min ? ` Stima indicativa: ${euro(r.min)}–${euro(r.max)} €, IVA ${r.ivaPerc}% inclusa.` : '') + riepExtra(inputs);
 			segna(null, { input: v, mostrato: r.min ? { min: r.min, max: r.max } : null });
 		}
 	};
@@ -536,6 +613,17 @@ for (const form of $$('[data-rapida]')) {
 				.catch(() => (comuni = []));
 		});
 		c.addEventListener('input', () => suggerisci(c.value));
+	}
+
+	// periodo preferito: toccando di nuovo quello scelto si toglie (è facoltativo)
+	for (const r of $$('input[name="periodo"]', form)) {
+		r.addEventListener('pointerdown', () => (r._prima = r.checked));
+		r.addEventListener('click', () => {
+			if (!r._prima) return;
+			r.checked = false;
+			r._prima = false;
+			form.dispatchEvent(new Event('input', { bubbles: true }));
+		});
 	}
 
 	// dopo l'invio riuscito i campi restano come sono (il modulo appena mandato non cambia)
@@ -1033,7 +1121,11 @@ if (pv) {
 		const pan = $(`[data-pannello="${slug}"]`, pv);
 		if (!pan) return '';
 		const mq = numeroDi(pan, 'mq');
-		if (slug === 'imbiancatura') return mq ? `${mq} m² di pavimento${$('[name="soffitti"]', pan)?.checked ? ', soffitti compresi' : ''}` : 'Metri quadri da indicare';
+		const visibili = (pan, salta = []) => $$('input:checked', pan).filter((i) => !i.disabled && !nascosto(i) && !salta.includes(i.name)).map(etichetta);
+		if (slug === 'imbiancatura') {
+			if ($('[name="nonso"]', pan)?.checked) return 'Metri quadri da misurare al sopralluogo';
+			return mq ? `${mq} m² di pavimento${$('[name="soffitti"]', pan)?.checked ? ', soffitti compresi' : ''}` : 'Metri quadri da indicare';
+		}
 		if (slug === 'parquet') return [scelti(pan, 'lavoro'), mq ? `${mq} m²` : 'metri quadri da indicare'].filter(Boolean).join(' · ');
 		if (slug === 'montaggio-mobili') {
 			let pezzi = 0;
@@ -1043,14 +1135,16 @@ if (pv) {
 				if (i.name === 'cucinaMl') cucina = n;
 				else pezzi += n;
 			}
-			return [pezzi ? `${pezzi} ${pezzi === 1 ? 'mobile' : 'mobili'}` : '', cucina ? `cucina ${cucina} m` : ''].filter(Boolean).join(' · ') || 'Mobili da indicare';
+			const op = $('input[name="operazione"]:checked', pan)?.value;
+			const lavoro = op === 'rimontare' ? 'da smontare e rimontare' : op === 'smontare' ? 'solo smontaggio' : '';
+			return [pezzi ? `${pezzi} ${pezzi === 1 ? 'mobile' : 'mobili'}` : '', cucina ? `cucina ${cucina} m` : '', lavoro].filter(Boolean).join(' · ') || 'Mobili da indicare';
 		}
 		if (slug === 'ristrutturazioni') {
 			if ($('input[name="cosa"]:checked', pan)?.value === 'bagno') return [scelti(pan, 'misura'), scelti(pan, 'livello') && `stile ${scelti(pan, 'livello')}`].filter(Boolean).join(' · ');
-			return mq ? `${mq} m²` : '';
+			return [...visibili($('[data-se="altro"]', pan) || pan, ['cosa']).slice(0, 3), mq ? `${mq} m²` : ''].filter(Boolean).join(' · ');
 		}
 		if (slug === 'risanamento-umidita') return numeroDi(pan, 'metri') ? `${numeroDi(pan, 'metri')} m di muro` : scelti(pan, 'dove');
-		if (slug === 'falegnameria') return scelti(pan, 'tipo');
+		if (slug === 'falegnameria') return visibili(pan, ['dove']).slice(0, 3).join(' · ');
 		if (slug === 'traslochi') {
 			// partenza e arrivo restano due cose distinte (e non si chiedono di nuovo)
 			const s = formDati._am?.calcolo?.input;
@@ -1470,7 +1564,7 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101214-r41').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101214-r42').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
 if ($('[data-passi]')) import('./passi.js?v=2026101214').catch(senzaTendine);
 

@@ -41,7 +41,8 @@ export function avviaPassi(box) {
 			if (el.matches('[data-somma]')) {
 				const tot = $$('input[type="number"]', el).reduce((t, i) => t + (Number(i.value) || 0), 0);
 				if (!tot) return el;
-			} else if (el.matches('input') && !(Number(String(el.value).replace(',', '.')) > 0)) return el.closest('.campo') || el;
+			// un campo spento non manca (es. «Non so i m²» nell'imbiancatura: i metri li misuriamo al sopralluogo)
+			} else if (el.matches('input') && !el.disabled && !(Number(String(el.value).replace(',', '.')) > 0)) return el.closest('.campo') || el;
 		}
 		return null;
 	}
@@ -52,6 +53,8 @@ export function avviaPassi(box) {
 		const parti = [];
 		for (const c of $$('fieldset, .campo, label.check', corpo)) {
 			if (c.closest('label.check') && c !== c.closest('label.check')) continue;
+			// le domande nascoste per le risposte date non entrano nel riassunto (12/10, «percorsi più chiari»)
+			if (c.closest('[data-mostra-se][hidden]')) continue;
 			if (c.matches('fieldset')) {
 				// nei livelli del bagno basta il nome (Base, Comfort, Top), senza prezzo e punti
 				const scelti = $$('input:checked', c).map((i) => testo($('.livello__nome', i.closest('label')) || i.closest('label')));

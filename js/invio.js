@@ -105,7 +105,8 @@ export function attivaModuli(moduli) {
 				email: g('email'),
 				comune: g('comune'),
 				messaggio: g('messaggio'),
-				riepilogo: g('riepilogo'),
+				// periodo preferito (12/10): il server accetta solo giorni nelle date, quindi va nel riepilogo, che Fabri legge
+				riepilogo: [g('riepilogo'), g('periodo') && `Periodo preferito: ${g('periodo')}.`].filter(Boolean).join(' '),
 				preferenza_sopralluogo: g('data-sopralluogo') || null,
 				preferenza_inizio: g('inizio-desiderato') || null,
 				privacy: fd.get('privacy') != null,
