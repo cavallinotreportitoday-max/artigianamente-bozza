@@ -21,7 +21,8 @@ import {
 	scatoloniStimati,
 	inventario,
 	comuniPronti
-} from './trasloco.js?v=2026101021-r34';
+} from './trasloco.js?v=2026101021-r35';
+import { durata, finisciArrivo, tieniPosto, rigaChiusa, liberaPosti, daTastiera, ravviva } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -299,13 +300,18 @@ export function avviaTrasloco(box) {
 	const passi = $$('[data-passo]', form);
 	const passo = (n) => passi.find((p) => Number(p.dataset.passo) === n);
 	function apri(n, scorri = true) {
+		finisciArrivo();
 		visti.add(n);
 		// da una tendina all'altra (Avanti, ‹, indietro): niente risalita da sotto, cambia solo il contenuto
 		const prima = passi.find((q) => q.classList.contains('is-aperto') && !q.classList.contains('is-chiude') && tendina(q.dataset.passo));
 		const daTendina = Boolean(prima);
 		if (aperta && n !== 2) chiudiStanza(false);
+		// altezza della riga chiusa: il suo posto resta nella lista mentre il passo è una tendina (niente scatto chiudendo)
+		const riga = passo(n) && !passo(n).classList.contains('is-aperto') ? passo(n).getBoundingClientRect().height : 0;
+		liberaPosti(form);
 		for (const p of passi) {
 			clearTimeout(p._chiude);
+			p._fine = null; // una chiusura in corso non può più chiudere questa apertura
 			p.classList.remove('is-chiude');
 			const si = Number(p.dataset.passo) === n;
 			p.classList.toggle('senza-salita', si && daTendina);
@@ -316,7 +322,10 @@ export function avviaTrasloco(box) {
 			$('[data-passo-apri]', p).setAttribute('aria-expanded', String(si));
 		}
 		sintesi();
-		if (tendina(n)) segna();
+		if (tendina(n)) {
+			segna();
+			if (passo(n)) tieniPosto(passo(n), riga);
+		}
 		if (!scorri || !passo(n)) return;
 		// tendina: si parte dall'inizio del passo, la pagina sotto resta ferma
 		if (tendina(n)) $('[data-passo-corpo]', passo(n)).scrollTop = 0;
@@ -324,21 +333,32 @@ export function avviaTrasloco(box) {
 	}
 	/** Chiude un passo; sul telefono la tendina scende prima di sparire */
 	function chiudiPasso(p, subito = false) {
+		finisciArrivo();
+		const eraTendina = tendina(p.dataset.passo);
 		const fine = () => {
-			p.classList.remove('is-aperto', 'is-chiude');
+			clearTimeout(p._chiude);
+			p._fine = null;
+			p.classList.remove('is-aperto', 'is-chiude', 'senza-salita');
 			$('[data-passo-corpo]', p).hidden = true;
 			$('[data-passo-apri]', p).setAttribute('aria-expanded', 'false');
+			liberaPosti(p);
 			sintesi();
+			// la voce della cronologia si toglie a movimento finito (prima rubava i primi fotogrammi della discesa)
+			if (eraTendina) togliSegno();
 		};
 		clearTimeout(p._chiude);
-		if (tendina(p.dataset.passo)) {
-			// la × della pagina sta dove c'era quella della tendina: un secondo tocco subito dopo non chiude anche la stima (12/10)
-			window.amTendinaChiusaIl = performance.now();
-			togliSegno();
-		}
-		if (tendina(p.dataset.passo) && !ridotto && !subito) {
+		// la × della pagina sta dove c'era quella della tendina: un secondo tocco subito dopo non chiude anche la stima (12/10)
+		if (eraTendina) window.amTendinaChiusaIl = performance.now();
+		const ms = durata('--t-chiudi', 300);
+		if (eraTendina && ms && !subito) {
+			// la discesa vale anche dopo «Avanti» o «‹» (senza-salita toglieva l'animazione)
+			p.classList.remove('senza-salita');
 			p.classList.add('is-chiude');
-			p._chiude = setTimeout(fine, 330);
+			// il posto nella lista prende subito l'altezza della riga come sarà da chiusa: alla fine niente scatto
+			sintesi();
+			tieniPosto(p, rigaChiusa(p));
+			p._fine = fine;
+			p._chiude = setTimeout(fine, ms);
 		} else fine();
 	}
 	/** Tendina tirata giù col dito: segue il dito (il velo sfuma insieme); lanciata o tirata oltre un certo punto
@@ -403,29 +423,31 @@ export function avviaTrasloco(box) {
 			const [a, b] = [ultimi[0], ultimi[ultimi.length - 1]];
 			const v = a && b && b[0] > a[0] ? (b[1] - a[1]) / (b[0] - a[0]) : 0;
 			const chiude = dy > Math.min(140, foglio.offsetHeight * 0.18) || (v > 0.45 && dy > 16);
+			const giu = durata('--t-chiudi', 300);
+			const su = durata('--t-tendina', 400);
 			if (chiude) {
-				foglio.style.transition = 'transform 280ms var(--molla)';
+				foglio.style.transition = `transform ${giu}ms var(--molla)`;
 				foglio.style.transform = 'translateY(100%)';
 				if (velo) {
-					velo.style.transition = 'opacity 280ms ease';
+					velo.style.transition = `opacity ${durata('--t-velo-via', 120)}ms ease-out`;
 					velo.style.opacity = '0';
 				}
 				setTimeout(() => {
 					chiudi();
 					pulisci(foglio);
 					requestAnimationFrame(() => pulisci(velo));
-				}, 270);
+				}, Math.max(0, giu - 10));
 			} else {
-				foglio.style.transition = 'transform 420ms var(--molla)';
+				foglio.style.transition = `transform ${su}ms var(--molla)`;
 				foglio.style.transform = '';
 				if (velo) {
-					velo.style.transition = 'opacity 420ms var(--molla)';
+					velo.style.transition = `opacity ${su}ms var(--molla)`;
 					velo.style.opacity = '';
 				}
 				setTimeout(() => {
 					foglio.style.transition = '';
 					if (velo) velo.style.transition = '';
-				}, 440);
+				}, su + 20);
 			}
 		};
 		foglio.addEventListener('touchend', fine);
@@ -437,7 +459,8 @@ export function avviaTrasloco(box) {
 		// telefono: la tendina del passo si chiude tirandola giù
 		tiraGiu(p, $('[data-passo-corpo]', p), () => chiudiPasso(p, true), () => p.classList.contains('is-aperto') && tendina(n) && !aperta, $('[data-tr-velo]', box));
 		$('[data-passo-apri]', p).addEventListener('click', () => {
-			if (p.classList.contains('is-aperto')) chiudiPasso(p);
+			// una tendina che sta scendendo conta come chiusa: toccandola si riapre
+			if (p.classList.contains('is-aperto') && !p.classList.contains('is-chiude')) chiudiPasso(p);
 			else apri(n);
 		});
 		$('[data-passo-chiudi]', p)?.addEventListener('click', () => chiudiPasso(p));
@@ -517,6 +540,9 @@ export function avviaTrasloco(box) {
 		if (!segno) return;
 		segno = false;
 		const n = apertoOra();
+		// indietro mentre la tendina sta già scendendo: vale la chiusura, che finisce subito
+		const inDiscesa = passi.find((q) => q._fine);
+		if (inDiscesa) return inDiscesa._fine();
 		// stanza aperta: si chiude la stanza e si resta nel passo
 		if (n === 2 && aperta && tendina(2)) {
 			chiudiEditor(false);
@@ -537,16 +563,35 @@ export function avviaTrasloco(box) {
 		true
 	);
 	// la tendina si apre anche scegliendo Traslochi dalla pagina (la classe arriva dopo)
+	// il posto della riga del passo aperto come tendina (all'arrivo e quando la classe arriva dopo)
+	const postoTendina = () => {
+		const n = apertoOra();
+		const p = n && passo(n);
+		if (p && tendina(n) && !p._fine) {
+			if (!p.previousElementSibling?.classList.contains('tr2-posto')) tieniPosto(p);
+		} else if (!p?._fine) liberaPosti(form);
+	};
 	new MutationObserver(() => {
 		const n = apertoOra();
 		if (n && tendina(n)) segna();
+		postoTendina();
 	}).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-	// girando il telefono o allargando oltre 860 px la tendina torna un passo nella pagina: si toglie la voce in più (12/10)
+	// anche quando il pannello dei traslochi compare o sparisce (si cambia lavoro nella pagina, la classe resta uguale)
+	const pannelloTr = box.closest('[data-pannello]');
+	if (pannelloTr) new MutationObserver(postoTendina).observe(pannelloTr, { attributes: true, attributeFilter: ['hidden'] });
+	// girando il telefono o allargando oltre 860 px la tendina torna un passo nella pagina: si toglie la voce in più (12/10);
+	// una discesa in corso finisce subito e non restano stili del trascinamento
 	matchMedia('(max-width: 860px)').addEventListener('change', () => {
+		for (const q of passi) {
+			if (q._fine) q._fine();
+			q.style.transition = q.style.transform = '';
+		}
 		const n = apertoOra();
 		if (n && tendina(n)) segna();
 		else togliSegno();
+		postoTendina();
 	});
+	postoTendina();
 
 	/** Il passo n ha i dati per andare avanti? Il passo 1 (comuni) si può saltare: il prezzo poi si vede solo inserendoli */
 	function primoMancante(n) {
@@ -591,7 +636,8 @@ export function avviaTrasloco(box) {
 	function sintesi() {
 		const r = ultimo;
 		const manca = (n) => (r?.mancano || []).some((m) => m.passo === n);
-		const chiuso = (n) => !passo(n).classList.contains('is-aperto');
+		// una tendina che sta scendendo conta già come chiusa (il suo posto nella lista si misura così)
+		const chiuso = (n) => !passo(n).classList.contains('is-aperto') || passo(n).classList.contains('is-chiude');
 		const metti = (n, t, fatto) => {
 			const p = passo(n);
 			$('[data-passo-sintesi]', p).textContent = t;
@@ -681,11 +727,11 @@ export function avviaTrasloco(box) {
 	/** Chiude la stanza aperta e torna alla sua scheda (controllata = l'esempio è stato visto) */
 	function chiudiEditor(controllata, subito = false) {
 		const ed = foglioStanza && $('.tr2-stanza.is-aperta', foglioStanza);
-		if (ed && tendina(2) && !subito && !ridotto) {
+		if (ed && tendina(2) && !subito && durata('--t-chiudi', 300)) {
 			if (ed.classList.contains('is-chiude')) return;
 			ed.classList.add('is-chiude');
 			const uid = aperta;
-			setTimeout(() => aperta === uid && chiudiEditorOra(controllata), 330);
+			setTimeout(() => aperta === uid && chiudiEditorOra(controllata), durata('--t-chiudi', 300));
 			return;
 		}
 		chiudiEditorOra(controllata);
@@ -695,7 +741,9 @@ export function avviaTrasloco(box) {
 		aggiorna();
 		const card = chiusa && $(`[data-stanza="${chiusa.uid}"]`, listaStanze);
 		if (!card) return;
-		$('button', card)?.focus({ preventScroll: true });
+		// il fuoco torna alla scheda della stanza a chi usa la tastiera; col dito niente riquadro
+		if (daTastiera() || !tendina(2)) $('button', card)?.focus({ preventScroll: true });
+		else if (document.activeElement && foglioStanza?.contains(document.activeElement)) document.activeElement.blur();
 		// telefono: la lista resta ferma dov'era (prima scorreva da sola fino alla stanza)
 		if (!tendina(2)) requestAnimationFrame(() => scorriA(card));
 	}
@@ -1171,10 +1219,15 @@ export function avviaTrasloco(box) {
 		if (e) e.textContent = testo;
 	};
 	const cifra = (dove, r) => {
+		const prima = dove.textContent;
 		dove.replaceChildren();
-		if (r.vuoto) return void (dove.textContent = '—');
-		dove.append(document.createTextNode(`${euro(r.min)}–${euro(r.max)} € `));
-		dove.append(el('span', 'risultato__iva', 'IVA inclusa'));
+		if (r.vuoto) dove.textContent = '—';
+		else {
+			dove.append(document.createTextNode(`${euro(r.min)}–${euro(r.max)} € `));
+			dove.append(el('span', 'risultato__iva', 'IVA inclusa'));
+		}
+		// la cifra è subito quella nuova; compare solo con una dissolvenza breve (12/10)
+		if (dove.textContent !== prima) ravviva(dove);
 	};
 	const blocco = (nome, voci, fai) => {
 		const b = $(`[data-blocco="${nome}"]`, box);

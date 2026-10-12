@@ -1,7 +1,8 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r34';
-import { cerca } from './ricerca.js?v=2026100914-r34';
-import { attivaModuli } from './invio.js?v=2026101118-r34';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r35';
+import { cerca } from './ricerca.js?v=2026100914-r35';
+import { attivaModuli } from './invio.js?v=2026101118-r35';
+import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -259,12 +260,9 @@ for (const calc of $$('[data-calc]')) {
 		const r = calcolaBagno(v);
 		const cifra = `${euro(r.min)}–${euro(r.max)} €`;
 		const box = $('[data-ris="bagno"]', calc);
-		if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-			box.classList.add('sta-cambiando');
-			clearTimeout(box._t);
-			box._t = setTimeout(() => box.classList.remove('sta-cambiando'), 140);
-		}
 		const c = $('[data-b-cifra]', box);
+		// la cifra è subito quella nuova; compare solo con una dissolvenza breve (12/10)
+		if (c.textContent.trim() !== cifra) ravviva(c);
 		c.textContent = cifra + ' ';
 		const iva = document.createElement('span');
 		iva.className = 'risultato__iva';
@@ -328,12 +326,9 @@ for (const calc of $$('[data-calc]')) {
 			return;
 		}
 		const r = calcola(tipo, v);
-		const pannello = cifra.closest('.risultato');
-		if (pannello && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-			pannello.classList.add('sta-cambiando');
-			clearTimeout(pannello._t);
-			pannello._t = setTimeout(() => pannello.classList.remove('sta-cambiando'), 140);
-		}
+		// la cifra è subito quella nuova; compare solo con una dissolvenza breve (12/10)
+		const primaCifra = cifra.textContent;
+		queueMicrotask(() => cifra.textContent !== primaCifra && ravviva(cifra));
 		if (r.valutazione || r.vuoto) {
 			cifra.textContent = r.vuoto ? '—' : 'Su sopralluogo';
 			dettaglio.textContent = r.messaggio || '';
@@ -471,7 +466,10 @@ if (visore && typeof visore.showModal === 'function') {
 				return d;
 			})
 		);
-		visore.showModal();
+		// riaperto mentre si stava chiudendo: vince l'ultima azione, la finestra resta aperta
+		clearTimeout(visore._t);
+		visore.classList.remove('is-chiude');
+		if (!visore.open) visore.showModal();
 		// il fuoco va sulla finestra, non sul primo pulsante: niente cerchio intorno alla × all'apertura
 		visore.focus({ preventScroll: true });
 		document.documentElement.classList.add('visore-aperto');
@@ -500,12 +498,14 @@ if (visore && typeof visore.showModal === 'function') {
 	// chiudendo, la libreria scende piano e poi sparisce (anche con Esc)
 	const chiudi = () => {
 		if (!visore.open || visore.classList.contains('is-chiude')) return;
-		if (lento) return visore.close();
+		const ms = durata('--t-esce', 250);
+		if (lento || !ms) return visore.close();
 		visore.classList.add('is-chiude');
-		setTimeout(() => {
+		clearTimeout(visore._t);
+		visore._t = setTimeout(() => {
 			visore.close();
 			visore.classList.remove('is-chiude');
-		}, 250);
+		}, ms);
 	};
 	for (const b of $$('[data-visore-chiudi]', visore)) b.addEventListener('click', chiudi);
 	visore.addEventListener('cancel', (e) => {
@@ -596,6 +596,7 @@ if (sfondo && zonaCerca) {
 	document.addEventListener('sfondo-misura', misura);
 	addEventListener('load', misura);
 	$('[data-giu]')?.addEventListener('click', () => {
+		window.amScopriTutto?.();
 		// la vetrina parte subito sotto la testata, che intanto ha preso le sezioni dalla fascia
 		const c = $('[data-contenuto]');
 		const y = c ? c.getBoundingClientRect().top + scrollY - (header?.offsetHeight || 0) : fine();
@@ -630,6 +631,7 @@ if (contenuto) {
 
 	// Porta la vetrina subito sotto le icone fisse
 	const scorriAiLavori = (morbido) => {
+		window.amScopriTutto?.();
 		// le sezioni stanno nella testata: la vetrina parte subito sotto di lei
 		const alto = header?.offsetHeight || 0;
 		const y = contenuto.getBoundingClientRect().top + scrollY - alto;
@@ -797,7 +799,7 @@ if (pv) {
 	}
 	$('[data-foglio-chiudi]')?.addEventListener('click', () => {
 		// B4: subito dopo la chiusura di una tendina un secondo tocco nello stesso punto non chiude anche la stima
-		if (performance.now() - (window.amTendinaChiusaIl ?? -1e9) < 450) return;
+		if (performance.now() - (window.amTendinaChiusaIl ?? -1e9) < 350) return;
 		if (!sceltoQui && daSito) return history.back();
 		// alla lista pulita: le domande del lavoro di prima non restano sotto (B1)
 		$('[data-pv-cambia]', pv).click();
@@ -861,6 +863,7 @@ if (pv) {
 	for (const b of lavori)
 		b.addEventListener('click', () => {
 			sceltoQui = true;
+			document.documentElement.classList.remove('pv-arrivo');
 			scegli(b.dataset.scegli, true);
 		});
 	$('[data-pv-cambia]', pv).addEventListener('click', () => {
@@ -928,6 +931,8 @@ if (pv) {
 	};
 	addEventListener('hashchange', () => daIndirizzo(false));
 	daIndirizzo(true);
+	// D2 (12/10): arrivando con un lavoro nell'indirizzo la pagina era nascosta fino a qui (pv-arrivo): ora è pronta
+	document.documentElement.classList.add('pv-pronto');
 }
 
 /* "Stampa il riepilogo": stampa solo il riepilogo del bagno (dal menu di stampa si salva come PDF) */
@@ -1093,12 +1098,16 @@ if (tipi.length) {
 }
 
 /* Calcolatore del trasloco: lo script si carica solo dove serve */
-/* Entrata morbida (10/10): schede e sezioni che arrivano scorrendo salgono piano, solo la prima volta.
-   Quello che si vede già all'apertura resta fermo (niente lampi); col tasto indietro e con "Riduci movimento" niente. */
+/* Entrata morbida (12/10, lotto «Movimento rifinito»): solo le schede con foto salgono piano (12 px, 400 ms), la prima
+   volta. Testi e prezzi si vedono subito. Arrivando con un'ancora (#…), col tasto indietro o con «Riduci movimento»
+   niente entrate; con «Tutto» e con la freccia ↓ la destinazione si vede subito. La classe «entra» la mette questo
+   script: se si ferma, il contenuto resta visibile. */
+window.amScopriTutto = () => {};
 if (
 	'IntersectionObserver' in window &&
 	!matchMedia('(prefers-reduced-motion: reduce)').matches &&
-	!document.documentElement.classList.contains('torna')
+	!document.documentElement.classList.contains('torna') &&
+	!location.hash
 ) {
 	const vista = new IntersectionObserver(
 		(voci) => {
@@ -1107,17 +1116,21 @@ if (
 				v.target.classList.add('si-vede');
 				vista.unobserve(v.target);
 				// a fine entrata si tolgono le classi: niente trasformazioni rimaste addosso
-				setTimeout(() => v.target.classList.remove('entra', 'si-vede'), 900);
+				setTimeout(() => v.target.classList.remove('entra', 'si-vede'), durata('--t-entra', 400) + 100);
 			}
 		},
 		{ rootMargin: '0px 0px -6% 0px' }
 	);
-	const candidati = $$('.v3-card, .v3-sezione:not(:has(.v3-griglia)):not(.v3-pv__passo)').filter((e) => !e.closest('.v3-pv'));
+	const candidati = $$('.v3-card, .v3-mini, .v3-rappresenta').filter((e) => !e.closest('.v3-pv'));
 	for (const e of candidati) {
 		if (e.getBoundingClientRect().top < innerHeight) continue;
 		e.classList.add('entra');
 		vista.observe(e);
 	}
+	window.amScopriTutto = () => {
+		vista.disconnect();
+		for (const e of $$('.entra')) e.classList.remove('entra', 'si-vede');
+	};
 }
 
 // se uno script dei passi non arriva, la pagina non resta sotto una tendina senza comandi: i passi restano nella pagina
@@ -1125,9 +1138,9 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101213-r34').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101214-r35').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
-if ($('[data-passi]')) import('./passi.js?v=2026101213').catch(senzaTendine);
+if ($('[data-passi]')) import('./passi.js?v=2026101214').catch(senzaTendine);
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {
@@ -1348,7 +1361,15 @@ if (cal) {
 
 	// mostra un passo nella stessa finestra: titolo, testi, pulsanti, giorni possibili
 	const mostra = (k, nota = '') => {
+		// da un passo all'altro il contenuto arriva di lato, come nelle tendine (avanti da destra, indietro da sinistra)
+		const verso = modo && modo !== k ? (k === 'inizio' ? 'avanti' : 'indietro') : '';
 		modo = k;
+		cal.classList.remove('cal-scorre');
+		if (verso) {
+			cal.dataset.verso = verso;
+			void cal.offsetWidth;
+			cal.classList.add('cal-scorre');
+		}
 		const primo = k === 'sopralluogo';
 		passoTesto.textContent = primo ? 'Passo 1 di 2' : 'Passo 2 di 2';
 		titolo.textContent = primo ? 'Sopralluogo' : nomeInizio();
@@ -1389,16 +1410,35 @@ if (cal) {
 		controllaServizio();
 		daChi = chi;
 		bozza = { sopralluogo: valori.sopralluogo, inizio: valori.inizio };
-		cal.showModal(); // la pagina sotto resta inerte finché la finestra è aperta
+		// riaperto mentre si stava chiudendo: vince l'ultima azione
+		clearTimeout(cal._t);
+		cal.classList.remove('is-chiude');
+		if (!cal.open) cal.showModal(); // la pagina sotto resta inerte finché la finestra è aperta
 		document.documentElement.classList.add('cal-aperto');
+		modo = null; // all'apertura niente scivolata di lato
 		mostra(k === 'inizio' ? 'inizio' : 'sopralluogo');
 	};
+	// chiusura con un movimento (12/10): sul telefono scende come le tendine, sul computer sparisce svelto
 	const chiudi = () => {
-		if (cal.open) cal.close();
+		if (!cal.open || cal.classList.contains('is-chiude')) return;
+		const ms = durata(matchMedia('(max-width: 860px)').matches ? '--t-chiudi' : '--t-rapido', 200);
+		if (!ms) return cal.close();
+		cal.classList.add('is-chiude');
+		cal._t = setTimeout(() => {
+			cal.classList.remove('is-chiude');
+			cal.close();
+		}, ms);
 	};
+	// Esc: stessa chiusura animata (senza salvare)
+	cal.addEventListener('cancel', (e) => {
+		e.preventDefault();
+		chiudi();
+	});
 	cal.addEventListener('close', () => {
 		document.documentElement.classList.remove('cal-aperto');
-		daChi?.focus({ preventScroll: true });
+		cal.classList.remove('is-chiude', 'cal-scorre');
+		// il fuoco torna al pulsante che l'ha aperto; col dito il browser lo rimette da solo, senza riquadro
+		if (daTastiera() || !matchMedia('(hover: none)').matches) daChi?.focus({ preventScroll: true });
 	});
 	cal.addEventListener('click', (e) => {
 		if (e.target === cal) chiudi(); // clic fuori: chiude senza salvare
@@ -1464,6 +1504,8 @@ for (const box of $$('[data-esempi]')) {
 		if (i === ora) return;
 		ora = i;
 		casi.forEach((c, k) => (c.hidden = k !== i));
+		// i testi del caso nuovo compaiono con una dissolvenza breve, mai sovrapposti ai vecchi (12/10)
+		ravviva(casi[i]);
 	};
 	riga.addEventListener('scroll', segui, { passive: true });
 	addEventListener('resize', segui, { passive: true });

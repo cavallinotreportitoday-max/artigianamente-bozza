@@ -30,39 +30,37 @@
 				ht.classList.add('a-tutto');
 				addEventListener('load', function () { requestAnimationFrame(function () { requestAnimationFrame(function () { ht.classList.remove('a-tutto'); }); }); });
 			}
-			// Preventivo dei traslochi (preventivo.html#traslochi): titolo corto già al primo disegno, niente lampo
-			if (/^#traslochi/.test(location.hash)) document.documentElement.classList.add('pv-trasloco');
-			// …e sul telefono la stima del trasloco si apre già come tendina (pv-foglio), senza lampi
-			if (/^#traslochi/.test(location.hash) && /preventivo(\.html)?$/.test(location.pathname)) document.documentElement.classList.add('pv-foglio');
+			// Preventivo con un lavoro nell'indirizzo (#imbiancatura, #ristrutturazioni:cucina…): lo prepara lo script
+			// nella testa della pagina Preventivo (lista dei lavori presa dai dati del sito), 12/10
 		</script>
-		<link href="./app/immutable/entry/start.WPI3V01o.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/DKzqjRG7.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/Bj2FrH9z.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/Dl9CHjVJ.js" rel="modulepreload">
-		<link href="./app/immutable/entry/app.53_YoOJ9.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/BoD-Ve4G.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/BdlOpPca.js" rel="modulepreload">
-		<link href="./app/immutable/nodes/0.j81lD2iD.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/IKVPOvA_.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/BbmVcc3y.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/C0MiikWb.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/Di1Fe_Kb.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/DdCZwV6H.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/7tET8z2C.js" rel="modulepreload">
-		<link href="./app/immutable/chunks/BJQUK8sD.js" rel="modulepreload">
-		<link href="./app/immutable/nodes/6.oCI52GQ8.js" rel="modulepreload">
+		<link href="./app/immutable/entry/start.CoJ4-dQo.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/AzIGLxJ8.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/BbEDLejb.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/_DWUyRiQ.js" rel="modulepreload">
+		<link href="./app/immutable/entry/app.CggCPymP.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/DbSHbY93.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/RcPAeoPf.js" rel="modulepreload">
+		<link href="./app/immutable/nodes/0.D6P0vUBV.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/BY0TqiF_.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/Cr8GzWwv.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/hRwCFu3D.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/BhDdX2Kv.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/0OTY6sS7.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/DoWDfP7_.js" rel="modulepreload">
+		<link href="./app/immutable/chunks/wG2WTGLQ.js" rel="modulepreload">
+		<link href="./app/immutable/nodes/6.S9CLoaUp.js" rel="modulepreload">
 		<link href="./app/immutable/chunks/C0LK5Rdq.js" rel="modulepreload">
 		<link href="./app/immutable/chunks/DM5ATfM5.js" rel="modulepreload">
 		<link href="./app/env.js" rel="modulepreload">
 		
-		<link href="./app/immutable/assets/0.dATpUPou.css" rel="stylesheet">
+		<link href="./app/immutable/assets/0.CfTm1CYi.css" rel="stylesheet">
 		<link href="./app/immutable/assets/6._F5KnlIa.css" rel="stylesheet">
 	</head>
 	<body>
 		<div style="display: contents">
 			<script>
 				{
-					__sveltekit_1kr1n79 = {
+					__sveltekit_z07p04 = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: null
 					};
@@ -70,11 +68,11 @@
 					const element = document.currentScript.parentElement;
 
 					import("./app/env.js").then(({ env }) => {
-						__sveltekit_1kr1n79.env = env;
+						__sveltekit_z07p04.env = env;
 
 						Promise.all([
-							import("./app/immutable/entry/start.WPI3V01o.js"),
-							import("./app/immutable/entry/app.53_YoOJ9.js")
+							import("./app/immutable/entry/start.CoJ4-dQo.js"),
+							import("./app/immutable/entry/app.CggCPymP.js")
 						]).then(([kit, app]) => {
 							kit.start(app, element);
 						});
@@ -105,6 +103,6 @@
 				} catch (e) {}
 			})();
 		</script>
-		<script type="module" src="./js/app.js?v=2026101213-r34"></script>
+		<script type="module" src="./js/app.js?v=2026101214-r35"></script>
 	</body>
 </html>

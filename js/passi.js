@@ -4,6 +4,7 @@
 // da sotto come tendina: × e ‹ in alto, in fondo la stima e «Avanti»; si chiude anche tirandola giù, toccando il velo,
 // con Esc o con il tasto indietro del telefono. L'ultimo «Avanti» porta alla stima (il riquadro nero sotto i passi,
 // a destra sul computer). I conti restano in app.js (calcola, calcolaBagno): qui si legge solo quello che mostrano.
+import { durata, finisciArrivo, tieniPosto, rigaChiusa, liberaPosti, fuocoDopoChiusura, daTastiera, ravviva } from './tendine.js?v=2026101214';
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -109,7 +110,8 @@ export function avviaPassi(box) {
 			av.textContent = ultimo ? 'Vedi la stima' : 'Avanti';
 			av.setAttribute('aria-disabled', m ? 'true' : 'false');
 			// riassunto e stato: fatto (spunta), aperto, da completare
-			const chiuso = !p.classList.contains('is-aperto');
+			// una tendina che sta scendendo conta già come chiusa: riassunto e stato pronti prima che si veda la riga
+			const chiuso = !p.classList.contains('is-aperto') || p.classList.contains('is-chiude');
 			const t = sintesi(p);
 			const daFare = visti.has(p) && chiuso && m;
 			$('[data-passo-sintesi]', p).textContent = daFare ? (t ? `${t} · da completare` : 'Da completare') : t;
@@ -119,7 +121,11 @@ export function avviaPassi(box) {
 		});
 		for (const st of $$('[data-passi-stima]', box)) {
 			st.dataset.azione = s.azione;
-			$('strong', st).textContent = s.cifra;
+			const forte = $('strong', st);
+			if (forte.textContent !== s.cifra) {
+				forte.textContent = s.cifra; // subito il valore nuovo; la dissolvenza è solo decorazione
+				ravviva(forte);
+			}
 			$('small', st).textContent = s.sotto;
 		}
 		if (fondo) {
@@ -157,8 +163,15 @@ export function avviaPassi(box) {
 	/** Tiene allineati finestra e resto della pagina con il passo aperto (anche girando il telefono) */
 	function sincronizza() {
 		const p = aperto();
-		if (tendina(p) && !p.classList.contains('is-chiude')) isola(p);
-		else libera();
+		const chiude = p?.classList.contains('is-chiude');
+		if (chiude) return; // a fine discesa ci pensa chiudi()
+		if (tendina(p)) {
+			isola(p);
+			if (!p.previousElementSibling?.classList.contains('tr2-posto')) tieniPosto(p);
+		} else {
+			libera();
+			liberaPosti(box);
+		}
 	}
 
 	/* ---------- Aprire e chiudere ---------- */
@@ -168,13 +181,18 @@ export function avviaPassi(box) {
 	}
 	function apri(p, scorri = true, iniziale = false) {
 		if (!p) return;
+		if (!iniziale) finisciArrivo();
 		visti.add(p);
 		p._aperto = performance.now(); // B3: un secondo tocco rapido su «Avanti» non salta il passo nuovo
 		// da una tendina all'altra (Avanti, ‹): niente risalita da sotto, cambia solo il contenuto
 		const prima = passi().find((q) => q.classList.contains('is-aperto') && !q.classList.contains('is-chiude') && tendina(q));
 		const tutti = passi();
+		// altezza della riga chiusa, prima che diventi tendina: il suo posto resta nella lista (niente scatto chiudendo)
+		const riga = p.classList.contains('is-aperto') ? 0 : p.getBoundingClientRect().height;
+		liberaPosti(box);
 		for (const q of $$('.tr2-passo', box)) {
 			clearTimeout(q._chiude);
+			q._fine = null; // una chiusura in corso non può più chiudere questa apertura
 			q.classList.remove('is-chiude');
 			const si = q === p;
 			q.classList.toggle('senza-salita', si && Boolean(prima));
@@ -186,6 +204,7 @@ export function avviaPassi(box) {
 		aggiorna();
 		sincronizza();
 		if (tendina(p)) {
+			tieniPosto(p, riga);
 			$('[data-passo-corpo]', p).scrollTop = 0;
 			if (iniziale) return entraNellaTendina(p); // all'arrivo nella pagina: senza voce nella cronologia
 			segna();
@@ -210,26 +229,40 @@ export function avviaPassi(box) {
 	}
 	function chiudi(p, subito = false) {
 		if (!p) return;
+		finisciArrivo();
 		const eraTendina = tendina(p);
 		const fine = () => {
-			p.classList.remove('is-aperto', 'is-chiude');
+			clearTimeout(p._chiude);
+			p._fine = null;
+			p.classList.remove('is-aperto', 'is-chiude', 'senza-salita');
 			$('[data-passo-corpo]', p).hidden = true;
 			$('[data-passo-apri]', p).setAttribute('aria-expanded', 'false');
+			// la riga torna nella lista nello stesso momento in cui il suo posto sparisce: niente scatto
+			liberaPosti(p);
 			aggiorna();
-			// il fuoco torna sul passo appena chiuso (non all'inizio della pagina)
-			const f = document.activeElement;
-			if (eraTendina && (!f || f === document.body || p.contains(f))) $('[data-passo-apri]', p)?.focus({ preventScroll: true });
+			if (!eraTendina) return;
+			// a movimento finito: voce della cronologia, pagina di nuovo raggiungibile, fuoco
+			// (fatto prima, su iPhone rubava i primi fotogrammi della discesa)
+			togliSegno();
+			libera();
+			fuocoDopoChiusura(p, $('[data-passo-apri]', p));
 		};
 		clearTimeout(p._chiude);
 		if (eraTendina) {
 			// B4: la × della pagina sta dove c'era quella della tendina: un secondo tocco subito dopo non deve chiudere anche la stima
 			window.amTendinaChiusaIl = performance.now();
-			togliSegno();
-			libera();
 		}
-		if (tendina(p) && !ridotto && !subito) {
+		const ms = durata('--t-chiudi', 300);
+		if (eraTendina && ms && !subito) {
+			// D1: la discesa vale anche dopo «Avanti» o «‹» (senza-salita toglieva l'animazione)
+			p.classList.remove('senza-salita');
 			p.classList.add('is-chiude');
-			p._chiude = setTimeout(fine, 330);
+			// il posto nella lista prende subito l'altezza della riga come sarà da chiusa (col riassunto):
+			// la lista si sistema sotto il velo mentre la tendina scende, e alla fine non scatta (Fable, video iPhone)
+			aggiorna();
+			tieniPosto(p, rigaChiusa(p));
+			p._fine = fine;
+			p._chiude = setTimeout(fine, ms);
 		} else fine();
 	}
 	/** Alla stima: si chiude la tendina e la pagina va al riquadro nero, che si illumina un attimo */
@@ -243,9 +276,9 @@ export function avviaPassi(box) {
 			r.classList.remove('tr2-evidenzia');
 			void r.offsetWidth;
 			r.classList.add('tr2-evidenzia');
-			setTimeout(() => r.classList.remove('tr2-evidenzia'), 1700);
-			$('a.btn, .btn', r)?.focus({ preventScroll: true });
-		}, p && tendina(p) && !ridotto ? 340 : 0);
+			setTimeout(() => r.classList.remove('tr2-evidenzia'), 1000);
+			if (daTastiera()) $('a.btn, .btn', r)?.focus({ preventScroll: true });
+		}, p && tendina(p) ? durata('--t-chiudi', 300) : 0);
 	}
 	/** Porta al campo che manca, in risalto */
 	function mostraCosaManca(p) {
@@ -316,29 +349,32 @@ export function avviaPassi(box) {
 			tira = false;
 			const [a, b] = [ultimi[0], ultimi[ultimi.length - 1]];
 			const v = a && b && b[0] > a[0] ? (b[1] - a[1]) / (b[0] - a[0]) : 0;
+			const giu = durata('--t-chiudi', 300);
+			const su = durata('--t-tendina', 400);
 			if (dy > Math.min(140, p.offsetHeight * 0.18) || (v > 0.45 && dy > 16)) {
-				p.style.transition = 'transform 280ms var(--molla)';
+				// lanciata giù: continua il gesto (curva «molla», parte svelta come il dito) e il velo va via subito
+				p.style.transition = `transform ${giu}ms var(--molla)`;
 				p.style.transform = 'translateY(100%)';
 				if (velo) {
-					velo.style.transition = 'opacity 280ms ease';
+					velo.style.transition = `opacity ${durata('--t-velo-via', 120)}ms ease-out`;
 					velo.style.opacity = '0';
 				}
 				setTimeout(() => {
 					chiudi(p, true);
 					pulisci(p);
 					requestAnimationFrame(() => pulisci(velo));
-				}, 270);
+				}, Math.max(0, giu - 10));
 			} else {
-				p.style.transition = 'transform 420ms var(--molla)';
+				p.style.transition = `transform ${su}ms var(--molla)`;
 				p.style.transform = '';
 				if (velo) {
-					velo.style.transition = 'opacity 420ms var(--molla)';
+					velo.style.transition = `opacity ${su}ms var(--molla)`;
 					velo.style.opacity = '';
 				}
 				setTimeout(() => {
 					p.style.transition = '';
 					if (velo) velo.style.transition = '';
-				}, 440);
+				}, su + 20);
 			}
 		};
 		p.addEventListener('touchend', fine);
@@ -372,6 +408,8 @@ export function avviaPassi(box) {
 		segno = false;
 		const p = aperto();
 		if (!p || !tendina(p)) return;
+		// indietro mentre la tendina sta già scendendo: vale la chiusura, che finisce subito
+		if (p._fine) return p._fine();
 		const tutti = passi();
 		const i = tutti.indexOf(p);
 		if (i > 0) apri(tutti[i - 1]);
@@ -381,7 +419,8 @@ export function avviaPassi(box) {
 	/* ---------- Comandi ---------- */
 	for (const p of $$('.tr2-passo', box)) {
 		tiraGiu(p);
-		$('[data-passo-apri]', p).addEventListener('click', () => (p.classList.contains('is-aperto') ? chiudi(p) : apri(p)));
+		// una tendina che sta scendendo conta come chiusa: toccandola si riapre (prima ripartiva la chiusura)
+		$('[data-passo-apri]', p).addEventListener('click', () => (p.classList.contains('is-aperto') && !p.classList.contains('is-chiude') ? chiudi(p) : apri(p)));
 		$('[data-passo-chiudi]', p)?.addEventListener('click', () => chiudi(p));
 		$('[data-passo-indietro]', p)?.addEventListener('click', () => {
 			const tutti = passi();
@@ -389,7 +428,8 @@ export function avviaPassi(box) {
 			if (i > 0) apri(tutti[i - 1]);
 		});
 		$('[data-passo-avanti]', p).addEventListener('click', () => {
-			if (performance.now() - (p._aperto || 0) < 350) return; // B3: tocco doppio
+			// B3: tocco doppio. La finestra è lunga quanto il cambio di passo (250 ms): un secondo tocco voluto non si perde
+			if (performance.now() - (p._aperto || 0) < durata('--t-passo', 250, false)) return;
 			if (manca(p)) return mostraCosaManca(p);
 			const tutti = passi();
 			const dopo = tutti[tutti.indexOf(p) + 1];
@@ -439,6 +479,12 @@ export function avviaPassi(box) {
 	// B8 (revisione 12/10): girando il telefono o allargando oltre 860 px la tendina torna un passo nella pagina:
 	// la voce in più della cronologia si toglie (e si rimette se lo schermo torna stretto)
 	matchMedia('(max-width: 860px)').addEventListener('change', () => {
+		// una discesa in corso finisce subito; via gli stili lasciati da un trascinamento
+		for (const q of $$('.tr2-passo', box)) {
+			if (q._fine) q._fine();
+			q.style.transition = q.style.transform = '';
+		}
+		if (velo) velo.style.transition = velo.style.opacity = '';
 		const p = aperto();
 		if (tendina(p)) segna();
 		else togliSegno();
