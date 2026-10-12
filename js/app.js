@@ -1,7 +1,7 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r33';
-import { cerca } from './ricerca.js?v=2026100914-r33';
-import { attivaModuli } from './invio.js?v=2026101118-r33';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r34';
+import { cerca } from './ricerca.js?v=2026100914-r34';
+import { attivaModuli } from './invio.js?v=2026101118-r34';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -1125,7 +1125,7 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101213-r33').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101213-r34').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
 if ($('[data-passi]')) import('./passi.js?v=2026101213').catch(senzaTendine);
 
@@ -1452,39 +1452,21 @@ if (cal) {
 	void MOSTRA_FINE;
 }
 
-/* Esempi di intervento (11/10, S5): i titoli scelgono il caso; foto e testi cambiano insieme. Niente rotazione
-   automatica. Tastiera come le schede: frecce ← → (e Home/Fine) tra i titoli, Invio o Spazio li sceglie. */
+/* Esempi di intervento (12/10, Gian): le foto si scorrono come le altre gallerie ([data-galleria]); i testi seguono
+   la foto in vista, così scorrendo cambia tutto il caso. Niente rotazione automatica. */
 for (const box of $$('[data-esempi]')) {
-	const voci = $$('[data-esempio-voce]', box);
+	const riga = $('[data-galleria-riga]', box);
 	const casi = $$('[data-esempio-caso]', box);
-	const scegli = (i, fuoco) => {
-		voci.forEach((v, k) => {
-			const si = k === i;
-			v.classList.toggle('is-attiva', si);
-			v.setAttribute('aria-selected', String(si));
-			v.tabIndex = si ? 0 : -1;
-		});
+	if (!riga || !casi.length) continue;
+	let ora = 0;
+	const segui = () => {
+		const i = Math.min(casi.length - 1, Math.max(0, Math.round(riga.scrollLeft / (riga.clientWidth || 1))));
+		if (i === ora) return;
+		ora = i;
 		casi.forEach((c, k) => (c.hidden = k !== i));
-		// la galleria del caso riparte dalla prima foto
-		const riga = $('[data-galleria-riga]', casi[i]);
-		if (riga) riga.scrollLeft = 0;
-		if (fuoco) voci[i].focus({ preventScroll: true });
-		// sul telefono la fila dei titoli scorre di lato fino al titolo scelto (la pagina non si muove)
-		const fila = voci[i].parentElement;
-		const v = voci[i];
-		if (v.offsetLeft < fila.scrollLeft || v.offsetLeft + v.offsetWidth > fila.scrollLeft + fila.clientWidth)
-			fila.scrollTo({ left: Math.max(0, v.offsetLeft - 16), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 	};
-	voci.forEach((v, i) => {
-		v.addEventListener('click', () => scegli(i, false));
-		v.addEventListener('keydown', (e) => {
-			const n = voci.length;
-			const dove = { ArrowRight: (i + 1) % n, ArrowLeft: (i - 1 + n) % n, Home: 0, End: n - 1 }[e.key];
-			if (dove === undefined) return;
-			e.preventDefault();
-			scegli(dove, true);
-		});
-	});
+	riga.addEventListener('scroll', segui, { passive: true });
+	addEventListener('resize', segui, { passive: true });
 }
 
 /* Recensioni: "Mostra tutte e N le recensioni" apre le altre (sul computer se ne vedono 4) */
