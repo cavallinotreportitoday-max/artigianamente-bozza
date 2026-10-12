@@ -28,21 +28,29 @@ export function avviaPassi(box) {
 	const passi = () => $$('.tr2-passo', box).filter((p) => !p.hidden && !giaRisposto(p));
 	const aperto = () => passi().find((p) => p.classList.contains('is-aperto'));
 	const risultato = () => $$('.risultato', box).find((r) => !r.hidden);
+	const ris = $('[data-pv-ris]', box); // «Il tuo progetto»: lo scrive app.js (titolo, stima o prezzo dopo il sopralluogo)
 	// tendina solo sul telefono, nella pagina Preventivo, e solo se questo calcolatore è quello in vista
 	const foglio = () => document.documentElement.classList.contains('pv-foglio') && telefono() && !box.closest('[hidden]');
 	const tendina = (p) => Boolean(p) && foglio() && !p.hasAttribute('data-passo-stima');
 	const inAlto = () => (foglio() && testaFoglio?.offsetHeight ? testaFoglio.offsetHeight : header?.offsetHeight || 60) + 12;
 
-	/* ---------- Cosa manca: i campi che servono per la stima (data-serve) ---------- */
+	/* ---------- Cosa manca: le risposte che servono per andare avanti (data-obbligo, 12/10 flussi guidati) ----------
+	   Solo le domande in vista: una domanda nascosta per le risposte date non è mai obbligatoria. Un campo spento non
+	   manca (es. «Non so i m²»: i metri li misuriamo al sopralluogo). I facoltativi non bloccano mai. */
 	function manca(p) {
-		const sel = p.dataset.serve;
-		if (!sel) return null;
-		for (const el of $$(sel, p)) {
+		for (const el of $$('[data-obbligo]', p)) {
+			if (el.closest('[data-mostra-se][hidden]') || el.closest('[data-pv-fissata]')) continue;
 			if (el.matches('[data-somma]')) {
 				const tot = $$('input[type="number"]', el).reduce((t, i) => t + (Number(i.value) || 0), 0);
-				if (!tot) return el;
-			// un campo spento non manca (es. «Non so i m²» nell'imbiancatura: i metri li misuriamo al sopralluogo)
-			} else if (el.matches('input') && !el.disabled && !(Number(String(el.value).replace(',', '.')) > 0)) return el.closest('.campo') || el;
+				const o = el.dataset.sommaO && $(`input[name="${el.dataset.sommaO}"]`, form);
+				if (!tot && !(o && o.checked && !o.disabled)) return el;
+			} else if (el.matches('fieldset')) {
+				if (!$$('input', el).some((i) => i.checked && !i.disabled)) return el;
+			} else {
+				const i = $('input, textarea', el);
+				if (!i || i.disabled) continue;
+				if (i.type === 'number' ? !(Number(String(i.value).replace(',', '.')) > 0) : !i.value.trim()) return el;
+			}
 		}
 		return null;
 	}
@@ -54,13 +62,17 @@ export function avviaPassi(box) {
 		for (const c of $$('fieldset, .campo, label.check', corpo)) {
 			if (c.closest('label.check') && c !== c.closest('label.check')) continue;
 			// le domande nascoste per le risposte date non entrano nel riassunto (12/10, «percorsi più chiari»)
-			if (c.closest('[data-mostra-se][hidden]')) continue;
+			if (c.closest('[data-mostra-se][hidden]') || c.closest('.tr2-avanti')) continue;
 			if (c.matches('fieldset')) {
-				// nei livelli del bagno basta il nome (Base, Comfort, Top), senza prezzo e punti
-				const scelti = $$('input:checked', c).map((i) => testo($('.livello__nome', i.closest('label')) || i.closest('label')));
-				if (scelti.length) parti.push(scelti.join(', '));
+				// nei livelli del bagno basta il nome (Base, Comfort, Top), nelle schede il titolo (senza l'esempio)
+				const scelti = $$('input:checked', c).filter((i) => !i.disabled).map((i) => testo($('.livello__nome, .tr__imballo-nome', i.closest('label')) || i.closest('label')));
+				// sì/no con il nome della domanda («Soffitti: sì»), le altre risposte così come sono
+				if (scelti.length) parti.push(c.dataset.sintesi ? `${c.dataset.sintesi}: ${scelti.join(', ').toLowerCase()}` : scelti.join(', '));
 			} else if (c.matches('label.check')) {
-				if ($('input', c)?.checked) parti.push(c.dataset.sintesi || testo(c));
+				if ($('input', c)?.checked && !$('input', c).disabled) parti.push(c.dataset.sintesi || testo(c));
+			} else if (c.matches('[data-testo]')) {
+				const t = $('input, textarea', c)?.value.trim();
+				if (t) parti.push(t.length > 40 ? t.slice(0, 38).trimEnd() + '…' : t);
 			} else if (c.matches('[data-somma]')) {
 				for (const r of $$('.riga-mobile', c)) {
 					const n = Number($('input', r)?.value) || 0;
@@ -70,8 +82,10 @@ export function avviaPassi(box) {
 					parti.push(un ? `${nome} ${n} ${un}` : `${n} × ${nome.toLowerCase()}`);
 				}
 			} else if (!c.matches('fieldset .campo, [data-somma] *')) {
-				const inp = $('input[type="number"]', c);
-				if (inp && inp.value) parti.push(`${inp.value} ${testo($('.numero__unita', c))}`.trim());
+				const tutti = $$('input[type="number"]', c);
+				const nums = tutti.filter((i) => i.value && !i.disabled);
+				const un = (i) => testo($('.numero__unita', i.parentElement));
+				if (nums.length) parti.push(nums.map((i) => `${tutti.length > 1 && i.placeholder ? i.placeholder + ' ' : ''}${i.value} ${un(i)}`.trim()).join(', '));
 			}
 		}
 		return parti.join(' · ');
@@ -79,15 +93,46 @@ export function avviaPassi(box) {
 
 	/* ---------- La stima, letta dal riquadro che app.js tiene aggiornato ---------- */
 	function stima() {
-		const r = risultato();
-		const prima = passi().find((p) => manca(p));
-		if (prima) return { cifra: '', sotto: `Da completare: ${testo($('.tr2-passo__titolo', prima)).toLowerCase()}`, azione: 'manca', passo: prima };
-		const c = r && $('.risultato__cifra', r);
-		if (!c) return { cifra: '', sotto: 'Prezzo dopo il sopralluogo', azione: 'stima' };
-		const t = testo(c).replace(/\s*IVA inclusa\s*$/i, '');
-		if (/a partire da/i.test(testo($('.risultato__label', r)))) return { cifra: `Da ${t}`, sotto: 'Prezzo finale dopo il sopralluogo', azione: 'stima' };
-		if (!/€/.test(t)) return { cifra: '', sotto: t && t !== '—' ? t : 'Prezzo dopo il sopralluogo', azione: 'stima' };
-		return { cifra: t, sotto: 'IVA inclusa · stima indicativa', azione: 'stima' };
+		// solo i passi già visti (o quello aperto): un passo che deve ancora arrivare non è «da completare»
+		const prima = passi().find((p) => manca(p) && (visti.has(p) || p.classList.contains('is-aperto')));
+		if (prima) return { cifra: '', sotto: `Da completare: ${testo($('.tr2-passo__titolo', prima)).toLowerCase().replace(/\?$/, '')}`, azione: 'manca', passo: prima };
+		const cifra = ris?.dataset.cifra || '';
+		if (!cifra) return { cifra: '', sotto: 'Prezzo dopo il sopralluogo', azione: 'stima' };
+		return { cifra, sotto: 'IVA inclusa · stima indicativa', azione: 'stima' };
+	}
+	/* ---------- «Il tuo progetto»: le righe dei passi (riassunto e Modifica) sono i gruppi del riepilogo; qui solo
+	   il testo d'invito finché non c'è niente ---------- */
+	function gruppi(tutti) {
+		const vuotoBox = ris && $('[data-pv-ris-vuoto]', ris);
+		if (vuotoBox) vuotoBox.hidden = Boolean(ris.dataset.iniziato) || tutti.some((p) => sintesi(p));
+		const ul = ris && $('[data-pv-ris-gruppi]', ris);
+		if (!ul) return;
+		const voci = tutti.map((p) => [p, testo($('.tr2-passo__titolo', p)).replace(/\?$/, ''), sintesi(p)]).filter(([, , t]) => t);
+		const chiave = voci.map(([, a, b]) => a + '|' + b).join('§');
+		if (ul.dataset.chiave !== chiave) {
+			ul.dataset.chiave = chiave;
+			ul.replaceChildren(
+				...voci.map(([p, titolo, t]) => {
+					const li = document.createElement('li');
+					const a = document.createElement('span');
+					a.className = 'pv-gruppo__titolo';
+					a.textContent = titolo;
+					const b = document.createElement('span');
+					b.className = 'pv-gruppo__testo';
+					b.textContent = t;
+					const m = document.createElement('button');
+					m.type = 'button';
+					m.className = 'link pv-gruppo__modifica';
+					m.textContent = 'Modifica';
+					m.setAttribute('aria-label', `Modifica: ${titolo.toLowerCase()}`);
+					m.addEventListener('click', () => apri(p));
+					li.append(a, b, m);
+					return li;
+				})
+			);
+		}
+		const vuoto = $('[data-pv-ris-vuoto]', ris);
+		if (vuoto) vuoto.hidden = voci.length > 0;
 	}
 
 	/* ---------- Disegno: numeri, linea dei passi, riassunti, stato, stima in fondo ---------- */
@@ -108,9 +153,13 @@ export function avviaPassi(box) {
 			if (strada) $$('i', strada).forEach((x, k) => x.classList.toggle('is-fatto', k < n));
 			const quale = $('[data-passi-quale]', p);
 			if (quale) quale.textContent = `Passo ${n} di ${tutti.length}`;
+			// dopo l'ultimo passo il riepilogo; contatti e invio vengono dopo, a parte
+			const poi = $('[data-passi-poi]', p);
+			if (poi) poi.textContent = ultimo ? 'Poi il riepilogo del tuo progetto' : `Poi: ${testo($('.tr2-passo__titolo', tutti[i + 1])).replace(/\?$/, '').toLowerCase()}`;
 			const av = $('[data-passo-avanti]', p);
 			const m = manca(p);
-			av.textContent = ultimo ? 'Vedi la stima' : 'Avanti';
+			// «Vedi la stima» solo se porta davvero a una stima; altrimenti «Rivedi il progetto»
+			av.textContent = ultimo ? (ris?.dataset.esito === 'S' ? 'Vedi la stima' : 'Rivedi il progetto') : 'Avanti';
 			av.setAttribute('aria-disabled', m ? 'true' : 'false');
 			// riassunto e stato: fatto (spunta), aperto, da completare
 			// una tendina che sta scendendo conta già come chiusa: riassunto e stato pronti prima che si veda la riga
@@ -131,11 +180,22 @@ export function avviaPassi(box) {
 			}
 			$('small', st).textContent = s.sotto;
 		}
+		const finito = tutti.length > 0 && tutti.every((p) => visti.has(p) && !manca(p));
 		if (fondo) {
-			const finito = tutti.every((p) => visti.has(p) && !manca(p));
-			$('[data-passi-fondo-titolo]', fondo).textContent = s.cifra ? 'La tua stima' : 'Il tuo preventivo';
-			$('[data-passi-fondo-sotto]', fondo).textContent = finito ? 'Sopralluogo gratuito' : 'Rispondi a poche domande';
-			$('[data-passi-continua]', fondo).textContent = finito ? 'Vedi la stima' : 'Continua';
+			$('[data-passi-fondo-titolo]', fondo).textContent = s.cifra ? 'La tua stima' : 'Il tuo progetto';
+			$('[data-passi-fondo-sotto]', fondo).textContent = finito ? 'Riepilogo pronto' : 'Rispondi a poche domande';
+			$('[data-passi-continua]', fondo).textContent = finito ? (s.cifra ? 'Vedi la stima' : 'Rivedi il progetto') : 'Continua';
+		}
+		if (ris) {
+			gruppi(tutti);
+			ris.classList.toggle('is-finito', finito);
+			const prossimo = $('[data-pv-ris-prossimo]', ris);
+			const dopo = tutti.find((p) => !visti.has(p) || manca(p));
+			if (prossimo) {
+				const manca2 = ris.dataset.manca;
+				prossimo.textContent = dopo && ris.dataset.iniziato ? `Prossimo passo: ${testo($('.tr2-passo__titolo', dopo)).replace(/\?$/, '').toLowerCase()}.${manca2 && !s.cifra ? ` La stima compare con ${manca2}.` : ''}` : '';
+				prossimo.hidden = !prossimo.textContent;
+			}
 		}
 	}
 

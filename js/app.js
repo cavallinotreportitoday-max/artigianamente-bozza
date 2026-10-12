@@ -1,7 +1,8 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r43';
-import { cerca } from './ricerca.js?v=2026100914-r43';
-import { attivaModuli } from './invio.js?v=2026101216-r43';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r44';
+import { percorso } from './percorsi.js?v=2026101220';
+import { cerca } from './ricerca.js?v=2026100914-r44';
+import { attivaModuli } from './invio.js?v=2026101220-r44';
 import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -190,14 +191,14 @@ for (const box of $$('[data-stepper]')) {
 	}
 }
 
-/* Lettura dei valori del preventivo (le domande nascoste per le risposte date sono disattivate: non contano) */
+/* Lettura dei valori del preventivo: solo le domande in vista (quelle nascoste per le risposte date sono spente) */
 function leggi(box) {
 	const v = {};
-	for (const el of $$('input', box)) {
-		if (!el.name || el.disabled) continue;
+	for (const el of $$('input, textarea, select', box)) {
+		if (!el.name || el.disabled || el.type === 'file') continue;
 		if (el.type === 'radio') {
 			if (el.checked) v[el.name] = el.value;
-		} else if (el.type === 'checkbox' && el.closest('.scelta')) {
+		} else if (el.type === 'checkbox' && el.closest('.scelta, .pv-carta')) {
 			v[el.name] = v[el.name] || [];
 			if (el.checked) v[el.name].push(el.value);
 		} else if (el.type === 'checkbox') {
@@ -209,109 +210,175 @@ function leggi(box) {
 	return v;
 }
 
-// le domande nascoste per le risposte date non finiscono nel riepilogo (i passi chiusi sì: le risposte restano)
+// una domanda nascosta per le risposte date non conta (i passi chiusi sì: le risposte restano)
 const nascosto = (el) => Boolean(el.closest('[data-mostra-se][hidden]'));
-const senzaFacolt = (t) => t.replace(/\s*\(facoltativ[oiae]\)/i, '').trim();
-function riepilogoLibero(servizio, box) {
-	const parti = [servizio + '.'];
-	for (const fs of $$('fieldset', box)) {
-		if (nascosto(fs)) continue;
-		const leg = $('legend', fs)?.textContent.trim();
-		const sel = $$('input:checked', fs).map((i) => i.closest('label').textContent.trim());
-		if (leg && sel.length) parti.push(`${leg} ${sel.join(', ')}.`);
-	}
-	// numeri: superficie, metri di muro, misure indicative (con l'unità)
-	for (const c of $$('.campo', box)) {
-		if (nascosto(c) || c.closest('fieldset')) continue;
-		const nums = $$('input[type="number"]', c).filter((i) => i.value && !i.disabled);
-		if (!nums.length) continue;
-		const lab = senzaFacolt(($('.campo__label', c) || $('label', c))?.textContent || '');
-		const unita = (i) => $('.numero__unita', i.parentElement)?.textContent.trim() ?? '';
-		const val = nums.map((i) => `${nums.length > 1 && i.placeholder ? i.placeholder + ' ' : ''}${i.value} ${unita(i)}`.trim()).join(', ');
-		if (lab) parti.push(`${lab}: ${val}.`);
-	}
-	return parti.join(' ') + riepExtra(box, true);
+const senzaFacolt = (t) => t.replace(/\s*\(facoltativ[oiae]\)/gi, '').replace(/\s+/g, ' ').trim();
+const testoDi = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
+/** Nome breve di una risposta: il titolo della scheda (senza l'esempio), il nome del livello, o il testo della scelta */
+const nomeDi = (i) => testoDi($('.tr__imballo-nome, .livello__nome', i.closest('label')) || i.closest('label'));
+/** Etichette delle risposte attive, per nome della domanda */
+const etichette = (box) => (nome) => $$(`input[name="${nome}"]:checked`, box).filter((i) => !i.disabled).map(nomeDi);
+/** La domanda di un campo: la legenda del gruppo o l'etichetta, senza «(facoltativo)» */
+const domandaDi = (el) => senzaFacolt(testoDi($(':scope > legend, :scope > .campo__label, :scope > label', el) || $('legend, .campo__label, label', el)));
+
+/* Domande che compaiono solo per certe risposte (12/10, flussi guidati): data-mostra-se su domande, scelte e passi.
+   Regola: «nome=a,b» (una delle risposte), «nome!=a,b» (nessuna di queste), «nome>0» (numero positivo);
+   «&» = tutte, «|» = almeno una. «_» = nessuna risposta. Nascoste = spente: fuori da stima, riepilogo, controlli e invio. */
+function vale(regola, box) {
+	return regola.split('|').some((alt) =>
+		alt.split('&').every((atomo) => {
+			const m = atomo.match(/^([\w-]+)(!=|=|>)(.*)$/);
+			if (!m) return false;
+			const [, nome, op, vals] = m;
+			const campi = $$(`[name="${nome}"]`, box).filter((i) => !i.disabled);
+			if (op === '>') return campi.some((i) => Number(String(i.value).replace(',', '.')) > Number(vals));
+			const scelti = campi.filter((i) => (i.type === 'radio' || i.type === 'checkbox' ? i.checked : i.value)).map((i) => i.value);
+			const ammessi = vals.split(',');
+			if (op === '!=') return !scelti.some((x) => ammessi.includes(x));
+			return (scelti.length === 0 && ammessi.includes('_')) || scelti.some((x) => ammessi.includes(x));
+		})
+	);
 }
-/* Domande che non cambiano la stima ma servono a Fabri (data-riep-extra): vanno in fondo al riepilogo.
-   soloTesto: nei riepiloghi liberi i gruppi di scelte ci sono già, qui restano solo i campi di testo */
-function riepExtra(box, soloTesto = false) {
-	const parti = [];
-	for (const el of $$('[data-riep-extra]', box)) {
-		if (nascosto(el)) continue;
-		if (el.matches('fieldset')) {
-			if (soloTesto) continue;
-			const sel = $$('input:checked', el).map((i) => i.closest('label').textContent.trim());
-			if (sel.length) parti.push(`${$('legend', el)?.textContent.trim()} ${sel.join(', ')}.`);
-		} else {
-			const i = $('input[type="text"], textarea', el);
-			if (i?.value.trim()) parti.push(`${senzaFacolt($('label', el)?.textContent || '')}: ${i.value.trim()}.`);
+function condizioni(box) {
+	// più giri finché niente cambia: una domanda può dipendere da un'altra che dipende da una terza
+	for (let giro = 0; giro < 5; giro++) {
+		let cambiato = false;
+		for (const el of $$('[data-mostra-se]', box)) {
+			const si = vale(el.dataset.mostraSe, box) && !el.parentElement.closest('[data-mostra-se][hidden]');
+			if (el.hidden !== !si) {
+				el.hidden = !si;
+				cambiato = true;
+			}
+			// i campi dentro una domanda nascosta (anche di una domanda interna in vista) sono spenti
+			for (const i of $$('input, select, textarea', el)) {
+				const spento = !si || Boolean(i.closest('[data-mostra-se][hidden]'));
+				if (i.disabled !== spento && !i.dataset.spentoDa) {
+					i.disabled = spento;
+					cambiato = true;
+				}
+			}
+		}
+		if (!cambiato) break;
+	}
+	// «Non so i m²»: il campo dei metri si spegne e si svuota (niente zero inventato); torna quando togli la spunta
+	for (const c of $$('input[data-spegne]', box)) {
+		const campo = $(`[name="${c.dataset.spegne}"]`, box);
+		if (!campo) continue;
+		const spegni = c.checked && !c.disabled;
+		if (spegni) {
+			campo.dataset.spentoDa = c.name;
+			campo.disabled = true;
+			campo.value = '';
+		} else if (campo.dataset.spentoDa) {
+			delete campo.dataset.spentoDa;
+			campo.disabled = nascosto(campo);
+		}
+		for (const b of $$('[data-step]', campo.parentElement)) b.disabled = campo.disabled;
+	}
+	// titoli dei passi che seguono la risposta (es. «Quali mobili smontiamo?»)
+	for (const t of $$('[data-titoli]', box)) {
+		let nuovo = t.dataset.titoloBase;
+		for (const r of t.dataset.titoli.split(';')) {
+			const k = r.indexOf(':');
+			if (k > 0 && vale(r.slice(0, k), box)) {
+				nuovo = r.slice(k + 1);
+				break;
+			}
+		}
+		if (t.textContent !== nuovo) t.textContent = nuovo;
+	}
+}
+/* «Non so», «Da decidere», «Tutta la casa»… nelle scelte multiple escludono le altre (e le altre escludono loro) */
+function esclusivi(e) {
+	const i = e.target;
+	if (!i.matches?.('input[type="checkbox"]') || !i.checked || !i.closest('.scelta, .pv-carta')) return;
+	const gruppo = $$(`input[type="checkbox"][name="${i.name}"]`, i.form);
+	for (const x of gruppo) if (x !== i && x.checked && (i.hasAttribute('data-esclusivo') || x.hasAttribute('data-esclusivo'))) x.checked = false;
+}
+
+/* «Dettagli del progetto»: tutte le risposte in vista, passo per passo, in righe semplici (per Fabri, nel messaggio).
+   Si rifà da capo a ogni invio dalle risposte di adesso: niente accumuli tornando indietro. */
+// «Domanda? risposta» oppure «Etichetta: risposta»
+const coppia = (d, r) => (d.endsWith('?') ? `${d} ${r}` : `${d}: ${r}`);
+function dettagliDa(box, p) {
+	const righe = [];
+	for (const passo of $$('.tr2-passo', box)) {
+		if (passo.hidden) continue;
+		for (const el of $$('fieldset.campo, .campo, label.check', $('[data-passo-corpo]', passo))) {
+			if (nascosto(el) || el.closest('.tr2-avanti')) continue;
+			if (el.matches('.campo') && el.closest('fieldset.campo') && el.closest('fieldset.campo') !== el) continue;
+			if (el.matches('label.check')) {
+				const c = $('input', el);
+				if (c.checked && !c.disabled) righe.push(`- ${coppia(testoDi(el), 'sì')}`);
+				continue;
+			}
+			if (el.matches('fieldset')) {
+				const sel = $$('input:checked', el).filter((i) => !i.disabled).map(nomeDi);
+				if (sel.length) righe.push(`- ${coppia(domandaDi(el), sel.join(', '))}`);
+			} else if (el.matches('[data-somma]')) {
+				const pezzi = $$('.riga-mobile', el)
+					.map((r) => [testoDi($('label', r)), Number($('input', r).value) || 0, testoDi($('.numero__unita', r))])
+					.filter(([, n]) => n > 0)
+					.map(([nome, n, u]) => (u ? `${nome} ${n} ${u}` : `${nome}: ${n}`));
+				if (pezzi.length) righe.push(`- Mobili: ${pezzi.join(', ')}`);
+			} else {
+				const tutti = $$('input:not([type="checkbox"]):not([type="radio"]), textarea', el);
+				const campi = tutti.filter((i) => !i.disabled && i.value.trim());
+				if (!campi.length) continue;
+				const unita = (i) => testoDi($('.numero__unita', i.parentElement));
+				const val = campi.map((i) => `${tutti.length > 1 && i.placeholder ? i.placeholder + ' ' : ''}${i.value.trim()}${unita(i) ? ' ' + unita(i) : ''}`).join(', ');
+				righe.push(`- ${coppia(domandaDi(el), val)}`);
+			}
 		}
 	}
-	return parti.length ? ' ' + parti.join(' ') : '';
+	const testa = [p.servizio, p.titolo].filter(Boolean).join(' · ');
+	const esito = p.modo === 'valutazione' ? 'Richiesta di valutazione: prezzo dopo il sopralluogo' : p.esito === 'S' ? `${p.stimaTitolo || 'Stima indicativa'} calcolata sul sito (la ricalcola il server)` : 'Prezzo dopo il sopralluogo';
+	return [
+		testa,
+		...righe,
+		p.ipotesi?.length ? `Ipotesi della stima: ${p.ipotesi.join('; ')}` : '',
+		p.daVerificare?.length ? `Da verificare: ${p.daVerificare.join('; ')}` : '',
+		`Esito: ${esito}`,
+		p.contesto ? `Arriva da: ${p.contesto}` : ''
+	]
+		.filter(Boolean)
+		.join('\n');
 }
-/* Domande che compaiono solo per certe risposte (data-mostra-se="nome=valore,valore", 12/10 «percorsi più chiari»):
-   nascoste e disattivate quando non servono, così non contano né nella stima né nel riepilogo */
-function condizioni(box) {
-	for (const el of $$('[data-mostra-se]', box)) {
-		const [nome, vals = ''] = el.dataset.mostraSe.split('=');
-		const ammessi = vals.split(',');
-		const scelti = $$(`input[name="${nome}"]`, box)
-			.filter((i) => (i.type === 'radio' || i.type === 'checkbox' ? i.checked : i.value))
-			.map((i) => i.value);
-		const si = scelti.some((x) => ammessi.includes(x));
-		if (el.hidden !== !si) el.hidden = !si;
-		for (const i of $$('input, select, textarea', el)) i.disabled = !si;
-	}
-}
+
+const euroRiga = (r) => `${euro(r.min)}–${euro(r.max)} €`;
+const iva = (testo) => {
+	const s = document.createElement('span');
+	s.className = 'risultato__iva';
+	s.textContent = testo;
+	return s;
+};
 
 for (const calc of $$('[data-calc]')) {
 	const tipo = calc.dataset.calc;
 	const servizio = calc.dataset.servizio;
 	const inputs = $('[data-calc-inputs]', calc);
 	const riepilogo = $('[data-riepilogo]');
-	const cifra = $('[data-out-cifra]', calc);
-	const dettaglio = $('[data-out-dettaglio]', calc);
-	const liste = $('[data-out-liste]', calc);
-	const conCalcolo = Boolean(cifra);
+	const ris = $('[data-pv-ris]', calc);
+	const R = (k) => $(`[data-pv-ris-${k}]`, ris);
+	const cifra = $('[data-out-cifra]', ris);
+	const dettaglio = $('[data-out-dettaglio]', ris);
+	const liste = $('[data-out-liste]', ris);
+	const bagnoBox = $('[data-ris="bagno"]', ris);
+	let senzaStima = false; // «Preferisco una valutazione senza stima» (bagno)
 	// Nella pagina Preventivo ci sono tutti i lavori: scrive il riepilogo solo quello scelto
 	const attivo = () => riepilogo && !calc.closest('[hidden]');
-	// Le scelte del calcolatore vanno al server, che rifà il conto (backend, Fase 1)
-	const segna = (lavoro, calcolo) => {
-		if (riepilogo?.form) riepilogo.form._am = { lavoro, calcolo };
+	// Le scelte del calcolatore vanno al server, che rifà il conto (backend, Fase 1); «valutazione» = senza stima
+	const segna = (am) => {
+		if (riepilogo?.form) riepilogo.form._am = am;
 	};
 
-	// Ristrutturazioni: simulatore del bagno, oppure prezzo dopo il sopralluogo per gli altri lavori
-	const aggiornaRistr = () => {
-		condizioni(inputs);
-		const v = leggi(inputs);
-		const isBagno = v.cosa === 'bagno';
-		for (const g of $$('[data-se]', calc)) g.hidden = g.dataset.se !== (isBagno ? 'bagno' : 'altro');
-		for (const a of $$('[data-ris]', calc)) a.hidden = a.dataset.ris !== (isBagno ? 'bagno' : 'altro');
-		const barra = $('[data-bagno-barra]', calc);
-		if (barra) barra.hidden = !isBagno;
-		if (!isBagno) {
-			if (attivo()) {
-				const cosa = $('input[name="cosa"]:checked', inputs)?.closest('label').textContent.trim();
-				riepilogo.value = riepilogoLibero(`${servizio}: ${cosa}`, $('[data-se="altro"]', calc));
-				segna(v.cosa || null, null);
-			}
-			return;
-		}
-		const r = calcolaBagno(v);
-		const cifra = `${euro(r.min)}–${euro(r.max)} €`;
-		const box = $('[data-ris="bagno"]', calc);
-		const c = $('[data-b-cifra]', box);
-		// la cifra è subito quella nuova; compare solo con una dissolvenza breve (12/10)
-		if (c.textContent.trim() !== cifra) ravviva(c);
-		c.textContent = cifra + ' ';
-		const iva = document.createElement('span');
-		iva.className = 'risultato__iva';
-		iva.textContent = 'IVA inclusa';
-		c.append(iva);
-		$('[data-b-iva]', box).textContent = `Senza IVA: ${euro(r.nettoMin)}–${euro(r.nettoMax)} €. IVA al 10% per i lavori sulla casa (aziende ed enti: 22%).`;
-		$('[data-b-durata]', box).textContent = r.durata;
-		$('[data-barra-cifra]', calc).textContent = cifra;
-		const ul = $('[data-b-voci]', box);
+	const disegnaBagno = (r, v) => {
+		const c = $('[data-b-cifra]', bagnoBox);
+		const testo = euroRiga(r);
+		if (c.firstChild?.textContent.trim() !== testo) ravviva(c);
+		c.replaceChildren(testo + ' ', iva('IVA inclusa'));
+		$('[data-b-iva]', bagnoBox).textContent = `Senza IVA: ${euro(r.nettoMin)}–${euro(r.nettoMax)} €. IVA al 10% per i lavori sulla casa (aziende ed enti: 22%).`;
+		$('[data-b-durata]', bagnoBox).textContent = r.durata;
 		const icona = (n) => {
 			const span = document.createElement('span');
 			span.className = 'scontrino__icona';
@@ -319,7 +386,7 @@ for (const calc of $$('[data-calc]')) {
 			if (svg) span.append(svg.cloneNode(true));
 			return span;
 		};
-		ul.replaceChildren(
+		$('[data-b-voci]', bagnoBox).replaceChildren(
 			...r.voci.map((x) => {
 				const li = document.createElement('li');
 				const a = document.createElement('span');
@@ -327,99 +394,65 @@ for (const calc of $$('[data-calc]')) {
 				a.className = 'scontrino__nome';
 				b.className = 'scontrino__euro';
 				a.textContent = x.nome;
-				b.textContent = x.daValutare ? 'da valutare' : `${euro(x.min)}–${euro(x.max)} €`;
+				b.textContent = x.daValutare ? 'da valutare' : euroRiga(x);
 				li.append(icona(x.icona), a, b);
 				return li;
 			})
 		);
-		// Prezzo di ogni livello con le altre scelte di adesso
-		for (const el of $$('[data-prezzo-livello]', calc)) {
-			const x = calcolaBagno({ ...v, livello: el.dataset.prezzoLivello });
-			el.textContent = `${euro(x.min)}–${euro(x.max)} €`;
-		}
-		// "Mandami il riepilogo": il testo che il cliente si tiene
-		const testo = [
+		// prezzo di ogni livello con le altre scelte di adesso
+		for (const el of $$('[data-prezzo-livello]', calc)) el.textContent = euroRiga(calcolaBagno({ ...v, livello: el.dataset.prezzoLivello }));
+		// «Salva la tua stima»: il testo che il cliente si tiene
+		const salva = [
 			'Stima del mio bagno, da ArtigianaMente',
 			r.riepilogo,
-			...r.voci.map((x) => `- ${x.nome}: ${x.daValutare ? 'da valutare' : `${euro(x.min)}–${euro(x.max)} €`}`),
+			...r.voci.map((x) => `- ${x.nome}: ${x.daValutare ? 'da valutare' : euroRiga(x)}`),
 			`Durata indicativa: ${r.durata}.`,
 			'Stima indicativa, non un’offerta vincolante. Il preventivo scritto arriva dopo il sopralluogo gratuito.',
-			location.href.split('#')[0] + '#ristrutturazioni'
+			location.href.split('#')[0] + '#ristrutturazioni:bagno'
 		].join('\n');
-		$('[data-b-whatsapp]', box).href = 'https://wa.me/?text=' + encodeURIComponent(testo);
-		$('[data-b-email]', box).href =
-			'mailto:?subject=' + encodeURIComponent('Stima del mio bagno – ArtigianaMente') + '&body=' + encodeURIComponent(testo);
-		if (attivo()) {
-			riepilogo.value = r.riepilogo;
-			segna('bagno', { input: v, mostrato: { min: r.min, max: r.max } });
-		}
+		$('[data-b-whatsapp]', bagnoBox).href = 'https://wa.me/?text=' + encodeURIComponent(salva);
+		$('[data-b-email]', bagnoBox).href = 'mailto:?subject=' + encodeURIComponent('Stima del mio bagno – ArtigianaMente') + '&body=' + encodeURIComponent(salva);
 	};
 
 	const aggiorna = () => {
-		if (tipo === 'ristrutturazioni') return aggiornaRistr();
 		condizioni(inputs);
-		// Imbiancatura, «Non so i m²»: i metri li misuriamo al sopralluogo; il campo si spegne (niente numero inventato)
-		const nonso = tipo === 'imbiancatura' && $('input[name="nonso"]', inputs)?.checked;
-		const campoMq = tipo === 'imbiancatura' && $('input[name="mq"]', inputs);
-		if (campoMq && campoMq.disabled !== Boolean(nonso)) {
-			campoMq.disabled = Boolean(nonso);
-			if (nonso) campoMq.value = '';
-			for (const b of $$('[data-step]', campoMq.parentElement)) b.disabled = Boolean(nonso);
-		}
-		const v = leggi(inputs);
-		if (!conCalcolo) {
-			if (attivo()) {
-				riepilogo.value = riepilogoLibero(servizio, inputs);
-				segna(null, null);
+		const a = leggi(inputs);
+		const p = percorso(tipo, a, etichette(inputs));
+		p.servizio = servizio;
+		p.contesto = calc._contesto || '';
+		// la stima: solo con il calcolatore e tutti i dati (mai importi inventati)
+		let r = null;
+		if (p.esito === 'S' && p.motore) {
+			r = p.motore.tipo === 'bagno' ? calcolaBagno(p.motore.input) : calcola(p.motore.tipo, p.motore.input);
+			if (!r.min) {
+				p.esito = 'V';
+				r = null;
+			} else if (p.rimontare) {
+				r.dettaglio = r.dettaglio.replace(', con smontaggio dei vecchi mobili.', ', da smontare e rimontare.');
+				r.riepilogo = r.riepilogo.replace('Smontaggio vecchi mobili sì.', 'Da smontare e rimontare.');
 			}
-			return;
 		}
-		// Montaggio: «smontare e rimontare» usa lo smontaggio che c'era già; «solo smontare» si valuta al sopralluogo
-		const operazione = tipo === 'montaggio' ? v.operazione || 'nuovi' : '';
-		if (operazione === 'rimontare') v.smontaggio = true;
-		const r = calcola(tipo, v);
-		if (operazione === 'rimontare' && !r.vuoto) {
-			r.dettaglio = r.dettaglio.replace(', con smontaggio dei vecchi mobili.', ', da smontare e rimontare.');
-			r.riepilogo = r.riepilogo.replace('Smontaggio vecchi mobili sì.', 'Da smontare e rimontare (es. dopo un trasloco).');
-		}
-		const daValutare = nonso || (operazione === 'smontare' && !r.vuoto);
-		if (daValutare) {
-			const primaCifra = cifra.textContent;
-			cifra.textContent = 'Su sopralluogo';
-			if (cifra.textContent !== primaCifra) ravviva(cifra);
-			dettaglio.textContent = nonso
-				? 'Misuriamo noi le stanze al sopralluogo gratuito, poi ricevi il preventivo.'
-				: 'Per il solo smontaggio la stima la facciamo al sopralluogo gratuito.';
-			liste.hidden = true;
-			if (attivo()) {
-				if (nonso) {
-					const scelte = [$('input[name="soffitti"]', inputs)?.checked && 'anche i soffitti', ...$$('input[type="radio"]:checked', inputs).map((i) => i.closest('label').textContent.trim().toLowerCase())].filter(Boolean);
-					riepilogo.value = `Imbiancatura: metri quadri da misurare al sopralluogo${scelte.length ? ', ' + scelte.join(', ') : ''}.` + riepExtra(inputs);
-					segna(null, { input: v, mostrato: null });
-				} else {
-					riepilogo.value = `Montaggio mobili: solo smontaggio, senza rimontare: ${r.dettaglio.replace(/\.$/, '')}.` + riepExtra(inputs);
-					segna(null, null);
-				}
-			}
-			return;
-		}
-		// la cifra è subito quella nuova; compare solo con una dissolvenza breve (12/10)
-		const primaCifra = cifra.textContent;
-		queueMicrotask(() => cifra.textContent !== primaCifra && ravviva(cifra));
-		if (r.valutazione || r.vuoto) {
-			cifra.textContent = r.vuoto ? '—' : 'Su sopralluogo';
-			dettaglio.textContent = r.messaggio || '';
-			liste.hidden = true;
-		} else {
-			cifra.innerHTML = '';
-			cifra.append(`${euro(r.min)}–${euro(r.max)} € `);
-			const iva = document.createElement('span');
-			iva.className = 'risultato__iva';
-			iva.textContent = 'IVA inclusa';
-			cifra.append(iva);
+		const bagno = p.motore?.tipo === 'bagno' && Boolean(r);
+		p.modo = r && !(bagno && senzaStima) ? 'stima' : 'valutazione';
+		const S = p.modo === 'stima';
+		ris.dataset.esito = S ? 'S' : 'V';
+		ris.dataset.cifra = S ? euroRiga(r) : '';
+		ris.dataset.iniziato = p.iniziato ? '1' : '';
+		ris.dataset.manca = p.mancaPerStima || '';
+		R('label').textContent = S ? (bagno ? 'La stima del tuo bagno' : 'La tua stima') : 'Il tuo progetto';
+		R('titolo').textContent = p.titolo;
+		R('descr').textContent = p.descrizione;
+		R('descr').hidden = !p.descrizione;
+		// stima (S)
+		R('stima').hidden = !S || bagno;
+		if (bagnoBox) bagnoBox.hidden = !(S && bagno);
+		if (S && bagno) disegnaBagno(r, p.motore.input);
+		if (S && !bagno) {
+			R('stima-titolo').textContent = p.stimaTitolo || 'Stima indicativa';
+			const testo = euroRiga(r);
+			if (cifra.firstChild?.textContent.trim() !== testo) queueMicrotask(() => ravviva(cifra));
+			cifra.replaceChildren(testo + ' ', iva(`IVA ${r.ivaPerc}% inclusa`));
 			dettaglio.textContent = r.dettaglio;
-			liste.hidden = false;
-			liste.innerHTML = '';
 			const ul = document.createElement('ul');
 			for (const c of r.comprende) {
 				const li = document.createElement('li');
@@ -427,24 +460,52 @@ for (const calc of $$('[data-calc]')) {
 				li.append(c);
 				ul.append(li);
 			}
-			liste.append(ul);
-			if (r.esclude.length) {
-				const p = document.createElement('p');
-				p.className = 'risultato__dettaglio';
-				p.style.marginTop = '12px';
-				p.textContent = 'Non comprende: ' + r.esclude.join(', ').toLowerCase() + '.';
-				liste.append(p);
-			}
+			const fuori = document.createElement('p');
+			fuori.className = 'risultato__dettaglio';
+			fuori.textContent = r.esclude.length ? 'Non comprende: ' + r.esclude.join(', ').toLowerCase() + '.' : '';
+			liste.replaceChildren(ul, fuori);
 		}
+		// ipotesi e cose da verificare: separate da quello che hai detto
+		const note = [...(S ? p.ipotesi.map((t) => ['ipotesi', t]) : []), ...(S ? p.daVerificare.map((t) => ['verifica', t]) : [])];
+		R('note').hidden = !note.length;
+		R('note-titolo').textContent = p.ipotesi.length && S ? 'Ipotesi e cose da verificare' : 'Da verificare al sopralluogo';
+		R('note-lista').replaceChildren(
+			...note.map(([k, t]) => {
+				const li = document.createElement('li');
+				li.dataset.nota = k;
+				li.textContent = t;
+				return li;
+			})
+		);
+		// prezzo dopo il sopralluogo (V): perché, in una frase pertinente
+		R('v').hidden = S || !p.iniziato;
+		R('perche').textContent = bagno && senzaStima ? 'Hai scelto una valutazione senza stima: la simulazione non vale come prezzo.' : p.perche;
+		R('senza').hidden = !bagno;
+		$('[data-pv-valutazione]', ris).textContent = senzaStima ? 'Torna alla stima del bagno' : 'Preferisco una valutazione senza stima';
+		R('avviso').hidden = !S || bagno;
+		calc._p = p;
 		if (attivo()) {
-			riepilogo.value =
-				(r.riepilogo || servizio) + (r.min ? ` Stima indicativa: ${euro(r.min)}–${euro(r.max)} €, IVA ${r.ivaPerc}% inclusa.` : '') + riepExtra(inputs);
-			segna(null, { input: v, mostrato: r.min ? { min: r.min, max: r.max } : null });
+			const testa = tipo === 'ristrutturazioni' && a.cosa ? `${servizio}: ${etichette(inputs)('cosa')[0]}.` : `${servizio}.`;
+			riepilogo.value = S
+				? `${(r.riepilogo || servizio).replace(/ Budget indicativo:.*$/, '')} ${p.stimaTitolo || 'Stima indicativa'}: ${euroRiga(r)}, IVA ${r.ivaPerc ?? 10}% inclusa.`
+				: [testa, p.titolo && p.titolo + '.', p.descrizione && p.descrizione.replace(/\.?$/, '.'), 'Prezzo dopo il sopralluogo.'].filter(Boolean).join(' ');
+			segna({
+				lavoro: tipo === 'ristrutturazioni' ? a.cosa || null : null,
+				calcolo: S ? { input: p.motore.input, mostrato: { min: r.min, max: r.max } } : null,
+				modo: p.modo,
+				dettagli: () => dettagliDa(inputs, calc._p)
+			});
 		}
 	};
 	inputs.addEventListener('submit', (e) => e.preventDefault()); // Invio in un campo non ricarica la pagina
+	inputs.addEventListener('change', esclusivi, true);
 	inputs.addEventListener('input', aggiorna);
 	inputs.addEventListener('change', aggiorna);
+	$('[data-pv-valutazione]', ris)?.addEventListener('click', () => {
+		senzaStima = !senzaStima;
+		aggiorna();
+	});
+	calc._aggiorna = aggiorna;
 	aggiorna();
 }
 
@@ -465,8 +526,8 @@ for (const form of $$('[data-rapida]')) {
 	// dettagli (messaggio ed email): chiusi, ma se c'è scritto qualcosa si vede anche da chiusi
 	const sintesiDettagli = () => {
 		if (!testoDett) return;
-		const parti = [msg?.value.trim() && 'messaggio', email?.value.trim() && 'email'].filter(Boolean);
-		testoDett.textContent = parti.length ? `Aggiunti: ${parti.join(' ed ')}` : vuotoDett;
+		const parti = [msg?.value.trim() && (form.hasAttribute('data-generale') ? 'messaggio' : 'nota'), email?.value.trim() && 'email'].filter(Boolean);
+		testoDett.textContent = parti.length ? `Aggiunte: ${parti.join(' ed ')}` : vuotoDett;
 		rigaDett?.classList.toggle('is-pieno', parti.length > 0);
 		if (titoloDett) titoloDett.textContent = parti.length ? 'Dettagli' : 'Aggiungi dettagli';
 	};
@@ -629,13 +690,12 @@ for (const form of $$('[data-rapida]')) {
 	// dopo l'invio riuscito i campi restano come sono (il modulo appena mandato non cambia)
 	form._rr = {
 		apriDettagli,
-		/** Il lavoro scelto nel Preventivo: per «Altro lavoro» il messaggio serve, quindi i dettagli si aprono */
-		servizio(slug) {
-			const altro = slug === 'altro';
+		/** Il lavoro scelto nel Preventivo. 12/10 (flussi guidati): per «Altro lavoro» la descrizione si scrive prima,
+		 *  nel percorso; qui il messaggio resta una nota facoltativa per tutti */
+		servizio() {
 			const etichetta = $('[data-rr-msg-etichetta]', form);
-			if (etichetta) etichetta.textContent = altro ? 'Raccontaci cosa ti serve' : 'Messaggio';
-			if (testoDett) testoDett.textContent = altro ? 'Il messaggio serve, l’email è facoltativa' : vuotoDett;
-			if (altro) apriDettagli(true);
+			if (etichetta) etichetta.textContent = 'Nota';
+			if (testoDett) testoDett.textContent = vuotoDett;
 			sintesiDettagli();
 		}
 	};
@@ -1081,7 +1141,7 @@ if (contenuto) {
 	});
 }
 
-/* Pagina Preventivo: scegli il servizio, rispondi, vedi la stima; i dati solo se chiedi il sopralluogo */
+/* Pagina Preventivo: scegli il servizio, rispondi, vedi il tuo progetto; i dati solo se chiedi il sopralluogo */
 const pv = $('[data-pv]');
 if (pv) {
 	const lavori = $$('[data-scegli]', pv);
@@ -1097,13 +1157,102 @@ if (pv) {
 	const comuneCampo = $('[data-pv-comune-campo]', pv);
 	const msg = $('[data-pv-msg]', pv);
 	const facolt = $('[data-pv-facolt]', pv);
+	const fotoIn = $('[data-rr-foto-input]', pv);
 	const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const vai = (el) => el.scrollIntoView({ behavior: ridotto ? 'auto' : 'smooth', block: 'start' });
-
-	// "La tua richiesta" (12/10, richiesta rapida): riepilogo compatto, niente casella da riempire. Lavoro, la quantità
-	// che conta con la sua unità, la stima solo se il calcolatore l'ha fatta (mai importi inventati); «Vedi dettagli»
-	// mostra il riepilogo intero, «Modifica» riapre le scelte (restano tutte, anche quello che hai scritto qui)
 	const formDati = riepilogo.form;
+	const pannello = (slug) => $(`[data-pannello="${slug}"]`, pv);
+
+	/* ---------- Altro lavoro (A1): una frase; se somiglia a un nostro lavoro lo proponiamo (senza spostarti) ---------- */
+	const altro = $('[data-altro]', pv);
+	const descrAltro = altro && $('[data-altro-descr]', altro);
+	let suggerito = null;
+	const aggiornaAltro = () => {
+		if (!altro) return;
+		const t = descrAltro.value.trim();
+		$('[data-altro-testo]', altro).textContent = t;
+		$('[data-altro-testo]', altro).hidden = !t;
+		$('[data-altro-vuoto]', altro).hidden = Boolean(t);
+		suggerito = t.length >= 4 ? cerca(t)[0] ?? null : null;
+		const btn = suggerito && lavori.find((b) => b.dataset.scegli === suggerito);
+		$('[data-altro-suggerito]', altro).hidden = !btn;
+		if (btn) {
+			$('[data-altro-nome]', altro).textContent = $('.v3-pv__nome', btn).textContent.trim();
+			$('[data-altro-vai]', altro).href = '#' + suggerito;
+		}
+		// il messaggio del modulo serve solo se qui non c'è niente (il server vuole una descrizione)
+		if (formDati.dataset.servizio === 'altro') msg.required = !t;
+		if (formDati.dataset.servizio === 'altro') {
+			riepilogo.value = t ? `Altro lavoro: ${t}` : 'Altro lavoro: vedi la descrizione.';
+			formDati._am = {
+				lavoro: null,
+				calcolo: null,
+				modo: 'valutazione',
+				dettagli: () => ['Altro lavoro · Il tuo lavoro', t && `- Cosa ti serve? ${t}`, suggerito && `- Percorso suggerito dal sito: ${$('[data-altro-nome]', altro).textContent} (non seguito)`, 'Esito: Prezzo dopo il sopralluogo'].filter(Boolean).join('\n')
+			};
+		}
+	};
+	descrAltro?.addEventListener('input', aggiornaAltro);
+	$('[data-altro-vai]', altro)?.addEventListener('click', (e) => {
+		e.preventDefault();
+		if (!suggerito) return;
+		passaA(suggerito, `Altro lavoro: «${descrAltro.value.trim()}»`);
+	});
+
+	/* ---------- Da un percorso all'altro (Montaggio → Traslochi, Cucina → Montaggio…): il contesto viene con te ---------- */
+	const mostraContesto = (box, testo) => {
+		box._contesto = testo;
+		const nota = $('[data-pv-contesto]', box);
+		if (!nota) return;
+		nota.hidden = !testo;
+		$('[data-pv-contesto-testo]', nota).textContent = testo ? `Hai scritto prima: ${testo.replace(/^([^:]+): /, '$1 · ')}` : '';
+		box._aggiorna?.();
+		$('[data-calc-inputs], [data-tr-form]', box)?.dispatchEvent(new Event('input', { bubbles: true }));
+	};
+	const passaA = (verso, testo) => {
+		const [slug] = verso.split(':');
+		const box = pannello(slug)?.querySelector('[data-calc], [data-trasloco]');
+		if (box) mostraContesto(box, testo);
+		sceltoQui = true;
+		location.hash = verso;
+	};
+	pv.addEventListener('click', (e) => {
+		const a = e.target.closest('[data-pv-passa]');
+		if (a) {
+			e.preventDefault();
+			const box = a.closest('[data-calc]');
+			const p = box?._p;
+			passaA(a.dataset.pvPassa, p ? `${p.servizio}: ${[p.titolo, p.descrizione].filter(Boolean).join(' — ')}` : '');
+			return;
+		}
+		const via = e.target.closest('[data-pv-contesto-togli]');
+		if (via) mostraContesto(via.closest('[data-calc], [data-trasloco]'), '');
+		// «È una porta o una finestra?»: stessa domanda, altra risposta (il resto resta)
+		const b = e.target.closest('[data-pv-vai-scelta]');
+		if (b) {
+			const [nome, val] = b.dataset.pvVaiScelta.split('=');
+			const r = $(`input[name="${nome}"][value="${val}"]`, b.closest('form'));
+			if (r) {
+				r.click();
+				requestAnimationFrame(() => $('fieldset:not([hidden]) input:not(:disabled)', b.closest('[data-passo-corpo]'))?.focus({ preventScroll: true }));
+			}
+		}
+		// foto nel passo o nel risultato: la stessa raccolta del modulo
+		if (e.target.closest('[data-pv-foto-aggiungi]')) fotoIn?.click();
+	});
+	const contaFoto = () => {
+		const n = fotoIn?.files?.length || 0;
+		for (const c of $$('[data-pv-foto-conta]', pv)) c.textContent = n ? ` ${n === 1 ? '1 foto aggiunta' : `${n} foto aggiunte`}.` : '';
+		for (const r of $$('[data-pv-ris-foto]', pv)) {
+			const box = r.closest('[data-pv-ris]');
+			r.hidden = !box?.dataset.iniziato;
+			$('[data-pv-ris-foto-testo]', r).textContent = n ? (n === 1 ? '1 foto aggiunta' : `${n} foto aggiunte`) : 'Puoi aggiungere una foto, se vuoi';
+		}
+	};
+	fotoIn?.addEventListener('change', () => setTimeout(contaFoto, 0));
+	formDati.addEventListener('input', () => setTimeout(contaFoto, 0));
+
+	/* ---------- «La tua richiesta» nel modulo: il progetto in breve, la stima solo se c'è, tutte le risposte in «Vedi dettagli» ---------- */
 	const rr = {
 		icona: $('[data-rr-icona]', riepBox),
 		servizio: $('[data-rr-servizio]', riepBox),
@@ -1114,45 +1263,18 @@ if (pv) {
 		vedi: $('[data-rr-vedi]', riepBox),
 		tutto: riepTesto.parentElement
 	};
-	const etichetta = (i) => ($('.livello__nome', i.closest('label')) || i.closest('label'))?.textContent.trim() || '';
-	const scelti = (pan, nome) => $$(`input[name="${nome}"]:checked`, pan).map(etichetta).join(', ');
-	const numeroDi = (pan, nome) => Number(String($(`[name="${nome}"]`, pan)?.value || '').replace(',', '.')) || 0;
 	const essenziale = (slug) => {
-		const pan = $(`[data-pannello="${slug}"]`, pv);
-		if (!pan) return '';
-		const mq = numeroDi(pan, 'mq');
-		const visibili = (pan, salta = []) => $$('input:checked', pan).filter((i) => !i.disabled && !nascosto(i) && !salta.includes(i.name)).map(etichetta);
-		if (slug === 'imbiancatura') {
-			if ($('[name="nonso"]', pan)?.checked) return 'Metri quadri da misurare al sopralluogo';
-			return mq ? `${mq} m² di pavimento${$('[name="soffitti"]', pan)?.checked ? ', soffitti compresi' : ''}` : 'Metri quadri da indicare';
-		}
-		if (slug === 'parquet') return [scelti(pan, 'lavoro'), mq ? `${mq} m²` : 'metri quadri da indicare'].filter(Boolean).join(' · ');
-		if (slug === 'montaggio-mobili') {
-			let pezzi = 0;
-			let cucina = 0;
-			for (const i of $$('[data-somma] input[type="number"]', pan)) {
-				const n = Number(i.value) || 0;
-				if (i.name === 'cucinaMl') cucina = n;
-				else pezzi += n;
-			}
-			const op = $('input[name="operazione"]:checked', pan)?.value;
-			const lavoro = op === 'rimontare' ? 'da smontare e rimontare' : op === 'smontare' ? 'solo smontaggio' : '';
-			return [pezzi ? `${pezzi} ${pezzi === 1 ? 'mobile' : 'mobili'}` : '', cucina ? `cucina ${cucina} m` : '', lavoro].filter(Boolean).join(' · ') || 'Mobili da indicare';
-		}
-		if (slug === 'ristrutturazioni') {
-			if ($('input[name="cosa"]:checked', pan)?.value === 'bagno') return [scelti(pan, 'misura'), scelti(pan, 'livello') && `stile ${scelti(pan, 'livello')}`].filter(Boolean).join(' · ');
-			return [...visibili($('[data-se="altro"]', pan) || pan, ['cosa']).slice(0, 3), mq ? `${mq} m²` : ''].filter(Boolean).join(' · ');
-		}
-		if (slug === 'risanamento-umidita') return numeroDi(pan, 'metri') ? `${numeroDi(pan, 'metri')} m di muro` : scelti(pan, 'dove');
-		if (slug === 'falegnameria') return visibili(pan, ['dove']).slice(0, 3).join(' · ');
+		if (slug === 'altro') return descrAltro?.value.trim() || 'Raccontaci cosa ti serve';
 		if (slug === 'traslochi') {
 			// partenza e arrivo restano due cose distinte (e non si chiedono di nuovo)
 			const s = formDati._am?.calcolo?.input;
 			const da = s?.partenza?.comune;
 			const a = s?.arrivo?.comune;
+			if (formDati._am?.modo === 'valutazione' && !s) return 'Da quantificare insieme';
 			return da && a ? `Da ${da} a ${a}` : da ? `Partenza da ${da}, arrivo da indicare` : a ? `Arrivo a ${a}, partenza da indicare` : 'Partenza e arrivo da indicare';
 		}
-		return '';
+		const p = $('[data-calc]', pannello(slug))?._p;
+		return p ? [p.titolo, p.descrizione].filter(Boolean).join(' · ') : '';
 	};
 	const mostraRiep = () => {
 		const slug = formDati.dataset.servizio || '';
@@ -1161,7 +1283,7 @@ if (pv) {
 		if (!btn) return;
 		let nome = $('[data-pv-scelto-nome]', scelto).textContent.trim() || $('.v3-pv__nome', btn).textContent.trim();
 		const cosa = slug === 'ristrutturazioni' && $(`[data-pannello="${slug}"] input[name="cosa"]:checked`, pv);
-		if (cosa && !nome.includes('·')) nome = `${nome} · ${etichetta(cosa)}`;
+		if (cosa && !nome.includes('·')) nome = `${nome} · ${nomeDi(cosa)}`;
 		rr.servizio.textContent = nome;
 		if (rr.icona.dataset.per !== slug) {
 			rr.icona.dataset.per = slug;
@@ -1170,16 +1292,20 @@ if (pv) {
 		const riga = essenziale(slug);
 		rr.cosa.textContent = riga;
 		rr.cosa.hidden = !riga;
-		const m = slug === 'altro' ? null : formDati._am?.calcolo?.mostrato;
+		const am = formDati._am;
+		const m = am?.modo !== 'valutazione' ? am?.calcolo?.mostrato : null;
 		rr.stima.hidden = !m;
 		if (m) rr.cifra.textContent = `${euro(m.min)}–${euro(m.max)} €`;
+		const p = $('[data-calc]', pannello(slug))?._p;
 		rr.nota.textContent = m
 			? 'Importo indicativo. Il preventivo definitivo segue il sopralluogo gratuito. Prezzi provvisori.'
 			: slug === 'altro'
-				? 'Raccontaci qui sotto cosa ti serve. Sopralluogo e preventivo sono gratuiti.'
-				: 'Il prezzo lo definiamo dopo il sopralluogo gratuito.';
-		riepTesto.textContent = riepilogo.value;
-		const vedi = slug !== 'altro' && !!riepilogo.value;
+				? 'Sopralluogo e preventivo sono gratuiti.'
+				: p?.perche || 'Il prezzo lo definiamo dopo il sopralluogo gratuito.';
+		// «Vedi dettagli»: tutte le risposte, anche quelle che non cambiano il prezzo (come arrivano a Fabri)
+		const tutto = typeof am?.dettagli === 'function' ? am.dettagli() : riepilogo.value;
+		riepTesto.textContent = tutto;
+		const vedi = Boolean(tutto);
 		rr.vedi.hidden = !vedi;
 		if (!vedi) {
 			rr.tutto.hidden = true;
@@ -1192,10 +1318,11 @@ if (pv) {
 		rr.vedi.setAttribute('aria-expanded', String(si));
 		rr.vedi.textContent = si ? 'Nascondi dettagli' : 'Vedi dettagli';
 	});
-	// «Modifica»: si torna alle scelte del lavoro (sul telefono il primo passo sale come tendina); per «Altro lavoro» alla lista
+	// «Modifica»: si torna alle scelte del lavoro (sul telefono il primo passo sale come tendina); per «Altro lavoro» alla frase
 	$('[data-rr-modifica]', riepBox).addEventListener('click', () => {
 		const slug = formDati.dataset.servizio;
-		const pan = slug && slug !== 'altro' && $(`[data-pannello="${slug}"]`, pv);
+		if (slug === 'altro') return descrAltro ? (vai(altro), descrAltro.focus({ preventScroll: true })) : $('[data-pv-cambia]', pv).click();
+		const pan = slug && pannello(slug);
 		if (!pan) return $('[data-pv-cambia]', pv).click();
 		const primo = $$('.tr2-passo', pan).find((q) => !q.hidden && !q.classList.contains('is-saltato') && !q.matches('[data-passo-stima], [data-passo="6"]'));
 		if (!primo) return vai(pan);
@@ -1203,6 +1330,14 @@ if (pv) {
 		if (!telefono()) requestAnimationFrame(() => vai(primo));
 	});
 	const apriDati = () => {
+		// Altro lavoro: prima la frase (il messaggio del modulo resta per i dettagli in più)
+		if (formDati.dataset.servizio === 'altro' && descrAltro && !descrAltro.value.trim() && !msg.value.trim()) {
+			vai(altro);
+			descrAltro.focus({ preventScroll: true });
+			descrAltro.closest('.campo')?.classList.add('tr2-evidenzia');
+			setTimeout(() => descrAltro.closest('.campo')?.classList.remove('tr2-evidenzia'), 1700);
+			return;
+		}
 		mostraRiep();
 		dati.hidden = false;
 		vai(dati);
@@ -1210,7 +1345,7 @@ if (pv) {
 
 	const telefono = () => matchMedia('(max-width: 860px)').matches;
 	// × della tendina: si torna alla pagina di prima del sito (es. Traslochi), altrimenti alla scelta del servizio.
-	// Se il lavoro l'hai scelto qui (dalla lista «Di cosa hai bisogno?»), si torna alla lista (12/10)
+	// Se il lavoro l'hai scelto qui (dalla lista «Che lavoro ti serve?»), si torna alla lista (12/10)
 	let sceltoQui = false;
 	// C'è una pagina del sito prima, nella stessa scheda? Si misura all'arrivo: dopo, le tendine aggiungono voci alla
 	// cronologia e history.length non lo dice più (revisione 12/10, M3: in una scheda nuova la × non faceva niente)
@@ -1254,31 +1389,32 @@ if (pv) {
 			campoLavoro.form.dataset.servizio = slug;
 			if (slug === 'altro') campoLavoro.form._am = null;
 		}
-		const altro = slug === 'altro';
-		msg.required = altro;
-		facolt.hidden = altro;
+		const isAltro = slug === 'altro';
+		msg.required = false;
+		facolt.hidden = false;
 		campoLavoro.form?._rr?.servizio(slug);
 		// nei traslochi partenza e arrivo li abbiamo già: niente terza domanda sul comune
 		const trasloco = slug === 'traslochi';
 		// calcolatori a passi (tutti tranne «Altro lavoro», 11/10): titolo più corto e meno spazio sopra, così il passo
 		// aperto arriva prima; sul telefono i passi salgono come tendine (come Traslochi)
-		const passi = !altro;
+		const passi = !isAltro;
 		document.documentElement.classList.toggle('pv-trasloco', passi);
 		document.documentElement.classList.toggle('pv-foglio', passi && !window.amSenzaTendine);
-		const titolo = btn.dataset.titoloStima || `La stima: ${nome}`;
+		const titolo = btn.dataset.titoloStima || nome;
 		for (const t of $$('.pv-foglio__titolo, .pv-titolo-tr')) t.textContent = titolo;
 		$('[data-foglio-chiudi]')?.setAttribute('aria-label', `Chiudi: ${titolo.toLowerCase()}`);
 		comuneCampo.hidden = trasloco;
 		$('input', comuneCampo).required = !trasloco;
 		// un campo nascosto non parte e non blocca l'invio (nei Traslochi il comune non serve: ci sono partenza e arrivo)
 		$('input', comuneCampo).disabled = trasloco;
-		dati.hidden = !altro;
+		dati.hidden = true;
 		$('[data-conferma]', dati).hidden = true;
-		if (altro) riepilogo.value = 'Altro lavoro: vedi la descrizione.';
+		if (isAltro) aggiornaAltro();
 		else $(`[data-pannello="${slug}"] [data-calc-inputs]`, pv)?.dispatchEvent(new Event('input', { bubbles: true }));
 		mostraRiep();
+		contaFoto();
 		try {
-			history.replaceState(null, '', location.pathname + '#' + slug);
+			history.replaceState(history.state, '', location.pathname + '#' + slug);
 		} catch {
 			// in alcune anteprime l'indirizzo non si può cambiare
 		}
@@ -1298,24 +1434,33 @@ if (pv) {
 		document.documentElement.classList.remove('pv-trasloco', 'pv-foglio');
 		vai(scelta);
 	});
-	// "Richiedi un sopralluogo", "Parliamone insieme": aprono il modulo dei dati
+	// «Richiedi un sopralluogo»: apre il modulo dei dati
 	pv.addEventListener('click', (e) => {
 		const a = e.target.closest('a[href="#dati"]');
 		if (!a) return;
 		e.preventDefault();
 		apriDati();
 	});
-	for (const ev of ['input', 'change']) pv.addEventListener(ev, () => setTimeout(mostraRiep, 0));
+	for (const ev of ['input', 'change'])
+		pv.addEventListener(ev, () =>
+			setTimeout(() => {
+				mostraRiep();
+				contaFoto();
+			}, 0)
+		);
 
 	// Arrivo da una pagina del servizio (preventivo.html#parquet): servizio già scelto, si va alle domande
-	// #ristrutturazioni:cucina → ristrutturazioni con "Cucina" già scelta
+	// #ristrutturazioni:cucina → ristrutturazioni con "Cucina" già scelta. Un indirizzo sconosciuto lascia la scelta.
 	const daIndirizzo = (primaVolta) => {
 		const [h, sub] = decodeURIComponent(location.hash.slice(1)).split(':');
 		if (h === 'dati') return;
 		if (!lavori.some((b) => b.dataset.scegli === h)) return;
 		const fai = () => {
 			const r = sub && $(`[data-pannello="${h}"] input[name="cosa"][value="${sub}"]`, pv);
-			if (r) r.checked = true;
+			if (r && !r.checked) {
+				r.checked = true;
+				r.dispatchEvent(new Event('change', { bubbles: true }));
+			}
 			scegli(h, !(primaVolta && tornato));
 			// "Parliamo della tua cucina": la cucina è già scelta, niente domanda "Quale spazio vuoi rinnovare?".
 			// Si vede in alto: "Ristrutturazioni · Cucina · Modifica"
@@ -1324,18 +1469,18 @@ if (pv) {
 				domanda.dataset.pvFissata = '';
 				domanda.hidden = true;
 				const nome = $('[data-pv-scelto-nome]', scelto);
-				nome.textContent = `${nome.textContent} · ${r.closest('label').textContent.trim()}`;
+				nome.textContent = `${nome.textContent} · ${nomeDi(r)}`;
 				// la variante resta nell'indirizzo: ricaricando o copiando il link resta la cucina (revisione 12/10, M2)
 				try {
 					history.replaceState(history.state, '', `${location.pathname}#${h}:${sub}`);
 				} catch {
 					// in alcune anteprime l'indirizzo non si può cambiare
 				}
-				// 12/10: se era l'unica domanda del passo aperto («Lo spazio»), si apre subito il passo dopo,
+				// se era l'unica domanda del passo aperto («Quale spazio»), si apre subito il passo dopo,
 				// così la tendina non resta vuota (passi.js fa lo stesso, ma arriva un attimo dopo)
 				const passo = domanda.closest('.tr2-passo.is-aperto');
 				const corpo = passo && $('[data-passo-corpo]', passo);
-				const restano = corpo && $$('fieldset, .campo, label.check', corpo).some((el) => !el.closest('.tr2-avanti') && !el.closest('[data-pv-fissata]'));
+				const restano = corpo && $$('fieldset, .campo, label.check', corpo).some((el) => !el.closest('.tr2-avanti') && !el.closest('[data-pv-fissata]') && !nascosto(el));
 				if (passo && !restano) passo.classList.add('is-saltato');
 				if (passo && !restano) {
 					let dopo = passo.nextElementSibling;
@@ -1564,9 +1709,9 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101214-r43').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r44').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
-if ($('[data-passi]')) import('./passi.js?v=2026101214').catch(senzaTendine);
+if ($('[data-passi]')) import('./passi.js?v=2026101220').catch(senzaTendine);
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {
@@ -1612,6 +1757,23 @@ if (cal) {
 	const avviso = $('[data-quando-avviso]');
 	let modo = 'sopralluogo';
 	let bozza = { sopralluogo: null, inizio: null }; // le scelte di questa apertura, non ancora salvate
+	let periodi = []; // «Oppure un periodo» del modulo (12/10): con «Ho una data» che apre il calendario
+	const dillo = (t) => {
+		if (!avviso) return;
+		avviso.textContent = t;
+		avviso.hidden = !t;
+	};
+	// periodo e date insieme no: con delle date salvate il periodo è «Ho una data»; senza date «Ho una data» si toglie
+	function allinea() {
+		const hoData = periodi.find((r) => r.value === 'Ho una data');
+		if (!hoData) return;
+		const date = Boolean(valori.sopralluogo || valori.inizio);
+		if (date && !hoData.checked) {
+			const prima = periodi.find((r) => r.checked);
+			hoData.checked = true;
+			if (prima) dillo(`Resta la data che hai scelto: il periodo «${prima.value}» non vale più.`);
+		} else if (!date && hoData.checked && !cal.open) hoData.checked = false;
+	}
 
 	// «oggi» è il giorno civile a Roma, qualunque sia il fuso del dispositivo; giorni senza ore (niente salti col cambio dell'ora)
 	const oggi = () => {
@@ -1730,6 +1892,7 @@ if (cal) {
 			const via = riga && $('[data-rr-date-togli]', riga);
 			if (via) via.hidden = !parti.length;
 		}
+		allinea();
 	};
 	for (const b of $$('[data-rr-date-togli]'))
 		b.addEventListener('click', () => {
@@ -1880,6 +2043,7 @@ if (cal) {
 		chiudi();
 	});
 	cal.addEventListener('close', () => {
+		allinea(); // «Ho una data» senza date salvate (chiuso senza salvare) si toglie
 		document.documentElement.classList.remove('cal-aperto');
 		cal.classList.remove('is-chiude', 'cal-scorre');
 		// il fuoco torna al pulsante che l'ha aperto; col dito il browser lo rimette da solo, senza riquadro
@@ -1930,6 +2094,23 @@ if (cal) {
 			// sessione non disponibile
 		}
 	});
+	// «Ho una data» apre il calendario; scegliendo un periodo le date di prima si tolgono (e lo diciamo)
+	periodi = $$('[data-rr-periodo] input[name="periodo"]');
+	for (const r of periodi)
+		r.addEventListener('change', () => {
+			if (!r.checked) return;
+			if (r.value === 'Ho una data') {
+				if (!valori.sopralluogo && !valori.inizio) apri('sopralluogo', $('[data-quando-apri="sopralluogo"]', r.form) || r);
+				return;
+			}
+			if (valori.sopralluogo || valori.inizio) {
+				valori.sopralluogo = null;
+				valori.inizio = null;
+				scrivi();
+				aggiorna();
+				dillo(`Resta il periodo «${r.value}»: abbiamo tolto le date scelte prima.`);
+			}
+		});
 	// date scadute o non più valide (es. tornando dopo qualche giorno): si tolgono
 	rivalida();
 	setTimeout(controllaServizio, 0);

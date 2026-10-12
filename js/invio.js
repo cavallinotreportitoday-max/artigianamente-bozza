@@ -37,6 +37,38 @@ async function riduci(f) {
 
 const euro = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
+/* Il messaggio della richiesta (12/10, flussi guidati): prima i «Dettagli del progetto» scritti dal sito con le
+   risposte di adesso (rifatti a ogni invio: niente accumuli), poi la «Nota del cliente». Le date hanno i loro campi;
+   il periodo («Nel prossimo mese»…) va nei dettagli. Al massimo 4.000 caratteri, come nel database. */
+export const MAX_MESSAGGIO = 4000;
+export function messaggioDi(form) {
+	const fd = new FormData(form);
+	const g = (k) => String(fd.get(k) ?? '').trim();
+	const am = form._am || null;
+	const periodo = g('periodo') && g('periodo') !== 'Ho una data' ? `- Periodo preferito: ${g('periodo')}` : '';
+	// il periodo con le altre risposte, prima della riga «Esito»
+	const righe = (typeof am?.dettagli === 'function' ? am.dettagli() : '').split('\n').filter(Boolean);
+	const k = righe.findIndex((r) => r.startsWith('Esito:'));
+	if (periodo) righe.splice(k < 0 ? righe.length : k, 0, periodo);
+	const dettagli = righe.join('\n');
+	const nota = g('messaggio');
+	return [dettagli && `Dettagli del progetto\n${dettagli}`, nota && `Nota del cliente\n${nota}`].filter(Boolean).join('\n\n');
+}
+function troppoLungo(form, n) {
+	const nota = form.querySelector('textarea[name="messaggio"]');
+	const quanto = n - MAX_MESSAGGIO;
+	const testo = `La nota è troppo lunga: togli circa ${quanto} caratteri (al massimo 4.000 caratteri in tutto, con i dettagli del progetto).`;
+	const avviso = form.querySelector('[data-pv-msg-limite]');
+	if (avviso) {
+		avviso.textContent = testo;
+		avviso.hidden = false;
+	}
+	form._rr?.apriDettagli(true);
+	nota?.setAttribute('aria-invalid', 'true');
+	nota?.focus({ preventScroll: false });
+	return Object.assign(new Error('lungo'), { messaggio: testo });
+}
+
 export function attivaModuli(moduli) {
 	for (const form of moduli) {
 		const ok = $('[data-conferma]', form);
@@ -80,6 +112,15 @@ export function attivaModuli(moduli) {
 			if (esito) esito.hidden = true;
 		};
 
+		form.addEventListener('input', (e) => {
+			if (e.target?.name !== 'messaggio') return;
+			const avviso = form.querySelector('[data-pv-msg-limite]');
+			if (avviso && !avviso.hidden && messaggioDi(form).length <= MAX_MESSAGGIO) {
+				avviso.hidden = true;
+				e.target.removeAttribute('aria-invalid');
+				nascondi();
+			}
+		});
 		// Dopo l'invio, se il cliente cambia qualcosa, è una richiesta nuova
 		form.addEventListener('input', () => {
 			if (!inviata) return;
@@ -94,7 +135,9 @@ export function attivaModuli(moduli) {
 			const fd = new FormData(form);
 			const g = (k) => String(fd.get(k) ?? '').trim();
 			const generale = form.hasAttribute('data-generale');
-			const am = form._am || null; // lo scrivono i calcolatori: { lavoro, calcolo }
+			const am = form._am || null; // lo scrivono i calcolatori: { lavoro, calcolo, modo, dettagli }
+			const messaggio = generale ? g('messaggio') : messaggioDi(form);
+			if (messaggio.length > MAX_MESSAGGIO) throw troppoLungo(form, messaggio.length);
 			const dati = {
 				chiave,
 				origine: generale ? 'contatti' : form.closest('[data-pv]') ? 'preventivo' : 'pagina_servizio',
@@ -104,17 +147,19 @@ export function attivaModuli(moduli) {
 				telefono: g('telefono'),
 				email: g('email'),
 				comune: g('comune'),
-				messaggio: g('messaggio'),
-				// periodo preferito (12/10): il server accetta solo giorni nelle date, quindi va nel riepilogo, che Fabri legge
-				riepilogo: [g('riepilogo'), g('periodo') && `Periodo preferito: ${g('periodo')}.`].filter(Boolean).join(' '),
+				// 12/10 (flussi guidati): «Dettagli del progetto» (tutte le risposte e il periodo) + «Nota del cliente»
+				messaggio,
+				riepilogo: g('riepilogo'),
 				preferenza_sopralluogo: g('data-sopralluogo') || null,
 				preferenza_inizio: g('inizio-desiderato') || null,
 				privacy: fd.get('privacy') != null,
 				sito_web: g('sito_web'),
 				revisione: REVISIONE,
-				calcolo: am?.calcolo ?? null,
+				calcolo: am?.modo === 'valutazione' ? null : (am?.calcolo ?? null),
 				conferma
 			};
+			// richiesta di valutazione esplicita (senza stima): solo dal Preventivo, mai dai Contatti
+			if (!generale && am?.modo === 'valutazione') dati.modo = 'valutazione';
 			if (generale) dati.extra = { partenza: g('partenza'), arrivo: g('arrivo'), data: g('data'), locali: g('locali') };
 			const corpo = new FormData();
 			corpo.set('dati', JSON.stringify(dati));
@@ -189,6 +234,12 @@ export function attivaModuli(moduli) {
 			e.preventDefault();
 			if (!form.checkValidity()) {
 				form.reportValidity();
+				return;
+			}
+			// nota troppo lunga: si dice subito, prima di inviare (niente tagli in silenzio)
+			if (!form.hasAttribute('data-generale') && messaggioDi(form).length > MAX_MESSAGGIO) {
+				const e = troppoLungo(form, messaggioDi(form).length);
+				mostra('errore', e.messaggio);
 				return;
 			}
 			if (!API) {

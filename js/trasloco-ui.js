@@ -21,7 +21,7 @@ import {
 	scatoloniStimati,
 	inventario,
 	comuniPronti
-} from './trasloco.js?v=2026101021-r43';
+} from './trasloco.js?v=2026101021-r44';
 import { durata, finisciArrivo, tieniPosto, rigaChiusa, liberaPosti, daTastiera, ravviva } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -38,6 +38,11 @@ const VICINI = ['VE', 'TV', 'PD', 'RO', 'VI', 'VR', 'BL', 'UD', 'PN', 'GO', 'TS'
 const pianoTesto = (p) => (p === '' ? '' : Number(p) < 0 ? 'seminterrato' : Number(p) === 0 ? 'piano terra' : `${p}° piano`);
 
 export function avviaTrasloco(box) {
+	/** «Non so quantificare» aperto e con due parole di descrizione (12/10, flussi guidati) */
+	const nonSoQuanto = () => {
+		const b = box.querySelector('[data-tr-nonso]');
+		return Boolean(b && !b.hidden && b.querySelector('[name="nonso-testo"]').value.trim().length >= 3);
+	};
 	const form = $('[data-tr-form]', box);
 	const aside = $('[data-tr-ris]', box);
 	const barra = $('[data-tr-barra]', box);
@@ -299,6 +304,13 @@ export function avviaTrasloco(box) {
 	/* ---------- Passi: uno aperto alla volta ---------- */
 	const passi = $$('[data-passo]', form);
 	const passo = (n) => passi.find((p) => Number(p.dataset.passo) === n);
+	// 12/10 (flussi guidati): il passo 3 («Manca qualcosa?») ora è una parte apribile del passo 2: si salta
+	const succ = (n) => (n === 2 ? 4 : n + 1);
+	const prec = (n) => (n === 4 ? 2 : n - 1);
+	const manca3 = $('[data-tr-manca]', box);
+	const apriManca = () => {
+		if (manca3) manca3.open = true;
+	};
 	function apri(n, scorri = true) {
 		finisciArrivo();
 		visti.add(n);
@@ -465,7 +477,7 @@ export function avviaTrasloco(box) {
 		});
 		$('[data-passo-chiudi]', p)?.addEventListener('click', () => chiudiPasso(p));
 		// ‹ in alto a sinistra: il passo prima
-		$('[data-passo-indietro]', p)?.addEventListener('click', () => n > 1 && apri(n - 1));
+		$('[data-passo-indietro]', p)?.addEventListener('click', () => n > 1 && apri(prec(n)));
 		$('[data-passo-avanti]', p)?.addEventListener('click', () => {
 			// mancano dati: niente passo dopo, si porta al campo da completare
 			if (bloccato(n)) return mostraCosaManca(n);
@@ -476,8 +488,8 @@ export function avviaTrasloco(box) {
 			}
 			// la prima volta i passi vanno in fila; se la stima si è già vista e si stava solo correggendo,
 			// si salta ai passi ancora da fare, o si torna alla stima
-			let dopo = n + 1;
-			if (visti.has(6)) while (dopo < 6 && visti.has(dopo) && !bloccato(dopo)) dopo++;
+			let dopo = succ(n);
+			if (visti.has(6)) while (dopo < 6 && visti.has(dopo) && !bloccato(dopo)) dopo = succ(dopo);
 			apri(dopo);
 		});
 	}
@@ -548,7 +560,7 @@ export function avviaTrasloco(box) {
 			chiudiEditor(false);
 			return segna();
 		}
-		if (n && tendina(n)) return n > 1 ? apri(n - 1) : chiudiPasso(passo(1));
+		if (n && tendina(n)) return n > 1 ? apri(prec(n)) : chiudiPasso(passo(1));
 		// dalla stima (o dalla pagina dopo i passi) si torna all'ultimo passo
 		apri(5);
 	});
@@ -597,7 +609,10 @@ export function avviaTrasloco(box) {
 	function primoMancante(n) {
 		const r = ultimo;
 		if (!r || n === 1 || n >= 6) return null;
-		const m = (r.mancano || []).find((x) => x.passo === n && !(n === 2 && /esempio/.test(x.testo)));
+		// «Non so quantificare» con due parole di descrizione: si va avanti senza inventario (valutazione)
+		if (n === 2 && nonSoQuanto()) return null;
+		// il passo 2 comprende anche «Manca qualcosa?» (oggetti tuoi senza nome)
+		const m = (r.mancano || []).find((x) => (x.passo === n || (n === 2 && x.passo === 3)) && !(n === 2 && /esempio/.test(x.testo)));
 		if (m) return m;
 		// passo 2: serve almeno qualcosa da portare (le stanze d'esempio vanno bene, si controllano dopo)
 		if (n === 2 && r.vuoto) return { testo: 'Aggiungi cosa portiamo', passo: 2, campo: s.cosa === 'poche' ? '[data-gruppo="poche"] input' : s.cosa ? '[data-tipo]' : '[name="cosa"]' };
@@ -610,6 +625,10 @@ export function avviaTrasloco(box) {
 	}
 	/** Apre il passo e porta al campo che manca, visibile sotto la barra (evidenzia = un attimo in risalto) */
 	function vaiAlCampo(n, sel, evidenzia = false) {
+		if (n === 3) {
+			n = 2;
+			apriManca();
+		}
 		apri(n, !sel);
 		if (!sel) return;
 		if (n === 2 && sel === '[data-tipo]') tipiAperti = true;
@@ -673,10 +692,14 @@ export function avviaTrasloco(box) {
 		else if (scTesto && !nCasa) t2 = `Solo ${scTesto}${manca(2) ? ' · da completare' : ''}`;
 		else if (s.cosa === 'casa') t2 = visti.has(2) && chiuso(2) ? 'Aggiungi le stanze · da completare' : '';
 		else t2 = daCompletare(2);
-		metti(2, t2, !manca(2) && (nCasa > 0 || sc > 0));
-		// 3 · manca qualcosa (facoltativo)
+		// 3 · manca qualcosa (facoltativo, dentro il passo 2)
 		const nTuoi = s.personali.filter((x) => String(x.nome || '').trim()).length;
 		const nAltri = conta(false) + nTuoi;
+		if (nonSoQuanto()) t2 = 'Da quantificare insieme';
+		else if (nAltri && t2 && !/da completare$/.test(t2)) t2 += ` · ${ogg(nAltri)} in più`;
+		const contaManca = $('[data-tr-manca-conta]', box);
+		if (contaManca) contaManca.textContent = nAltri ? `${ogg(nAltri)} in più` : 'Oggetti particolari o fuori elenco';
+		metti(2, t2, (!manca(2) && (nCasa > 0 || sc > 0)) || (nonSoQuanto() && !manca(2)));
 		let t3 = nAltri ? `${ogg(nAltri)} in più` : confermati.has(3) ? 'Nessun altro oggetto' : '';
 		if (manca(3)) t3 = t3 ? `${t3} · da completare` : 'Da completare';
 		metti(3, t3, !manca(3) && (nAltri > 0 || confermati.has(3)));
@@ -949,7 +972,7 @@ export function avviaTrasloco(box) {
 					inp.value = '';
 					mostraRis();
 					nuovoPersonale(testo);
-					if (!altri) apri(3);
+					if (!altri) apriManca();
 				});
 				vuoto.replaceChildren(el('p', '', 'Non è nel catalogo.'), tu);
 			}
@@ -1249,14 +1272,15 @@ export function avviaTrasloco(box) {
 		mostra();
 		const r = calcolaTrasloco(s, km);
 		ultimo = r;
-		const pronta = !r.vuoto && comuniPronti(s);
+		const pronta = !r.vuoto && comuniPronti(s) && !nonSoQuanto(); // «Non so quantificare»: niente cifra
 		const nManca = r.mancano.length;
 		const daFare = nManca ? `${nManca} ${nManca === 1 ? 'dato da completare' : 'dati da completare'}` : '';
 		// passo 6 (la stima)
 		cifra($('[data-tr-cifra]', box), pronta ? r : { vuoto: true });
 		scrivi('[data-tr-stima-label]', pronta ? etichetta(r) : 'La tua stima');
 		const mezzi = pronta ? (r.lungo ? `${r.furgoni} camion` : `${r.furgoni} ${r.furgoni === 1 ? 'furgone' : 'furgoni'}`) : '';
-		const riga = r.vuoto ? r.messaggio : !pronta ? `${ATTESA}.` : [base(r), mezzi, `${r.squadra} persone`, km && `${euro(r.km)} km`].filter(Boolean).join(' · ');
+		const daQuantificare = nonSoQuanto();
+		const riga = daQuantificare ? 'Da quantificare insieme: ti facciamo il preventivo dopo un sopralluogo o una videochiamata.' : r.vuoto ? r.messaggio : !pronta ? `${ATTESA}.` : [base(r), mezzi, `${r.squadra} persone`, km && `${euro(r.km)} km`].filter(Boolean).join(' · ');
 		scrivi('[data-tr-riga]', riga);
 		blocco('incluso', pronta ? r.incluso : [], (t) => el('li', '', t));
 		blocco('valutare', r.daValutare, (t) => el('li', '', t));
@@ -1288,7 +1312,7 @@ export function avviaTrasloco(box) {
 		// riassunto a destra (PC)
 		cifra($('[data-tr-ris-cifra]', aside), pronta ? r : { vuoto: true });
 		scrivi('.risultato__label', pronta ? etichetta(r) : 'Il tuo trasloco', aside);
-		scrivi('[data-tr-ris-riga]', r.vuoto ? r.messaggio : pronta ? base(r) : `${base(r)}. ${ATTESA}.`, aside);
+		scrivi('[data-tr-ris-riga]', daQuantificare ? 'Da quantificare insieme: prezzo dopo il sopralluogo o una videochiamata.' : r.vuoto ? r.messaggio : pronta ? base(r) : `${base(r)}. ${ATTESA}.`, aside);
 		// quanti oggetti per gruppo (la cucina componibile conta 1)
 		const pezzi = (mappa) => Object.entries(mappa).reduce((t, [id, q]) => t + (numero(q) > 0 ? (oggetti[id]?.unita === 'm' ? 1 : numero(q)) : 0), 0);
 		const gruppi = [];
@@ -1346,16 +1370,53 @@ export function avviaTrasloco(box) {
 
 		// riepilogo per il modulo "Richiedi un sopralluogo"
 		if (riepilogo && !box.closest('[hidden]')) {
-			riepilogo.value = r.riepilogo || '';
-			// scelte per il server, che rifà il conto (le foto vanno a parte, non nelle scelte)
+			// «Non so quantificare» detto dal cliente: valutazione, anche se ha già messo qualche stanza d'esempio
+			const valuta = nonSoQuanto();
+			const descr = $('[name="nonso-testo"]', form)?.value.trim() || '';
+			const tratta = [s.partenza.comune, s.arrivo.comune].filter(Boolean).join(' → ');
+			riepilogo.value = valuta ? `Trasloco da quantificare insieme${tratta ? ` (${tratta})` : ''}: ${descr}` : r.riepilogo || '';
+			// scelte per il server, che rifà il conto (le foto vanno a parte, non nelle scelte); «Non so quantificare»
+			// senza inventario = richiesta di valutazione, senza stima. L'inventario resta nelle scelte, mai nella nota.
 			if (riepilogo.form) {
 				const input = JSON.parse(JSON.stringify(s, (k, x) => (k === 'files' ? undefined : x)));
-				riepilogo.form._am = { lavoro: null, calcolo: { input, strada: km, mostrato: pronta ? { min: r.min, max: r.max } : null } };
+				const dettagli = () =>
+					[
+						'Traslochi · Il tuo trasloco',
+						s.cosa && `- Cosa devi spostare? ${s.cosa === 'casa' ? 'Casa o molti oggetti' : 'Poche cose'}`,
+						nonSoQuanto() && `- Da quantificare insieme: ${descr}`,
+						(() => {
+							const acc = $$('input[name="accesso"]:checked', form).map((i) => i.closest('label').textContent.trim());
+							return acc.length ? `- Accesso: ${acc.join(', ')} (da verificare al sopralluogo)` : '';
+						})(),
+						valuta ? 'Esito: Richiesta di valutazione: prezzo dopo il sopralluogo o una videochiamata' : `Esito: ${pronta ? 'Stima calcolata sul sito (la ricalcola il server)' : 'Stima da completare al sopralluogo'}`,
+						box._contesto && `Arriva da: ${box._contesto}`
+					]
+						.filter(Boolean)
+						.join('\n');
+				riepilogo.form._am = valuta
+					? { lavoro: null, calcolo: null, modo: 'valutazione', dettagli }
+					: { lavoro: null, calcolo: { input, strada: km, mostrato: pronta ? { min: r.min, max: r.max } : null }, modo: 'stima', dettagli };
 			}
 			riepilogo.dispatchEvent(new Event('change', { bubbles: true }));
 		}
 		sintesi();
 	}
+
+	/* ---------- «Non so quantificare» (12/10): due parole e si va avanti, senza inventario e senza stima ---------- */
+	const boxNonSo = $('[data-tr-nonso]', box);
+	const apriNonSo = $('[data-tr-nonso-apri]', box);
+	const mostraNonSo = (si) => {
+		if (!boxNonSo) return;
+		boxNonSo.hidden = !si;
+		apriNonSo?.setAttribute('aria-expanded', String(si));
+		if (si) requestAnimationFrame(() => $('textarea', boxNonSo).focus({ preventScroll: false }));
+		aggiorna();
+	};
+	apriNonSo?.addEventListener('click', () => mostraNonSo(boxNonSo.hidden));
+	$('[data-tr-nonso-chiudi]', box)?.addEventListener('click', () => {
+		mostraNonSo(false);
+		apriNonSo?.focus({ preventScroll: true });
+	});
 
 	form.addEventListener('submit', (e) => e.preventDefault());
 	for (const ev of ['input', 'change']) {
@@ -1382,7 +1443,7 @@ export function avviaTrasloco(box) {
 	const fondo = $('[data-tr-fondo]', box);
 	$('[data-tr-fondo-vai]', fondo)?.addEventListener('click', () => {
 		const r = ultimo;
-		const nonVisto = [1, 2, 3, 4, 5].find((k) => !visti.has(k));
+		const nonVisto = [1, 2, 4, 5].find((k) => !visti.has(k));
 		if (nonVisto) return apri(nonVisto);
 		const m = [...(r?.mancano || [])].sort((x, y) => x.passo - y.passo)[0];
 		if (m) return vaiAlCampo(m.passo, m.campo);
