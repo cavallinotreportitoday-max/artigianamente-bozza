@@ -1,7 +1,7 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r30';
-import { cerca } from './ricerca.js?v=2026100914-r30';
-import { attivaModuli } from './invio.js?v=2026101118-r30';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r31';
+import { cerca } from './ricerca.js?v=2026100914-r31';
+import { attivaModuli } from './invio.js?v=2026101118-r31';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -789,10 +789,14 @@ if (pv) {
 		facolt.hidden = altro;
 		// nei traslochi partenza e arrivo li abbiamo già: niente terza domanda sul comune
 		const trasloco = slug === 'traslochi';
-		// traslochi: titolo più corto e meno spazio sopra, così il passo aperto arriva prima
-		document.documentElement.classList.toggle('pv-trasloco', trasloco);
-		// sul telefono la stima del trasloco diventa una tendina a tutto schermo
-		document.documentElement.classList.toggle('pv-foglio', trasloco);
+		// calcolatori a passi (tutti tranne «Altro lavoro», 11/10): titolo più corto e meno spazio sopra, così il passo
+		// aperto arriva prima; sul telefono i passi salgono come tendine (come Traslochi)
+		const passi = !altro;
+		document.documentElement.classList.toggle('pv-trasloco', passi);
+		document.documentElement.classList.toggle('pv-foglio', passi);
+		const titolo = btn.dataset.titoloStima || `La stima: ${nome}`;
+		for (const t of $$('.pv-foglio__titolo, .pv-titolo-tr')) t.textContent = titolo;
+		$('[data-foglio-chiudi]')?.setAttribute('aria-label', `Chiudi: ${titolo.toLowerCase()}`);
 		comuneCampo.hidden = trasloco;
 		$('input', comuneCampo).required = !trasloco;
 		dati.hidden = !altro;
@@ -805,8 +809,8 @@ if (pv) {
 		} catch {
 			// in alcune anteprime l'indirizzo non si può cambiare
 		}
-		// nella tendina del trasloco si parte dall'alto; altrimenti si va al servizio scelto
-		if (scorri) trasloco && telefono() ? scrollTo({ top: 0, behavior: 'instant' }) : vai(scelto);
+		// con le tendine (telefono) si parte dall'alto; altrimenti si va al servizio scelto
+		if (scorri) passi && telefono() ? scrollTo({ top: 0, behavior: 'instant' }) : vai(scelto);
 	};
 
 	for (const b of lavori) b.addEventListener('click', () => scegli(b.dataset.scegli, true));
@@ -1042,7 +1046,9 @@ if (
 	}
 }
 
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101021-r30');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101203-r31');
+// gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
+if ($('[data-passi]')) import('./passi.js?v=2026101203');
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {

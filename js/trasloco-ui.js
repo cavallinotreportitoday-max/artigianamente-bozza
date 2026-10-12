@@ -21,7 +21,7 @@ import {
 	scatoloniStimati,
 	inventario,
 	comuniPronti
-} from './trasloco.js?v=2026101021-r30';
+} from './trasloco.js?v=2026101021-r31';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -86,7 +86,8 @@ export function avviaTrasloco(box) {
 	const inAlto = () => (testaFoglio && testaFoglio.offsetHeight ? testaFoglio.offsetHeight : header?.offsetHeight || 60);
 	const sopra = () => inAlto() + (barra && !barra.hidden && barra.offsetHeight ? barra.offsetHeight + 8 : 0) + 12;
 	// telefono, traslochi: i passi 1-4 si aprono come tendina da sotto (il passo 5, la stima, resta nella pagina)
-	const foglio = () => document.documentElement.classList.contains('pv-foglio') && matchMedia('(max-width: 860px)').matches;
+	// (11/10: le tendine ci sono in tutti i calcolatori; questo vale solo se il pannello dei traslochi è quello in vista)
+	const foglio = () => document.documentElement.classList.contains('pv-foglio') && matchMedia('(max-width: 860px)').matches && !box.closest('[hidden]');
 	const tendina = (n) => foglio() && Number(n) !== 6;
 	const scorriA = (dove) => {
 		// dentro una tendina scorre la tendina, non la pagina
