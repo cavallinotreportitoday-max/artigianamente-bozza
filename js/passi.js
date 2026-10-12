@@ -130,6 +130,37 @@ export function avviaPassi(box) {
 		}
 	}
 
+	/* ---------- Tendina come finestra (revisione 12/10, B2): con la tendina aperta il resto della pagina è inerte
+	   (tastiera e lettori di schermo non ci arrivano); chiusa, tutto torna come prima ---------- */
+	let inerti = [];
+	function libera() {
+		for (const el of inerti) el.inert = false;
+		inerti = [];
+		for (const q of $$('.tr2-passo[role="dialog"]', box)) {
+			q.removeAttribute('role');
+			q.removeAttribute('aria-modal');
+			q.removeAttribute('aria-label');
+		}
+	}
+	function isola(p) {
+		libera();
+		for (let el = p; el && el.parentElement && el !== document.body; el = el.parentElement)
+			for (const fratello of el.parentElement.children) {
+				if (fratello === el || fratello === velo || fratello.inert || fratello.matches('script, style, link')) continue;
+				fratello.inert = true;
+				inerti.push(fratello);
+			}
+		p.setAttribute('role', 'dialog');
+		p.setAttribute('aria-modal', 'true');
+		p.setAttribute('aria-label', testo($('.tr2-passo__titolo', p)));
+	}
+	/** Tiene allineati finestra e resto della pagina con il passo aperto (anche girando il telefono) */
+	function sincronizza() {
+		const p = aperto();
+		if (tendina(p) && !p.classList.contains('is-chiude')) isola(p);
+		else libera();
+	}
+
 	/* ---------- Aprire e chiudere ---------- */
 	function scorriA(el) {
 		const y = el.getBoundingClientRect().top + scrollY - inAlto();
@@ -138,6 +169,7 @@ export function avviaPassi(box) {
 	function apri(p, scorri = true, iniziale = false) {
 		if (!p) return;
 		visti.add(p);
+		p._aperto = performance.now(); // B3: un secondo tocco rapido su «Avanti» non salta il passo nuovo
 		// da una tendina all'altra (Avanti, ‹): niente risalita da sotto, cambia solo il contenuto
 		const prima = passi().find((q) => q.classList.contains('is-aperto') && !q.classList.contains('is-chiude') && tendina(q));
 		const tutti = passi();
@@ -152,9 +184,10 @@ export function avviaPassi(box) {
 			$('[data-passo-apri]', q).setAttribute('aria-expanded', String(si));
 		}
 		aggiorna();
+		sincronizza();
 		if (tendina(p)) {
 			$('[data-passo-corpo]', p).scrollTop = 0;
-			if (iniziale) return; // all'arrivo nella pagina: come il primo passo, senza voce nella cronologia
+			if (iniziale) return entraNellaTendina(p); // all'arrivo nella pagina: senza voce nella cronologia
 			segna();
 			// il fuoco va nella tendina (sulla ×): la tastiera del telefono non si apre da sola
 			requestAnimationFrame(() => $('[data-passo-chiudi]', p)?.focus({ preventScroll: true }));
@@ -170,16 +203,30 @@ export function avviaPassi(box) {
 		}
 		aggiorna();
 	}
+	/** All'arrivo il fuoco entra nella tendina (sulla tendina stessa: niente anello intorno alla ×) */
+	function entraNellaTendina(p) {
+		p.tabIndex = -1;
+		requestAnimationFrame(() => tendina(p) && p.classList.contains('is-aperto') && p.focus({ preventScroll: true }));
+	}
 	function chiudi(p, subito = false) {
 		if (!p) return;
+		const eraTendina = tendina(p);
 		const fine = () => {
 			p.classList.remove('is-aperto', 'is-chiude');
 			$('[data-passo-corpo]', p).hidden = true;
 			$('[data-passo-apri]', p).setAttribute('aria-expanded', 'false');
 			aggiorna();
+			// il fuoco torna sul passo appena chiuso (non all'inizio della pagina)
+			const f = document.activeElement;
+			if (eraTendina && (!f || f === document.body || p.contains(f))) $('[data-passo-apri]', p)?.focus({ preventScroll: true });
 		};
 		clearTimeout(p._chiude);
-		if (tendina(p)) togliSegno();
+		if (eraTendina) {
+			// B4: la × della pagina sta dove c'era quella della tendina: un secondo tocco subito dopo non deve chiudere anche la stima
+			window.amTendinaChiusaIl = performance.now();
+			togliSegno();
+			libera();
+		}
 		if (tendina(p) && !ridotto && !subito) {
 			p.classList.add('is-chiude');
 			p._chiude = setTimeout(fine, 330);
@@ -221,6 +268,7 @@ export function avviaPassi(box) {
 	/* ---------- Tendina tirata giù col dito (come Traslochi): oltre un certo punto si chiude ---------- */
 	function tiraGiu(p) {
 		const corpo = $('[data-passo-corpo]', p);
+		let x0 = 0;
 		let y0 = null;
 		let dy = 0;
 		let tira = false;
@@ -229,6 +277,7 @@ export function avviaPassi(box) {
 		const pulisci = (el) => el && ((el.style.transition = ''), (el.style.transform = ''), (el.style.opacity = ''));
 		p.addEventListener('touchstart', (e) => {
 			y0 = e.touches.length === 1 && vale() ? e.touches[0].clientY : null;
+			x0 = e.touches[0]?.clientX ?? 0;
 			dy = 0;
 			tira = false;
 			ultimi = [];
@@ -237,6 +286,13 @@ export function avviaPassi(box) {
 			if (y0 == null) return;
 			dy = e.touches[0].clientY - y0;
 			if (!tira) {
+				// M1 (revisione 12/10): un gesto più di lato che verso il basso è uno scorrimento (es. le schede dello stile):
+				// la tendina non lo segue
+				const dx = e.touches[0].clientX - x0;
+				if (Math.abs(dx) > 8 && Math.abs(dx) >= Math.abs(dy)) {
+					y0 = null;
+					return;
+				}
 				const daTesta = !corpo.contains(e.target);
 				if (dy > 8 && (daTesta || corpo.scrollTop <= 0)) {
 					tira = true;
@@ -247,7 +303,7 @@ export function avviaPassi(box) {
 					return;
 				} else return;
 			}
-			e.preventDefault();
+			if (e.cancelable) e.preventDefault();
 			p.style.transform = `translateY(${dy > 0 ? dy : dy * 0.2}px)`;
 			if (velo) velo.style.opacity = String(Math.max(0, 1 - Math.max(0, dy) / (p.offsetHeight * 0.8)));
 			ultimi.push([e.timeStamp, dy]);
@@ -333,6 +389,7 @@ export function avviaPassi(box) {
 			if (i > 0) apri(tutti[i - 1]);
 		});
 		$('[data-passo-avanti]', p).addEventListener('click', () => {
+			if (performance.now() - (p._aperto || 0) < 350) return; // B3: tocco doppio
 			if (manca(p)) return mostraCosaManca(p);
 			const tutti = passi();
 			const dopo = tutti[tutti.indexOf(p) + 1];
@@ -374,7 +431,19 @@ export function avviaPassi(box) {
 	new MutationObserver(() => {
 		const p = aperto();
 		if (tendina(p)) segna();
+		sincronizza();
 	}).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+	// il pannello di questo lavoro sparisce (si sceglie un altro lavoro): niente finestra rimasta a metà
+	const pannello = box.closest('[data-pannello]');
+	if (pannello) new MutationObserver(sincronizza).observe(pannello, { attributes: true, attributeFilter: ['hidden'] });
+	// B8 (revisione 12/10): girando il telefono o allargando oltre 860 px la tendina torna un passo nella pagina:
+	// la voce in più della cronologia si toglie (e si rimette se lo schermo torna stretto)
+	matchMedia('(max-width: 860px)').addEventListener('change', () => {
+		const p = aperto();
+		if (tendina(p)) segna();
+		else togliSegno();
+		sincronizza();
+	});
 	// quando la stima si vede nella pagina, il riquadro in fondo scende via
 	if (fondo && 'IntersectionObserver' in window) {
 		const inVista = new Set();
@@ -387,6 +456,8 @@ export function avviaPassi(box) {
 	const p0 = aperto();
 	if (p0) visti.add(p0);
 	riallinea(true);
+	sincronizza();
+	if (tendina(aperto())) entraNellaTendina(aperto());
 }
 
 for (const box of $$('[data-passi]')) avviaPassi(box);

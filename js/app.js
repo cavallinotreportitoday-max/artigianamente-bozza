@@ -1,7 +1,7 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r32';
-import { cerca } from './ricerca.js?v=2026100914-r32';
-import { attivaModuli } from './invio.js?v=2026101118-r32';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r33';
+import { cerca } from './ricerca.js?v=2026100914-r33';
+import { attivaModuli } from './invio.js?v=2026101118-r33';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -54,8 +54,10 @@ if (header) {
 		const fondoTestata = header.getBoundingClientRect().bottom;
 		const cima = largo.matches ? fondoTestata : fondoTestata - rigaSezioni.offsetHeight;
 		const con = f.bottom <= fondoTestata + 1;
-		// la riga della testata riparte da dove l'hai lasciata nella fascia (se l'avevi fatta scorrere di lato)
-		if (con && !header.classList.contains('con-sezioni')) $('.mm-sezioni__in', rigaSezioni).scrollLeft = $('.mm-sezioni__in', fascia).scrollLeft;
+		// la fila riparte da dove l'hai lasciata, scendendo (fascia → testata) e risalendo (testata → fascia)
+		const prima = header.classList.contains('con-sezioni');
+		if (con && !prima) $('.mm-sezioni__in', rigaSezioni).scrollLeft = $('.mm-sezioni__in', fascia).scrollLeft;
+		if (!con && prima) $('.mm-sezioni__in', fascia).scrollLeft = $('.mm-sezioni__in', rigaSezioni).scrollLeft;
 		header.classList.toggle('is-scrolled', f.top <= cima + 1);
 		header.classList.toggle('con-sezioni', con);
 	};
@@ -158,6 +160,23 @@ for (const slider of $$('[data-slider]')) {
 /* Campi numerici con + e − */
 for (const box of $$('[data-stepper]')) {
 	const input = $('input', box);
+	// anche scritti a mano restano tra il minimo e il massimo; dove si conta uno a uno, solo numeri interi (12/10, B6)
+	const limita = (finale) => {
+		if (input.value === '') return;
+		const min = input.min === '' ? -Infinity : Number(input.min);
+		const max = input.max === '' ? Infinity : Number(input.max);
+		let n = Number(input.value);
+		if (!Number.isFinite(n)) return;
+		if (finale && Number(input.step) === 1) n = Math.round(n);
+		const giusto = Math.min(max, Math.max(min, n));
+		if (giusto !== Number(input.value)) input.value = String(giusto);
+	};
+	input.addEventListener('input', () => limita(false));
+	input.addEventListener('change', () => {
+		const prima = input.value;
+		limita(true);
+		if (input.value !== prima) input.dispatchEvent(new Event('input', { bubbles: true }));
+	});
 	for (const btn of $$('[data-step]', box)) {
 		btn.addEventListener('click', () => {
 			const passo = Number(input.step) || 1;
@@ -768,22 +787,22 @@ if (pv) {
 	// × della tendina: si torna alla pagina di prima del sito (es. Traslochi), altrimenti alla scelta del servizio.
 	// Se il lavoro l'hai scelto qui (dalla lista «Di cosa hai bisogno?»), si torna alla lista (12/10)
 	let sceltoQui = false;
+	// C'è una pagina del sito prima, nella stessa scheda? Si misura all'arrivo: dopo, le tendine aggiungono voci alla
+	// cronologia e history.length non lo dice più (revisione 12/10, M3: in una scheda nuova la × non faceva niente)
+	let daSito = false;
+	try {
+		daSito = !!document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1;
+	} catch {
+		// referrer non leggibile: si resta qui
+	}
 	$('[data-foglio-chiudi]')?.addEventListener('click', () => {
-		if (sceltoQui) {
-			// si torna alla lista pulita: le domande del lavoro di prima non restano sotto
-			$('[data-pv-cambia]', pv).click();
-			domande.hidden = true;
-			dati.hidden = true;
-			return;
-		}
-		let primaNelSito = false;
-		try {
-			primaNelSito = !!document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1;
-		} catch {
-			// referrer non leggibile: si resta qui
-		}
-		if (primaNelSito) history.back();
-		else $('[data-pv-cambia]', pv).click();
+		// B4: subito dopo la chiusura di una tendina un secondo tocco nello stesso punto non chiude anche la stima
+		if (performance.now() - (window.amTendinaChiusaIl ?? -1e9) < 450) return;
+		if (!sceltoQui && daSito) return history.back();
+		// alla lista pulita: le domande del lavoro di prima non restano sotto (B1)
+		$('[data-pv-cambia]', pv).click();
+		domande.hidden = true;
+		dati.hidden = true;
 	});
 	const scegli = (slug, scorri) => {
 		const btn = lavori.find((b) => b.dataset.scegli === slug);
@@ -819,7 +838,7 @@ if (pv) {
 		// aperto arriva prima; sul telefono i passi salgono come tendine (come Traslochi)
 		const passi = !altro;
 		document.documentElement.classList.toggle('pv-trasloco', passi);
-		document.documentElement.classList.toggle('pv-foglio', passi);
+		document.documentElement.classList.toggle('pv-foglio', passi && !window.amSenzaTendine);
 		const titolo = btn.dataset.titoloStima || `La stima: ${nome}`;
 		for (const t of $$('.pv-foglio__titolo, .pv-titolo-tr')) t.textContent = titolo;
 		$('[data-foglio-chiudi]')?.setAttribute('aria-label', `Chiudi: ${titolo.toLowerCase()}`);
@@ -877,6 +896,12 @@ if (pv) {
 				domanda.hidden = true;
 				const nome = $('[data-pv-scelto-nome]', scelto);
 				nome.textContent = `${nome.textContent} · ${r.closest('label').textContent.trim()}`;
+				// la variante resta nell'indirizzo: ricaricando o copiando il link resta la cucina (revisione 12/10, M2)
+				try {
+					history.replaceState(history.state, '', `${location.pathname}#${h}:${sub}`);
+				} catch {
+					// in alcune anteprime l'indirizzo non si può cambiare
+				}
 				// 12/10: se era l'unica domanda del passo aperto («Lo spazio»), si apre subito il passo dopo,
 				// così la tendina non resta vuota (passi.js fa lo stesso, ma arriva un attimo dopo)
 				const passo = domanda.closest('.tr2-passo.is-aperto');
@@ -1020,7 +1045,8 @@ for (const box of $$('[data-scorri]')) {
 
 
 /* Tipi di ristrutturazione: pulsanti che cambiano la scheda sotto */
-const tipi = $$('[data-tipo]');
+// solo i pulsanti dei tipi (hanno data-tipo-sub): anche le stanze dei Traslochi hanno data-tipo (revisione 12/10, M4)
+const tipi = $$('[data-tipo][data-tipo-sub]');
 if (tipi.length) {
 	const pannelli = $$('[data-tipo-pannello]');
 	// riquadro di lato e barra in fondo seguono il tipo scelto: prezzo (o "Prezzo dopo il sopralluogo"),
@@ -1094,9 +1120,14 @@ if (
 	}
 }
 
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101203-r32');
+// se uno script dei passi non arriva, la pagina non resta sotto una tendina senza comandi: i passi restano nella pagina
+const senzaTendine = () => {
+	window.amSenzaTendine = true;
+	document.documentElement.classList.remove('pv-foglio');
+};
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101213-r33').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
-if ($('[data-passi]')) import('./passi.js?v=2026101210');
+if ($('[data-passi]')) import('./passi.js?v=2026101213').catch(senzaTendine);
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {

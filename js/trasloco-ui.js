@@ -21,7 +21,7 @@ import {
 	scatoloniStimati,
 	inventario,
 	comuniPronti
-} from './trasloco.js?v=2026101021-r32';
+} from './trasloco.js?v=2026101021-r33';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -331,7 +331,11 @@ export function avviaTrasloco(box) {
 			sintesi();
 		};
 		clearTimeout(p._chiude);
-		if (tendina(p.dataset.passo)) togliSegno();
+		if (tendina(p.dataset.passo)) {
+			// la × della pagina sta dove c'era quella della tendina: un secondo tocco subito dopo non chiude anche la stima (12/10)
+			window.amTendinaChiusaIl = performance.now();
+			togliSegno();
+		}
 		if (tendina(p.dataset.passo) && !ridotto && !subito) {
 			p.classList.add('is-chiude');
 			p._chiude = setTimeout(fine, 330);
@@ -340,6 +344,7 @@ export function avviaTrasloco(box) {
 	/** Tendina tirata giù col dito: segue il dito (il velo sfuma insieme); lanciata o tirata oltre un certo punto
 	 *  si chiude, altrimenti torna su con la molla (10/10) */
 	function tiraGiu(foglio, scorre, chiudi, vale = () => true, velo = null) {
+		let x0 = 0;
 		let y0 = null;
 		let dy = 0;
 		let tira = false;
@@ -350,6 +355,7 @@ export function avviaTrasloco(box) {
 			'touchstart',
 			(e) => {
 				y0 = e.touches.length === 1 && vale() ? e.touches[0].clientY : null;
+				x0 = e.touches[0]?.clientX ?? 0;
 				dy = 0;
 				tira = false;
 				ultimi = [];
@@ -362,6 +368,12 @@ export function avviaTrasloco(box) {
 				if (y0 == null) return;
 				dy = e.touches[0].clientY - y0;
 				if (!tira) {
+					// gesto più di lato che verso il basso: è uno scorrimento di una riga, la tendina non lo segue (12/10)
+					const dx = e.touches[0].clientX - x0;
+					if (Math.abs(dx) > 8 && Math.abs(dx) >= Math.abs(dy)) {
+						y0 = null;
+						return;
+					}
 					const daTesta = !scorre || !scorre.contains(e.target);
 					if (dy > 8 && (daTesta || inCima())) {
 						tira = true;
@@ -372,7 +384,7 @@ export function avviaTrasloco(box) {
 						return;
 					} else return;
 				}
-				e.preventDefault();
+				if (e.cancelable) e.preventDefault();
 				// verso l'alto fa resistenza, verso il basso segue il dito
 				const y = dy > 0 ? dy : dy * 0.2;
 				foglio.style.transform = `translateY(${y}px)`;
@@ -529,6 +541,12 @@ export function avviaTrasloco(box) {
 		const n = apertoOra();
 		if (n && tendina(n)) segna();
 	}).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+	// girando il telefono o allargando oltre 860 px la tendina torna un passo nella pagina: si toglie la voce in più (12/10)
+	matchMedia('(max-width: 860px)').addEventListener('change', () => {
+		const n = apertoOra();
+		if (n && tendina(n)) segna();
+		else togliSegno();
+	});
 
 	/** Il passo n ha i dati per andare avanti? Il passo 1 (comuni) si può saltare: il prezzo poi si vede solo inserendoli */
 	function primoMancante(n) {
