@@ -18,7 +18,13 @@ export function avviaPassi(box) {
 	const testaFoglio = document.querySelector('[data-foglio-testa]');
 	const visti = new WeakSet(); // passi già aperti almeno una volta
 
-	const passi = () => $$('.tr2-passo', box).filter((p) => !p.hidden);
+	// passo senza domande da fare: la sua domanda ha già la risposta dalla pagina di prima
+	// (es. preventivo.html#ristrutturazioni:bagno → «Lo spazio» è già «Bagno»; app.js la segna data-pv-fissata)
+	const giaRisposto = (p) => {
+		const domande = $$('fieldset, .campo, label.check', $('[data-passo-corpo]', p)).filter((el) => !el.closest('.tr2-avanti'));
+		return domande.length > 0 && domande.every((el) => el.closest('[data-pv-fissata]'));
+	};
+	const passi = () => $$('.tr2-passo', box).filter((p) => !p.hidden && !giaRisposto(p));
 	const aperto = () => passi().find((p) => p.classList.contains('is-aperto'));
 	const risultato = () => $$('.risultato', box).find((r) => !r.hidden);
 	// tendina solo sul telefono, nella pagina Preventivo, e solo se questo calcolatore è quello in vista
@@ -82,6 +88,8 @@ export function avviaPassi(box) {
 
 	/* ---------- Disegno: numeri, linea dei passi, riassunti, stato, stima in fondo ---------- */
 	function aggiorna() {
+		// il passo con la domanda già risposta non si vede proprio (né tendina né riga nella lista)
+		for (const p of $$('.tr2-passo', box)) p.classList.toggle('is-saltato', giaRisposto(p));
 		const tutti = passi();
 		const s = stima();
 		tutti.forEach((p, i) => {
@@ -127,7 +135,7 @@ export function avviaPassi(box) {
 		const y = el.getBoundingClientRect().top + scrollY - inAlto();
 		if (Math.abs(y - scrollY) > 8) scrollTo({ top: Math.max(0, y), behavior: ridotto ? 'auto' : 'smooth' });
 	}
-	function apri(p, scorri = true) {
+	function apri(p, scorri = true, iniziale = false) {
 		if (!p) return;
 		visti.add(p);
 		// da una tendina all'altra (Avanti, ‹): niente risalita da sotto, cambia solo il contenuto
@@ -145,11 +153,22 @@ export function avviaPassi(box) {
 		}
 		aggiorna();
 		if (tendina(p)) {
-			segna();
 			$('[data-passo-corpo]', p).scrollTop = 0;
+			if (iniziale) return; // all'arrivo nella pagina: come il primo passo, senza voce nella cronologia
+			segna();
 			// il fuoco va nella tendina (sulla ×): la tastiera del telefono non si apre da sola
 			requestAnimationFrame(() => $('[data-passo-chiudi]', p)?.focus({ preventScroll: true }));
 		} else if (scorri) requestAnimationFrame(() => scorriA(p));
+	}
+	/** Se il passo aperto non c'è più (domanda già risposta, o passo sparito), si apre il primo che resta */
+	function riallinea(iniziale = false) {
+		const ap = $$('.tr2-passo.is-aperto', box)[0];
+		const tutti = passi();
+		if (ap && !tutti.includes(ap)) {
+			if (tutti[0]) apri(tutti[0], false, iniziale);
+			else chiudi(ap, true);
+		}
+		aggiorna();
 	}
 	function chiudi(p, subito = false) {
 		if (!p) return;
@@ -348,7 +367,8 @@ export function avviaPassi(box) {
 	for (const ev of ['input', 'change']) form.addEventListener(ev, () => requestAnimationFrame(aggiorna));
 	// passi che compaiono o spariscono con le scelte (bagno o altro, nelle ristrutturazioni)
 	new MutationObserver((voci) => {
-		if (voci.some((v) => v.target.matches?.('.tr2-passo'))) requestAnimationFrame(aggiorna);
+		// e domande nascoste perché già risposte (fieldset con data-pv-fissata): il passo aperto può cambiare
+		if (voci.some((v) => v.target.matches?.('.tr2-passo, fieldset'))) requestAnimationFrame(() => riallinea());
 	}).observe(box, { attributes: true, attributeFilter: ['hidden'], subtree: true });
 	// la tendina si apre anche scegliendo il lavoro nella pagina (la classe pv-foglio arriva dopo): voce per il tasto indietro
 	new MutationObserver(() => {
@@ -366,7 +386,7 @@ export function avviaPassi(box) {
 	}
 	const p0 = aperto();
 	if (p0) visti.add(p0);
-	aggiorna();
+	riallinea(true);
 }
 
 for (const box of $$('[data-passi]')) avviaPassi(box);

@@ -1,7 +1,7 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r31';
-import { cerca } from './ricerca.js?v=2026100914-r31';
-import { attivaModuli } from './invio.js?v=2026101118-r31';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r32';
+import { cerca } from './ricerca.js?v=2026100914-r32';
+import { attivaModuli } from './invio.js?v=2026101118-r32';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -42,7 +42,23 @@ if (header) {
 	const chiaro = header.classList.contains('mm-header--chiaro');
 	const sopra = () => $('[data-sfondo]') || $('[data-slider], [data-copertina]');
 	const soglia = () => (chiaro ? 4 : Math.max(40, (sopra()?.offsetHeight || 400) - header.offsetHeight));
-	const aggiornaHeader = () => header.classList.toggle('is-scrolled', window.scrollY > soglia());
+	// Home (12/10): le sezioni stanno nella fascia sotto la foto. Telefono e tablet: quando la fascia arriva alla
+	// seconda riga della testata prende il suo posto (stessa altezza, non si vede il cambio). Computer: la testata
+	// diventa bianca quando la fascia la tocca e le sezioni compaiono quando la fascia le è passata sotto.
+	const fascia = $('[data-sezioni-home]');
+	const rigaSezioni = $('[data-chips]', header);
+	const largo = matchMedia('(min-width: 1024px)');
+	const aggiornaHeader = () => {
+		if (!fascia || !rigaSezioni) return header.classList.toggle('is-scrolled', window.scrollY > soglia());
+		const f = fascia.getBoundingClientRect();
+		const fondoTestata = header.getBoundingClientRect().bottom;
+		const cima = largo.matches ? fondoTestata : fondoTestata - rigaSezioni.offsetHeight;
+		const con = f.bottom <= fondoTestata + 1;
+		// la riga della testata riparte da dove l'hai lasciata nella fascia (se l'avevi fatta scorrere di lato)
+		if (con && !header.classList.contains('con-sezioni')) $('.mm-sezioni__in', rigaSezioni).scrollLeft = $('.mm-sezioni__in', fascia).scrollLeft;
+		header.classList.toggle('is-scrolled', f.top <= cima + 1);
+		header.classList.toggle('con-sezioni', con);
+	};
 	addEventListener('scroll', aggiornaHeader, { passive: true });
 	addEventListener('resize', aggiornaHeader, { passive: true });
 	aggiornaHeader();
@@ -405,7 +421,7 @@ if (visore && typeof visore.showModal === 'function') {
 		// con una foto sola niente "Tutte le foto" né "1 di 1" (nascosti senza spostare la ×)
 		tutte.style.visibility = conta.style.visibility = gruppo.length < 2 ? 'hidden' : '';
 		requestAnimationFrame(() => {
-			riga.scrollTo({ left: i * riga.clientWidth, behavior: morbido && !lento ? 'smooth' : 'instant' });
+			riga.scrollTo({ left: i * riga.clientWidth, behavior: morbido && !lento ? 'smooth' : 'auto' });
 			segna();
 		});
 	};
@@ -560,12 +576,12 @@ if (sfondo && zonaCerca) {
 	addEventListener('resize', misura);
 	document.addEventListener('sfondo-misura', misura);
 	addEventListener('load', misura);
-	$('[data-giu]')?.addEventListener('click', () =>
-		scrollTo({
-			top: fine(), // le icone salgono in cima (sul computer nella riga dell'intestazione)
-			behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-		})
-	);
+	$('[data-giu]')?.addEventListener('click', () => {
+		// la vetrina parte subito sotto la testata, che intanto ha preso le sezioni dalla fascia
+		const c = $('[data-contenuto]');
+		const y = c ? c.getBoundingClientRect().top + scrollY - (header?.offsetHeight || 0) : fine();
+		scrollTo({ top: Math.max(0, y), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+	});
 }
 
 /* Sezioni nella testata (in ogni pagina): la voce attiva si vede subito, anche quando la riga scorre di lato.
@@ -598,7 +614,7 @@ if (contenuto) {
 		// le sezioni stanno nella testata: la vetrina parte subito sotto di lei
 		const alto = header?.offsetHeight || 0;
 		const y = contenuto.getBoundingClientRect().top + scrollY - alto;
-		scrollTo({ top: Math.max(0, y), behavior: morbido && !ridotto ? 'smooth' : 'instant' });
+		scrollTo({ top: Math.max(0, y), behavior: morbido && !ridotto ? 'smooth' : 'auto' });
 	};
 
 	// Indirizzi vecchi (#traslochi, #azienda…): ora ogni lavoro ha la sua pagina
@@ -610,8 +626,8 @@ if (contenuto) {
 	daIndirizzo(true);
 	addEventListener('hashchange', () => daIndirizzo(false));
 
-	// "Tutto" in home: resta qui e scende alla vetrina
-	$('[data-chip="tutto"]')?.addEventListener('click', (e) => {
+	// "Tutto" in home (nella testata e nella fascia sotto la foto): resta qui e scende alla vetrina
+	for (const tutto of $$('[data-chip="tutto"]')) tutto.addEventListener('click', (e) => {
 		e.preventDefault();
 		try {
 			history.replaceState(null, '', location.pathname + '#tutto');
@@ -749,8 +765,17 @@ if (pv) {
 	};
 
 	const telefono = () => matchMedia('(max-width: 860px)').matches;
-	// × della tendina: si torna alla pagina di prima del sito (es. Traslochi), altrimenti alla scelta del servizio
+	// × della tendina: si torna alla pagina di prima del sito (es. Traslochi), altrimenti alla scelta del servizio.
+	// Se il lavoro l'hai scelto qui (dalla lista «Di cosa hai bisogno?»), si torna alla lista (12/10)
+	let sceltoQui = false;
 	$('[data-foglio-chiudi]')?.addEventListener('click', () => {
+		if (sceltoQui) {
+			// si torna alla lista pulita: le domande del lavoro di prima non restano sotto
+			$('[data-pv-cambia]', pv).click();
+			domande.hidden = true;
+			dati.hidden = true;
+			return;
+		}
 		let primaNelSito = false;
 		try {
 			primaNelSito = !!document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1;
@@ -765,8 +790,9 @@ if (pv) {
 		if (!btn) return;
 		// una domanda già risposta dalla pagina di prima (es. "Cucina") torna visibile se si cambia lavoro
 		for (const f of $$('[data-pv-fissata]', pv)) {
-			f.hidden = false;
 			delete f.dataset.pvFissata;
+			f.hidden = false;
+			f.closest('.tr2-passo')?.classList.remove('is-saltato');
 		}
 		for (const b of lavori) {
 			b.classList.toggle('is-active', b === btn);
@@ -810,10 +836,14 @@ if (pv) {
 			// in alcune anteprime l'indirizzo non si può cambiare
 		}
 		// con le tendine (telefono) si parte dall'alto; altrimenti si va al servizio scelto
-		if (scorri) passi && telefono() ? scrollTo({ top: 0, behavior: 'instant' }) : vai(scelto);
+		if (scorri) passi && telefono() ? scrollTo({ top: 0, behavior: 'auto' }) : vai(scelto);
 	};
 
-	for (const b of lavori) b.addEventListener('click', () => scegli(b.dataset.scegli, true));
+	for (const b of lavori)
+		b.addEventListener('click', () => {
+			sceltoQui = true;
+			scegli(b.dataset.scegli, true);
+		});
 	$('[data-pv-cambia]', pv).addEventListener('click', () => {
 		scelta.hidden = false;
 		scelto.hidden = true;
@@ -843,10 +873,28 @@ if (pv) {
 			// Si vede in alto: "Ristrutturazioni · Cucina · Modifica"
 			if (r) {
 				const domanda = r.closest('fieldset');
-				domanda.hidden = true;
 				domanda.dataset.pvFissata = '';
+				domanda.hidden = true;
 				const nome = $('[data-pv-scelto-nome]', scelto);
 				nome.textContent = `${nome.textContent} · ${r.closest('label').textContent.trim()}`;
+				// 12/10: se era l'unica domanda del passo aperto («Lo spazio»), si apre subito il passo dopo,
+				// così la tendina non resta vuota (passi.js fa lo stesso, ma arriva un attimo dopo)
+				const passo = domanda.closest('.tr2-passo.is-aperto');
+				const corpo = passo && $('[data-passo-corpo]', passo);
+				const restano = corpo && $$('fieldset, .campo, label.check', corpo).some((el) => !el.closest('.tr2-avanti') && !el.closest('[data-pv-fissata]'));
+				if (passo && !restano) passo.classList.add('is-saltato');
+				if (passo && !restano) {
+					let dopo = passo.nextElementSibling;
+					while (dopo && !(dopo.matches('.tr2-passo') && !dopo.hidden)) dopo = dopo.nextElementSibling;
+					if (dopo) {
+						passo.classList.remove('is-aperto');
+						corpo.hidden = true;
+						$('[data-passo-apri]', passo)?.setAttribute('aria-expanded', 'false');
+						dopo.classList.add('is-aperto');
+						$('[data-passo-corpo]', dopo).hidden = false;
+						$('[data-passo-apri]', dopo)?.setAttribute('aria-expanded', 'true');
+					}
+				}
 			}
 		};
 		// la prima volta subito, così la pagina è già quella giusta quando il browser la rimette dov'era
@@ -1046,9 +1094,9 @@ if (
 	}
 }
 
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101203-r31');
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101203-r32');
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
-if ($('[data-passi]')) import('./passi.js?v=2026101203');
+if ($('[data-passi]')) import('./passi.js?v=2026101210');
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {
