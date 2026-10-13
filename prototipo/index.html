@@ -1,0 +1,892 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#1b1b1e"><meta name="robots" content="noindex"><link rel="icon" href="../icone/gestione-192.png">
+<title>Gestione ArtigianaMente · prototipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Prototipo della Gestione (B-01). Una sola pagina, dati finti, nessun server.
+   Grafica del sito ArtigianaMente: bianco, nero #1B1B1E, grigio solo per il secondario, Hanken Grotesk,
+   angoli 16px (riquadri) / 10px (pulsanti e scelte) / 6px (etichette), icone a linea.
+   Movimento: curva del sito, aperture 400 ms, chiusure 300 ms, cambio schermata 250 ms. Look unico (chiaro), come la Gestione vera. */
+:root {
+	--nero: #1b1b1e; --bianco: #ffffff; --fondo: #f6f6f5; --grigio: #6b6b6b; --linea: #e6e6e6; --tinta: #f1f1ef;
+	--ok: #1f7a3a; --att: #b4661a; --err: #b3261e;
+	--font: 'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	--molla: cubic-bezier(.22, 1, .36, 1); --t-apri: 400ms; --t-chiudi: 300ms; --t-passo: 250ms;
+	--r: 16px; --rb: 10px; --rt: 6px;
+	color-scheme: light;
+}
+html, body { height: 100%; }
+body { margin: 0; background: var(--fondo); color: var(--nero); font-family: var(--font); font-size: 16px; line-height: 1.4; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; cursor: pointer; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 26px; font-weight: 500; letter-spacing: -0.4px; text-wrap: balance; }
+h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--grigio); }
+h3 { font-size: 17px; font-weight: 600; }
+a { color: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* scritta fissa del prototipo */
+.proto { position: fixed; top: 0; left: 0; right: 0; z-index: 50; height: calc(30px + env(safe-area-inset-top, 0px)); padding: calc(7px + env(safe-area-inset-top, 0px)) 16px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--nero); color: #fff; font-size: 12px; letter-spacing: 0.4px; text-align: center; }
+.proto b { font-weight: 600; }
+.rete { position: fixed; top: calc(30px + env(safe-area-inset-top, 0px)); left: 0; right: 0; z-index: 49; padding: 8px 16px; background: #fff4e5; color: #6b3d00; border-bottom: 1px solid #f0d9b5; font-size: 14px; display: flex; gap: 10px; align-items: center; }
+
+/* struttura a telefono */
+.app { max-width: 480px; margin: 0 auto; min-height: 100%; padding: calc(46px + env(safe-area-inset-top, 0px)) 16px calc(96px + env(safe-area-inset-bottom, 0px)); }
+.app.con-rete { padding-top: calc(100px + env(safe-area-inset-top, 0px)); }
+.schermo { animation: entra var(--t-passo) var(--molla); }
+@keyframes entra { from { opacity: 0; transform: translateY(8px); } }
+.testa { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 10px 0 16px; }
+.testa .sotto { color: var(--grigio); font-size: 15px; margin-top: 2px; }
+.indietro { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 8px 0; color: var(--grigio); font-size: 15px; }
+.indietro svg { width: 18px; height: 18px; }
+
+/* barra in basso */
+.barra { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; background: var(--bianco); border-top: 1px solid var(--linea); padding: 6px 8px calc(8px + env(safe-area-inset-bottom, 0px)); }
+.barra nav { max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.barra button { background: none; border: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0 4px; border-radius: var(--rb); color: var(--grigio); font-size: 11px; font-weight: 500; position: relative; }
+.barra button svg { width: 24px; height: 24px; stroke-width: 1.6; }
+.barra button.attiva { color: var(--nero); }
+.barra button.attiva svg { stroke-width: 2; }
+.barra .pallino { position: absolute; top: 4px; right: calc(50% - 20px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--nero); color: #fff; font-size: 11px; font-weight: 600; display: grid; place-items: center; }
+svg.ico { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; width: 20px; height: 20px; flex: none; }
+
+/* riquadri e liste */
+.riquadro { background: var(--bianco); border-radius: var(--r); padding: 16px; margin-bottom: 12px; }
+.riquadro > h2 { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.riquadro > h2 .conta { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.lista { list-style: none; margin: 0; padding: 0; }
+.lista li + li { border-top: 1px solid var(--linea); }
+.riga { width: 100%; text-align: left; background: none; border: 0; padding: 12px 0; display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+.riga .ora { font-weight: 600; font-size: 15px; min-width: 46px; }
+.riga .cosa { min-width: 0; }
+.riga .cosa b { font-weight: 600; display: block; }
+.riga .cosa span { display: block; color: var(--grigio); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.riga .cosa span.tag { display: inline-flex; margin-top: 3px; }
+.riga .cosa b span.tag { margin: 0 0 0 4px; vertical-align: middle; }
+.riga .freccia { color: var(--grigio); }
+.riga .freccia svg { width: 18px; height: 18px; }
+.riga .punto { width: 10px; height: 10px; border-radius: 50%; background: var(--nero); }
+.riga.urgente .punto { background: var(--att); }
+.vedi { display: block; width: 100%; margin-top: 8px; padding: 10px; border-radius: var(--rb); border: 1px solid var(--linea); background: var(--bianco); font-size: 14px; color: var(--grigio); text-align: center; }
+.vuoto { color: var(--grigio); font-size: 15px; padding: 8px 0; }
+.nota { color: var(--grigio); font-size: 14px; }
+.tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; padding: 2px 7px; border-radius: var(--rt); background: var(--tinta); color: #4a4a4a; white-space: nowrap; }
+.tag.ok { background: #e7f3ea; color: var(--ok); }
+.tag.att { background: #fbeedd; color: var(--att); }
+.tag.err { background: #fbe4e2; color: var(--err); }
+.tag.prop { background: #e8ecf5; color: #2f4a8a; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+.chips button { white-space: nowrap; padding: 8px 12px; border-radius: var(--rb); border: 1px solid var(--linea); background: var(--bianco); font-size: 14px; }
+.chips button span { color: var(--grigio); }
+.chips button.attivo { background: var(--nero); border-color: var(--nero); color: #fff; }
+.chips button.attivo span { color: #ccc; }
+.cerca { width: 100%; font: inherit; font-size: 16px; padding: 11px 14px; border-radius: var(--rb); border: 1px solid var(--linea); background: var(--bianco); margin-bottom: 10px; }
+
+/* pulsanti */
+.btn { font-weight: 600; font-size: 15px; padding: 12px 16px; border-radius: var(--rb); border: 1px solid var(--nero); background: var(--nero); color: #fff; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+.btn.linea { background: var(--bianco); color: var(--nero); }
+.btn.piccolo { padding: 8px 12px; font-size: 14px; }
+.btn.pieno { width: 100%; }
+.btn.pericolo { background: var(--bianco); color: var(--err); border-color: #e3b7b4; }
+.btn[disabled] { opacity: 0.45; cursor: default; }
+.azioni { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.link { background: none; border: 0; padding: 4px 0; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; }
+.proposta { opacity: 0.75; }
+
+/* scheda pratica */
+.intesta { padding: 6px 0 14px; }
+.intesta .codice { color: var(--grigio); font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.intesta h1 { margin-top: 4px; }
+.sommario { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+.sommario > div { background: var(--bianco); border-radius: var(--r); padding: 12px 14px; }
+.sommario small { display: block; color: var(--grigio); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.sommario b { font-weight: 600; font-size: 15px; }
+.suggerita { border: 1px solid var(--nero); }
+.suggerita h2 { color: var(--nero); }
+.suggerita .motivo { font-size: 15px; margin-bottom: 10px; }
+.contatti { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 15px; }
+.contatti span { display: inline-flex; gap: 6px; align-items: center; }
+.coppia { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 15px; }
+.coppia dt { color: var(--grigio); }
+.coppia dd { margin: 0; }
+.stima { font-size: 22px; font-weight: 600; }
+/* fotografie (dimostrative, da sostituire: cartella foto/, elenco in Altro → Foto dimostrative) */
+img { display: block; max-width: 100%; }
+.mini { width: 52px; height: 52px; border-radius: var(--rb); object-fit: cover; background: var(--tinta); flex: none; }
+.mini-vuota { width: 52px; height: 52px; border-radius: var(--rb); background: var(--tinta); display: grid; place-items: center; color: var(--grigio); flex: none; }
+.riga.con-mini { grid-template-columns: 52px 1fr auto; }
+.galleria { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+.galleria button { position: relative; padding: 0; border: 0; background: var(--tinta); border-radius: var(--rb); overflow: hidden; aspect-ratio: 1; }
+.galleria img { width: 100%; height: 100%; object-fit: cover; }
+.galleria .piu { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(27, 27, 30, 0.55); color: #fff; font-weight: 600; font-size: 18px; }
+.didascalia { color: var(--grigio); font-size: 12px; margin-top: 6px; }
+.copertina { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r); margin-bottom: 12px; }
+.visore { position: fixed; inset: 0; z-index: 80; background: #000; color: #fff; display: flex; flex-direction: column; animation: sfuma var(--t-apri) var(--molla); touch-action: pan-y; }
+.visore.via { animation: sfuma-via var(--t-chiudi) var(--molla) forwards; }
+.visore .vt { display: flex; justify-content: space-between; align-items: center; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px; font-size: 14px; }
+.visore .vt button { background: none; border: 0; color: #fff; font-size: 15px; padding: 8px 0; }
+.visore .vimg { flex: 1; display: grid; place-items: center; min-height: 0; padding: 0 8px; }
+.visore .vimg img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px; }
+.visore .vb { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)); font-size: 13px; color: #bbb; }
+.visore .vb button { background: rgba(255, 255, 255, 0.12); border: 0; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; }
+.visore .vb button[disabled] { opacity: 0.3; }
+
+/* Oggi: il prossimo appuntamento in evidenza */
+.prossimo { background: var(--nero); color: #fff; border-radius: var(--r); padding: 16px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.prossimo small { display: block; font-size: 12px; letter-spacing: 0.6px; text-transform: uppercase; color: #bdbdbd; margin-bottom: 6px; }
+.prossimo .ora-grande { font-size: 30px; font-weight: 600; letter-spacing: -0.5px; line-height: 1; }
+.prossimo b { display: block; font-size: 17px; font-weight: 600; margin-top: 6px; }
+.prossimo span.dett { display: block; color: #cfcfcf; font-size: 14px; margin-top: 2px; }
+.prossimo .btn { background: #fff; color: var(--nero); border-color: #fff; }
+.prossimo .tag { background: rgba(255, 255, 255, 0.14); color: #fff; }
+.vuoto-grande { text-align: center; padding: 28px 16px; color: var(--grigio); }
+.vuoto-grande svg { width: 36px; height: 36px; margin: 0 auto 10px; stroke-width: 1.2; }
+.vuoto-grande b { display: block; color: var(--nero); font-weight: 600; margin-bottom: 4px; }
+.coppia dd .tag { vertical-align: middle; }
+
+/* schermo largo: barra a sinistra, contenuto centrato */
+@media (min-width: 900px) {
+	.app { max-width: 640px; margin-left: calc(50% - 320px + 60px); padding-bottom: 40px; }
+	.barra { top: calc(30px + env(safe-area-inset-top, 0px)); bottom: 0; right: auto; width: 150px; border-top: 0; border-right: 1px solid var(--linea); padding: 20px 10px; }
+	.barra nav { display: flex; flex-direction: column; gap: 6px; max-width: none; }
+	.barra button { flex-direction: row; justify-content: flex-start; gap: 10px; padding: 10px 12px; font-size: 14px; }
+	.barra button.attiva { background: var(--tinta); }
+	.barra .pallino { position: static; margin-left: auto; }
+	.tendina { max-width: 520px; width: 520px; bottom: auto; top: 50%; left: 50%; right: auto; transform: translate(-50%, -50%); border-radius: var(--r); animation: entra-centro var(--t-apri) var(--molla); }
+	.tendina.via { animation: sfuma-via var(--t-chiudi) var(--molla) forwards; }
+	@keyframes entra-centro { from { opacity: 0; transform: translate(-50%, calc(-50% + 12px)); } }
+	.tendina .maniglia { display: none; }
+	.toast { bottom: 32px; left: calc(50% - 320px + 60px); right: auto; width: 640px; max-width: 640px; margin: 0; }
+	.sommario { grid-template-columns: 1fr 1fr 1fr; }
+	.galleria { grid-template-columns: repeat(4, 1fr); }
+}
+.versione { border: 1px solid var(--linea); border-radius: var(--rb); padding: 12px; margin-top: 10px; }
+.versione .testa-v { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.versione .testa-v b { font-weight: 600; }
+.storico { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.storico li { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 6px 0; border-top: 1px solid var(--linea); }
+.storico li:first-child { border-top: 0; }
+.storico .q { color: var(--grigio); }
+textarea.campo, input.campo, select.campo { width: 100%; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: var(--rb); border: 1px solid #d9d9d9; background: var(--bianco); margin-top: 6px; }
+label.campo { display: block; font-size: 14px; color: var(--grigio); margin-top: 10px; }
+label.campo input, label.campo select, label.campo textarea { color: var(--nero); }
+.scelte { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.scelte label { padding: 9px 12px; border: 1px solid #d0d0d0; border-radius: var(--rb); font-size: 15px; background: var(--bianco); color: var(--nero); }
+.scelte label:has(input:checked) { background: var(--nero); border-color: var(--nero); color: #fff; }
+.scelte input { position: absolute; opacity: 0; width: 0; height: 0; }
+.avviso { padding: 10px 12px; border-radius: var(--rb); font-size: 14px; margin-top: 10px; }
+.avviso.ok { background: #e7f3ea; color: var(--ok); }
+.avviso.err { background: #fbe4e2; color: var(--err); }
+.avviso.att { background: #fbeedd; color: #6b3d00; }
+
+/* preventivo: righe */
+.righe { width: 100%; border-collapse: collapse; font-size: 14px; }
+.righe th { text-align: left; color: var(--grigio); font-weight: 500; padding: 4px 0; }
+.righe td { padding: 8px 0; border-top: 1px solid var(--linea); vertical-align: top; }
+.righe td:last-child, .righe th:last-child { text-align: right; white-space: nowrap; }
+.totali { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin-top: 12px; font-size: 15px; }
+.totali b { font-size: 20px; }
+
+/* agenda */
+.agenda-testa { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.agenda-testa .tondo { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--linea); background: var(--bianco); display: grid; place-items: center; }
+.agenda-testa .titolo { flex: 1; font-weight: 600; font-size: 16px; text-align: center; }
+.giorno { background: var(--bianco); border-radius: var(--r); padding: 12px 16px; margin-bottom: 10px; }
+.giorno h3 { font-size: 14px; font-weight: 600; color: var(--grigio); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; }
+.giorno h3.oggi { color: var(--nero); }
+.giorno.libero { opacity: 0.7; }
+
+/* tendina */
+.velo { position: fixed; inset: 0; z-index: 60; background: rgba(27, 27, 30, 0.45); animation: sfuma var(--t-apri) var(--molla); }
+.velo.via { animation: sfuma-via var(--t-chiudi) var(--molla) forwards; }
+.tendina { position: fixed; left: 0; right: 0; bottom: 0; z-index: 61; max-width: 480px; margin: 0 auto; max-height: 88%; overflow: auto; background: var(--bianco); border-radius: var(--r) var(--r) 0 0; padding: 10px 16px calc(20px + env(safe-area-inset-bottom, 0px)); animation: sale var(--t-apri) var(--molla); }
+.tendina.via { animation: scende var(--t-chiudi) var(--molla) forwards; }
+.tendina .maniglia { width: 40px; height: 4px; border-radius: 2px; background: #ddd; margin: 0 auto 12px; }
+.tendina h3 { margin-bottom: 4px; }
+@keyframes sale { from { transform: translateY(100%); } }
+@keyframes scende { to { transform: translateY(100%); } }
+@keyframes sfuma { from { opacity: 0; } }
+@keyframes sfuma-via { to { opacity: 0; } }
+.toast { position: fixed; left: 16px; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 70; max-width: 448px; margin: 0 auto; background: var(--nero); color: #fff; padding: 12px 14px; border-radius: var(--rb); font-size: 14px; animation: entra var(--t-passo) var(--molla); }
+
+/* altro */
+.voci { list-style: none; margin: 0; padding: 0; background: var(--bianco); border-radius: var(--r); }
+.voci li + li { border-top: 1px solid var(--linea); }
+.voci button { width: 100%; text-align: left; background: none; border: 0; padding: 14px 16px; display: flex; align-items: center; gap: 12px; font-size: 16px; }
+.voci button .freccia { margin-left: auto; color: var(--grigio); }
+.voci button span.nota { margin-left: auto; }
+.pdf { background: var(--bianco); border-radius: var(--r); padding: 20px; font-size: 14px; line-height: 1.45; }
+.pdf .marchio { font-weight: 600; letter-spacing: 4px; font-size: 14px; }
+.pdf .marchio span { font-weight: 300; }
+.pdf hr { border: 0; border-top: 1px solid var(--linea); margin: 14px 0; }
+.pdf h3 { font-size: 20px; font-weight: 500; }
+.filigrana { display: inline-block; font-size: 12px; color: var(--grigio); border: 1px dashed #ccc; padding: 2px 8px; border-radius: var(--rt); margin-bottom: 12px; }
+.passi-pdf { list-style: none; padding: 0; margin: 10px 0 0; font-size: 15px; }
+.passi-pdf li { display: flex; gap: 8px; align-items: center; padding: 4px 0; color: var(--grigio); }
+.passi-pdf li.fatto { color: var(--nero); }
+.passi-pdf li.fatto::before { content: '✓'; color: var(--ok); }
+.passi-pdf li:not(.fatto)::before { content: '·'; }
+:focus-visible { outline: 2px solid var(--nero); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .schermo, .velo, .tendina, .toast, .visore { animation: none !important; } }
+</style>
+
+<div class="proto"><b>PROTOTIPO</b> · dati fittizi · nessun invio · niente va sul server</div>
+<div id="rete" class="rete" hidden><svg class="ico" viewBox="0 0 24 24"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M12 19h.01M3 3l18 18"/></svg><span>Senza rete: niente viene salvato finché non torna la connessione. Quello che scrivi resta qui.</span></div>
+<main id="app" class="app"></main>
+<div class="barra"><nav id="barra" aria-label="Sezioni"></nav></div>
+<div id="strato"></div>
+<div id="visore"></div>
+
+<script>
+/* ===================== DATI FINTI ===================== */
+const OGGI = '2026-10-13'; // martedì
+const OPERATORI = [{ id: 'fabri', nome: 'Fabri', ruolo: 'titolare' }, { id: 'marco', nome: 'Marco' }, { id: 'davide', nome: 'Davide' }];
+const NOMI_STATO = { nuova: 'Nuova', in_valutazione: 'In valutazione', da_programmare: 'Da programmare', programmata: 'Programmata', in_corso: 'In corso', conclusa: 'Conclusa', non_proseguita: 'Non proseguita', chiusa_da_confermare: 'Chiusa, esito da confermare' };
+const NOMI_TIPO = { sopralluogo: 'Sopralluogo', inizio_lavori: 'Inizio lavori', giornata_lavoro: 'Giornata di lavoro', consegna: 'Consegna', altro: 'Altro' };
+const NOMI_PREV = { bozza: 'Bozza', pronta: 'Pronto, da mandare', inviata: 'Inviato, in attesa', accettata: 'Accettato', rifiutata: 'Rifiutato', superata: 'Superato' };
+const CANALI = { whatsapp: 'WhatsApp', email: 'email', mano: 'a mano', telefono: 'telefono' };
+const NOMI_APP = { proposto: 'Proposto', confermato: 'Confermato', svolto: 'Svolto', annullato: 'Annullato' };
+
+/* Foto dimostrative (Pexels, uso libero). NON sono lavori di ArtigianaMente: servono a far capire le schermate.
+   Per sostituirle basta cambiare i file in foto/ e foto/mini/ con lo stesso nome. nome: [descrizione, autore, id Pexels] */
+const FOTO = {
+	'parquet-stanza-vuota': ['Stanza prima della posa', 'lamiko', 3616756], 'parquet-posa': ['Posa del parquet', 'kelly', 4263067], 'parquet-spina': ['Riferimento finitura', 'Magda Ehlers', 15066939],
+	'stanza-cantiere-scala': ['Stanza da imbiancare', 'Pietro Greco', 9908376], 'stanza-vuota-luce': ['Seconda stanza', 'Curtis Adams', 6835105],
+	'imbiancatura-rullo': ['Pittura a rullo', 'planka', 34046207], 'imbiancatura-rulli': ['Rulli e colori', 'Polina Tankilevitch', 5583090],
+	'muro-intonaco-scrostato': ['Parete con intonaco scrostato', 'deadbird', 29701042], 'muro-macchie-umidita': ['Macchie di umidità', 'laarkstudio', 7434331], 'intonaco-crepe': ['Intonaco con crepe', 'Magda Ehlers', 14990899],
+	'porte-interne-legno': ['Porta interna in legno', 'Max Vakhtbovych', 8134755], 'falegnameria-pialla': ['Banco da falegname', 'Daniel Reche', 7109995],
+	'bagno-piastrelle-posa': ['Bagno in cantiere', 'sejio402', 29181495], 'bagno-finito': ['Riferimento bagno finito', 'Curtis Adams', 10827343],
+	'parquet-vecchio-doghe': ['Parquet danneggiato', 'Engin Akyurt', 11126101], 'parquet-doghe-sconnesse': ['Doghe sconnesse', 'Magda Ehlers', 6364752],
+	'facciata-ponteggio': ['Facciata con ponteggio', 'Darya Sannikova', 2209529], 'montaggio-istruzioni': ['Montaggio mobili', 'athena', 5805491]
+};
+const FOTO_SERVIZIO = { Imbiancatura: 'imbiancatura-rulli', Parquet: 'parquet-posa', Falegnameria: 'falegnameria-pialla', 'Montaggio mobili': 'montaggio-istruzioni', Ristrutturazioni: 'bagno-piastrelle-posa', 'Risanamento umidità': 'muro-macchie-umidita' };
+const src = (n) => 'foto/' + n + '.jpg';
+const mini = (n) => 'foto/mini/' + n + '.jpg';
+
+function datiIniziali() {
+	return {
+		clienti: [
+			{ id: 'c1', nome: 'Luca Bianchi', tel: '347 112 2334', email: 'luca.bianchi@esempio.it', indirizzo: 'Via Pordelio 88, Cavallino-Treporti' },
+			{ id: 'c2', nome: 'Anna Furlan', tel: '340 556 7788', email: 'anna.furlan@esempio.it', indirizzo: 'Castello 4120, Venezia' },
+			{ id: 'c3', nome: 'Giorgio Trevisan', tel: '338 909 1122', email: '', indirizzo: 'Via Aquileia 15, Jesolo' },
+			{ id: 'c4', nome: 'Famiglia Doria', tel: '349 223 3445', email: 'doria.casa@esempio.it', indirizzo: 'Via Equilio 3, Jesolo' },
+			{ id: 'c5', nome: 'Elena Vianello', tel: '333 778 8990', email: 'elena.v@esempio.it', indirizzo: 'Via Fausta 240, Cavallino-Treporti' },
+			{ id: 'c6', nome: 'Nicola Zane', tel: '329 445 5667', email: '', indirizzo: 'Via Bafile 72, Jesolo' },
+			{ id: 'c7', nome: 'Stefano Pavan', tel: '345 667 7889', email: 'spavan@esempio.it', indirizzo: 'Via Treportina 9, Cavallino-Treporti' }
+		],
+		pratiche: [
+			{ id: 'r1', codice: 'R-2026-0141', nome: 'Marta Rossi', tel: '348 001 2233', email: 'marta.rossi@esempio.it', comune: 'Jesolo', indirizzoLavoro: 'Via Levantina 31, Jesolo', indirizzoCliente: '', clienteId: null, servizio: 'Imbiancatura', dettagli: 'Stanze arredate · 50 m² · soffitti sì · pareti in buone condizioni', stima: '1.100 – 1.350 €', stimaNota: 'IVA inclusa, stima online', foto: ['stanza-cantiere-scala','stanza-vuota-luce'], messaggio: 'Vorrei rinfrescare soggiorno e due camere prima di Natale. Preferisco il pomeriggio per il sopralluogo.', preferenze: 'Sopralluogo: pomeriggio · Inizio desiderato: novembre', ricevuta: '2026-10-13T08:12', stato: 'nuova', note: '', storico: [['2026-10-13T08:12', 'Richiesta ricevuta dal sito']] },
+			{ id: 'r2', codice: 'R-2026-0136', nome: 'Luca Bianchi', tel: '347 112 2334', email: 'luca.bianchi@esempio.it', comune: 'Cavallino-Treporti', indirizzoLavoro: 'Via Pordelio 88, Cavallino-Treporti', indirizzoCliente: 'Via Pordelio 88, Cavallino-Treporti', clienteId: 'c1', servizio: 'Parquet', dettagli: 'Posa prefinito · 40 m² · materiale nostro · senza rimozione · senza battiscopa', stima: '2.600 – 3.100 €', stimaNota: 'IVA inclusa, stima online', foto: ['parquet-stanza-vuota','parquet-posa','parquet-spina'], messaggio: 'Casa libera, posso aprire quando volete.', preferenze: 'Sopralluogo: mattina', ricevuta: '2026-10-06T18:40', stato: 'in_valutazione', note: 'Sottofondo buono, 2 stanze + corridoio. Vuole rovere naturale.', storico: [['2026-10-06T18:40', 'Richiesta ricevuta dal sito'], ['2026-10-07T08:05', 'Aperta da Fabri'], ['2026-10-07T08:10', 'Sopralluogo proposto per il 10/10 ore 9:00'], ['2026-10-07T12:30', 'Sopralluogo confermato'], ['2026-10-10T10:20', 'Sopralluogo segnato svolto']] },
+			{ id: 'r3', codice: 'R-2026-0129', nome: 'Anna Furlan', tel: '340 556 7788', email: 'anna.furlan@esempio.it', comune: 'Venezia', indirizzoLavoro: 'Castello 4120, Venezia', indirizzoCliente: 'Castello 4120, Venezia', clienteId: 'c2', servizio: 'Risanamento umidità', dettagli: 'Piano terra · macchie e muffa · una parete, 6 m · peggiora in inverno', stima: 'Da fare al sopralluogo', stimaNota: '', foto: ['muro-intonaco-scrostato','muro-macchie-umidita','intonaco-crepe'], messaggio: 'La parete verso il canale si rovina ogni inverno.', preferenze: 'Sopralluogo: quando volete', ricevuta: '2026-09-29T11:02', stato: 'in_valutazione', note: 'Risalita + sali. Serve barriera chimica e intonaco deumidificante.', storico: [['2026-09-29T11:02', 'Richiesta ricevuta dal sito'], ['2026-10-02T09:00', 'Sopralluogo svolto'], ['2026-10-08T17:30', 'Preventivo P-2026-0011 generato'], ['2026-10-09T08:15', 'Preventivo segnato inviato (WhatsApp)']] },
+			{ id: 'r4', codice: 'R-2026-0124', nome: 'Giorgio Trevisan', tel: '338 909 1122', email: '', comune: 'Jesolo', indirizzoLavoro: 'Via Aquileia 15, Jesolo', indirizzoCliente: 'Via Aquileia 15, Jesolo', clienteId: 'c3', servizio: 'Montaggio mobili', dettagli: 'Mobili nuovi · 1 armadio grande · 1 letto · 2 comodini', stima: '380 – 460 €', stimaNota: 'IVA inclusa, stima online', foto: ['montaggio-istruzioni'], messaggio: 'Mobili già consegnati, in scatola.', preferenze: '', ricevuta: '2026-09-25T15:10', stato: 'da_programmare', note: '', storico: [['2026-09-25T15:10', 'Richiesta ricevuta dal sito'], ['2026-09-26T08:00', 'Aperta da Fabri'], ['2026-10-05T18:00', 'Preventivo P-2026-0009 generato'], ['2026-10-06T08:30', 'Preventivo segnato inviato (email)'], ['2026-10-12T19:20', 'Preventivo registrato come accettato (WhatsApp)'], ['2026-10-12T19:21', 'Stato: Da programmare']] },
+			{ id: 'r5', codice: 'R-2026-0118', nome: 'Elena Vianello', tel: '333 778 8990', email: 'elena.v@esempio.it', comune: 'Cavallino-Treporti', indirizzoLavoro: 'Da Via Fausta 240, Cavallino → Via Roma Destra 40, Jesolo', indirizzoCliente: 'Via Fausta 240, Cavallino-Treporti', clienteId: 'c5', servizio: 'Traslochi', dettagli: '2 stanze + cucina · 18 m³ · 2° piano senza ascensore → 1° piano con ascensore · imballiamo noi', stima: '1.450 – 1.700 €', stimaNota: 'IVA inclusa, stima online', foto: [], messaggio: '', preferenze: 'Data desiderata: 16 ottobre', ricevuta: '2026-09-20T10:00', stato: 'programmata', note: 'Furgone grande + Marco e Davide.', storico: [['2026-09-20T10:00', 'Richiesta ricevuta dal sito'], ['2026-09-28T17:00', 'Preventivo P-2026-0007 accettato (a mano)'], ['2026-09-29T08:00', 'Inizio lavori confermato per il 16/10 ore 7:30'], ['2026-09-29T08:01', 'Stato: Programmata']] },
+			{ id: 'r6', codice: 'R-2026-0139', nome: 'Paolo Scarpa', tel: '331 220 9988', email: '', comune: 'Cavallino-Treporti', indirizzoLavoro: 'Via Fausta 12, Cavallino-Treporti', indirizzoCliente: '', clienteId: null, servizio: 'Falegnameria', dettagli: 'Riparare · porta interna che non chiude · 1 pezzo', stima: 'Da 75 €', stimaNota: 'Piccole riparazioni, IVA inclusa', foto: ['porte-interne-legno'], messaggio: 'La porta della camera striscia sul pavimento.', preferenze: 'Sopralluogo: mattina presto', ricevuta: '2026-10-09T20:30', stato: 'in_valutazione', note: '', storico: [['2026-10-09T20:30', 'Richiesta ricevuta dal sito'], ['2026-10-10T07:50', 'Aperta da Fabri'], ['2026-10-10T07:55', 'Sopralluogo proposto per il 13/10 ore 8:30'], ['2026-10-10T12:00', 'Sopralluogo confermato']] },
+			{ id: 'r7', codice: 'R-2026-0102', nome: 'Famiglia Doria', tel: '349 223 3445', email: 'doria.casa@esempio.it', comune: 'Jesolo', indirizzoLavoro: 'Via Equilio 3, Jesolo', indirizzoCliente: 'Via Equilio 3, Jesolo', clienteId: 'c4', servizio: 'Ristrutturazioni', dettagli: 'Bagno · 6 m² · impianti e pavimento · disposizione uguale', stima: '7.800 – 9.200 €', stimaNota: 'IVA inclusa, stima online', foto: ['bagno-piastrelle-posa','bagno-finito'], messaggio: '', preferenze: '', ricevuta: '2026-09-02T09:30', stato: 'in_corso', note: 'Piastrelle scelte: gres 60×60 grigio. Idraulico martedì.', storico: [['2026-09-02T09:30', 'Richiesta ricevuta dal sito'], ['2026-09-15T18:00', 'Preventivo P-2026-0004 accettato (email)'], ['2026-10-12T07:30', 'Inizio lavori segnato svolto'], ['2026-10-12T07:31', 'Stato: In corso']] },
+			{ id: 'r8', codice: 'R-2026-0140', nome: 'Chiara Moro', tel: '366 334 4556', email: 'chiara.moro@esempio.it', comune: 'Cavallino-Treporti', indirizzoLavoro: 'Via Treportina 44, Treporti', indirizzoCliente: '', clienteId: null, servizio: 'Parquet', dettagli: 'Riparare · 3 doghe sollevate · 2 m²', stima: 'Da fare al sopralluogo', stimaNota: '', foto: ['parquet-doghe-sconnesse','parquet-vecchio-doghe'], messaggio: 'Acqua dalla lavastoviglie, tre doghe si sono alzate.', preferenze: 'Sopralluogo: pomeriggio', ricevuta: '2026-10-11T16:45', stato: 'in_valutazione', note: '', storico: [['2026-10-11T16:45', 'Richiesta ricevuta dal sito'], ['2026-10-12T08:10', 'Aperta da Fabri'], ['2026-10-12T08:12', 'Sopralluogo proposto per il 13/10 ore 15:00']] },
+			{ id: 'r9', codice: 'R-2026-0088', nome: 'Stefano Pavan', tel: '345 667 7889', email: 'spavan@esempio.it', comune: 'Cavallino-Treporti', indirizzoLavoro: 'Via Treportina 9, Cavallino-Treporti', indirizzoCliente: 'Via Treportina 9, Cavallino-Treporti', clienteId: 'c7', servizio: 'Falegnameria', dettagli: 'Libreria su misura · nicchia · 180 cm · aperture miste', stima: '', stimaNota: '', foto: [], messaggio: '', preferenze: '', ricevuta: '2026-08-10T10:00', stato: 'conclusa', note: '', storico: [['2026-08-10T10:00', 'Richiesta ricevuta dal sito'], ['2026-09-30T17:00', 'Consegna segnata svolta'], ['2026-09-30T17:02', 'Stato: Conclusa']] },
+			{ id: 'r10', codice: 'R-2026-0133', nome: 'Nicola Zane', tel: '329 445 5667', email: '', comune: 'Jesolo', indirizzoLavoro: 'Via Bafile 72, Jesolo', indirizzoCliente: 'Via Bafile 72, Jesolo', clienteId: 'c6', servizio: 'Imbiancatura', dettagli: 'Esterni · facciata 120 m² · piattaforma', stima: 'Da fare al sopralluogo', stimaNota: '', foto: ['facciata-ponteggio','imbiancatura-rullo'], messaggio: '', preferenze: '', ricevuta: '2026-10-03T12:20', stato: 'in_valutazione', note: 'Serve piattaforma 12 m. Preventivo pronto, da mandare.', storico: [['2026-10-03T12:20', 'Richiesta ricevuta dal sito'], ['2026-10-07T10:00', 'Sopralluogo svolto'], ['2026-10-12T18:40', 'Preventivo P-2026-0012 generato']] },
+			{ id: 'r11', codice: 'R-2026-0121', nome: 'Rita Gallo', tel: '328 990 0112', email: 'rita.gallo@esempio.it', comune: 'Jesolo', indirizzoLavoro: 'Via Dante 5, Jesolo', indirizzoCliente: '', clienteId: null, servizio: 'Montaggio mobili', dettagli: 'Smontare e rimontare · cucina 3 m · trasloco interno', stima: '520 – 640 €', stimaNota: 'IVA inclusa, stima online', foto: [], messaggio: '', preferenze: '', ricevuta: '2026-09-22T09:00', stato: 'in_valutazione', note: '', storico: [['2026-09-22T09:00', 'Richiesta ricevuta dal sito'], ['2026-10-01T17:00', 'Preventivo P-2026-0008 generato'], ['2026-10-02T08:00', 'Preventivo segnato inviato (WhatsApp)']] }
+		],
+		appuntamenti: [
+			{ id: 'a1', praticaId: 'r6', tipo: 'sopralluogo', giorno: '2026-10-13', inizio: '08:30', fine: '09:15', chi: ['fabri'], stato: 'confermato', luogo: 'Via Fausta 12, Cavallino-Treporti' },
+			{ id: 'a2', praticaId: 'r7', tipo: 'giornata_lavoro', giorno: '2026-10-13', inizio: '10:30', fine: '17:00', chi: ['fabri', 'marco'], stato: 'confermato', luogo: 'Via Equilio 3, Jesolo' },
+			{ id: 'a3', praticaId: 'r8', tipo: 'sopralluogo', giorno: '2026-10-13', inizio: '15:00', fine: '15:45', chi: ['davide'], stato: 'proposto', luogo: 'Via Treportina 44, Treporti' },
+			{ id: 'a4', praticaId: null, tipo: 'altro', giorno: '2026-10-13', inizio: '17:30', fine: '18:00', chi: ['davide'], stato: 'confermato', luogo: 'Ferramenta Bertolin, Jesolo', titolo: 'Ritiro materiali' },
+			{ id: 'a5', praticaId: 'r7', tipo: 'giornata_lavoro', giorno: '2026-10-12', inizio: '07:30', fine: '17:00', chi: ['fabri', 'marco'], stato: 'svolto', luogo: 'Via Equilio 3, Jesolo' },
+			{ id: 'a6', praticaId: 'r7', tipo: 'giornata_lavoro', giorno: '2026-10-14', inizio: '08:00', fine: '17:00', chi: ['marco', 'davide'], stato: 'confermato', luogo: 'Via Equilio 3, Jesolo' },
+			{ id: 'a7', praticaId: 'r7', tipo: 'giornata_lavoro', giorno: '2026-10-15', inizio: '08:00', fine: '17:00', chi: ['fabri', 'marco'], stato: 'confermato', luogo: 'Via Equilio 3, Jesolo' },
+			{ id: 'a8', praticaId: 'r5', tipo: 'inizio_lavori', giorno: '2026-10-16', inizio: '07:30', fine: '16:00', chi: ['marco', 'davide'], stato: 'confermato', luogo: 'Via Fausta 240, Cavallino-Treporti' },
+			{ id: 'a9', praticaId: 'r2', tipo: 'sopralluogo', giorno: '2026-10-10', inizio: '09:00', fine: '09:45', chi: ['fabri'], stato: 'svolto', luogo: 'Via Pordelio 88, Cavallino-Treporti' },
+			{ id: 'a10', praticaId: 'r3', tipo: 'sopralluogo', giorno: '2026-10-02', inizio: '09:00', fine: '10:00', chi: ['fabri'], stato: 'svolto', luogo: 'Castello 4120, Venezia' },
+			{ id: 'a11', praticaId: 'r10', tipo: 'sopralluogo', giorno: '2026-10-07', inizio: '10:00', fine: '10:40', chi: ['fabri'], stato: 'svolto', luogo: 'Via Bafile 72, Jesolo' }
+		],
+		preventivi: [
+			{ id: 'p11', praticaId: 'r3', n: 1, numero: 'P-2026-0011', stato: 'inviata', generato: '2026-10-08T17:30', inviato: '2026-10-09T08:15', canale: 'whatsapp', righe: [['Rimozione intonaco ammalorato, parete 6 m × 1,5 m', '9 m²', 28, 252], ['Barriera chimica contro la risalita', '6 m', 95, 570], ['Intonaco deumidificante a calce, 2 mani', '9 m²', 68, 612], ['Finitura e tinteggiatura traspirante', '9 m²', 18, 162]], iva: 10 },
+			{ id: 'p9', praticaId: 'r4', n: 1, numero: 'P-2026-0009', stato: 'accettata', generato: '2026-10-05T18:00', inviato: '2026-10-06T08:30', canale: 'email', accettato: '2026-10-12T19:20', accettatoCanale: 'whatsapp', righe: [['Montaggio armadio grande (6 ante)', '1', 220, 220], ['Montaggio letto matrimoniale', '1', 90, 90], ['Montaggio comodini', '2', 25, 50], ['Smaltimento imballi', '1', 30, 30]], iva: 22 },
+			{ id: 'p7', praticaId: 'r5', n: 1, numero: 'P-2026-0007', stato: 'accettata', generato: '2026-09-27T17:00', inviato: '2026-09-27T17:30', canale: 'whatsapp', accettato: '2026-09-28T17:00', accettatoCanale: 'mano', righe: [['Trasloco 18 m³, 2 viaggi, 3 persone', '1', 1180, 1180], ['Imballo e scatoloni', '1', 190, 190], ['Smontaggio e rimontaggio armadio', '1', 140, 140]], iva: 22 },
+			{ id: 'p4', praticaId: 'r7', n: 1, numero: 'P-2026-0004', stato: 'accettata', generato: '2026-09-12T18:00', inviato: '2026-09-12T18:30', canale: 'email', accettato: '2026-09-15T18:00', accettatoCanale: 'email', righe: [['Demolizione e smaltimento', '1', 1100, 1100], ['Impianto idrico e scarichi', '1', 1900, 1900], ['Massetto e pavimento gres 60×60', '6 m²', 140, 840], ['Rivestimento pareti', '18 m²', 95, 1710], ['Sanitari e rubinetteria (posa)', '1', 650, 650], ['Imbiancatura soffitto', '6 m²', 14, 84]], iva: 10 },
+			{ id: 'p12', praticaId: 'r10', n: 1, numero: 'P-2026-0012', stato: 'pronta', generato: '2026-10-12T18:40', righe: [['Piattaforma aerea 12 m, noleggio 3 giorni', '1', 540, 540], ['Lavaggio e fissativo facciata', '120 m²', 6, 720], ['Pittura al quarzo, 2 mani', '120 m²', 14, 1680]], iva: 10 },
+			{ id: 'p8', praticaId: 'r11', n: 1, numero: 'P-2026-0008', stato: 'inviata', generato: '2026-10-01T17:00', inviato: '2026-10-02T08:00', canale: 'whatsapp', righe: [['Smontaggio cucina 3 m', '1', 180, 180], ['Rimontaggio con allacci idrici', '1', 320, 320], ['Materiale di fissaggio', '1', 35, 35]], iva: 22 }
+		],
+		avvisi: [
+			{ id: 'v1', quando: '2026-10-13T08:12', titolo: 'Nuova richiesta', testo: 'Marta Rossi · Imbiancatura · Jesolo', praticaId: 'r1', letto: false },
+			{ id: 'v2', quando: '2026-10-12T19:20', titolo: 'Preventivo accettato', testo: 'Giorgio Trevisan · P-2026-0009', praticaId: 'r4', letto: true },
+			{ id: 'v3', quando: '2026-10-11T16:45', titolo: 'Nuova richiesta', testo: 'Chiara Moro · Parquet · Treporti', praticaId: 'r8', letto: true }
+		],
+		email: [
+			{ quando: '2026-10-13T08:12', oggetto: 'Nuova richiesta R-2026-0141 · Imbiancatura · Jesolo', stato: 'intercettata (non inviata)' },
+			{ quando: '2026-10-11T16:45', oggetto: 'Nuova richiesta R-2026-0140 · Parquet · Treporti', stato: 'intercettata (non inviata)' }
+		],
+		senzaRete: false,
+		prossimoNumero: 13,
+		contatoreId: 100
+	};
+}
+
+/* ===================== STATO ===================== */
+let D;
+function carica() {
+	try { const s = localStorage.getItem('am-prototipo-b01-v3'); if (s) { D = JSON.parse(s); return; } } catch {}
+	D = datiIniziali();
+}
+function salva() { try { localStorage.setItem('am-prototipo-b01-v3', JSON.stringify(D)); } catch {} }
+function azzera() { D = datiIniziali(); salva(); vai('oggi'); toast('Dati di prova ripristinati.'); }
+const nuovoId = (p) => p + (++D.contatoreId);
+const pratica = (id) => D.pratiche.find((p) => p.id === id);
+const appDi = (id) => D.appuntamenti.filter((a) => a.praticaId === id).sort((a, b) => (a.giorno + a.inizio).localeCompare(b.giorno + b.inizio));
+const prevDi = (id) => D.preventivi.filter((p) => p.praticaId === id).sort((a, b) => a.n - b.n);
+const prevCorrente = (id) => prevDi(id).at(-1) ?? null;
+const cliente = (id) => D.clienti.find((c) => c.id === id);
+const nomeOp = (id) => OPERATORI.find((o) => o.id === id)?.nome ?? id;
+const adessoIso = () => OGGI + 'T' + new Date().toTimeString().slice(0, 5);
+const aperte = (a) => a.stato === 'proposto' || a.stato === 'confermato';
+const chiusa = (p) => ['conclusa', 'non_proseguita'].includes(p.stato);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fotoDi = (p) => (Array.isArray(p.foto) ? p.foto : []);
+const miniatura = (p) => { const f = fotoDi(p)[0] ?? FOTO_SERVIZIO[p.servizio]; return f ? `<img class="mini" src="${mini(f)}" alt="" loading="lazy" width="52" height="52">` : `<span class="mini-vuota">${I.pratiche}</span>`; };
+
+/* visore delle foto (a tutto schermo, scorrimento col dito o con le frecce) */
+let visore = null;
+function apriVisore(praticaId, i = 0) {
+	const p = pratica(praticaId); if (!p || !fotoDi(p).length) return;
+	visore = { p, i };
+	const s = document.getElementById('visore');
+	s.innerHTML = `<div class="visore" role="dialog" aria-modal="true" aria-label="Foto"><div class="vt"><span></span><button type="button" onclick="chiudiVisore()">Chiudi</button></div><div class="vimg"><img alt=""></div><div class="vb"><button type="button" aria-label="Precedente" onclick="visoreVai(-1)">${I.indietro}</button><span class="vdid"></span><button type="button" aria-label="Successiva" onclick="visoreVai(1)">${I.freccia}</button></div></div>`;
+	let x0 = null;
+	s.firstChild.addEventListener('touchstart', (e) => (x0 = e.touches[0].clientX), { passive: true });
+	s.firstChild.addEventListener('touchend', (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) visoreVai(dx < 0 ? 1 : -1); x0 = null; });
+	visoreMostra();
+}
+function visoreMostra() {
+	const { p, i } = visore, f = fotoDi(p), n = f[i], s = document.getElementById('visore');
+	s.querySelector('.vimg img').src = src(n);
+	s.querySelector('.vt span').textContent = `${i + 1} di ${f.length} · ${esc(p.nome)}`;
+	s.querySelector('.vdid').textContent = `${FOTO[n]?.[0] ?? ''} · foto dimostrativa (Pexels, ${FOTO[n]?.[1] ?? ''})`;
+	s.querySelector('.vb button:first-child').disabled = i === 0;
+	s.querySelector('.vb button:last-child').disabled = i === f.length - 1;
+}
+function visoreVai(d) { if (!visore) return; const n = visore.i + d; if (n < 0 || n >= fotoDi(visore.p).length) return; visore.i = n; visoreMostra(); }
+function chiudiVisore() {
+	const s = document.getElementById('visore'); if (!s.firstChild) return;
+	s.firstChild.classList.add('via'); visore = null;
+	setTimeout(() => (s.innerHTML = ''), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300);
+}
+const galleria = (p) => {
+	const f = fotoDi(p); if (!f.length) return '';
+	const mostra = f.slice(0, 3);
+	return `<div class="galleria">${mostra.map((n, i) => `<button type="button" onclick="apriVisore('${p.id}',${i})" aria-label="Foto ${i + 1}"><img src="${mini(n)}" alt="${esc(FOTO[n]?.[0] ?? '')}" loading="lazy">${i === 2 && f.length > 3 ? `<span class="piu">+${f.length - 3}</span>` : ''}</button>`).join('')}</div><p class="didascalia">Foto dimostrative (Pexels), non lavori di ArtigianaMente. Si sostituiscono con quelle vere.</p>`;
+};
+
+/* ===================== DATE ===================== */
+const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+const GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
+const GIORNI_B = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
+const d = (s) => new Date(s.slice(0, 10) + 'T12:00:00Z');
+const giornoLungo = (s) => { const x = d(s); return `${GIORNI[x.getUTCDay()]} ${x.getUTCDate()} ${MESI[x.getUTCMonth()]}`; };
+const giornoBreve = (s) => { const x = d(s); return `${GIORNI_B[x.getUTCDay()]} ${x.getUTCDate()} ${MESI[x.getUTCMonth()].slice(0, 3)}`; };
+const quando = (iso) => { if (!iso) return ''; const x = d(iso); return `${x.getUTCDate()} ${MESI[x.getUTCMonth()].slice(0, 3)}${iso.length > 10 ? ', ' + iso.slice(11, 16) : ''}`; };
+const piuGiorni = (s, n) => { const x = d(s); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+const lunediDi = (s) => piuGiorni(s, -((d(s).getUTCDay() + 6) % 7));
+const giorniDa = (iso) => Math.round((d(OGGI) - d(iso)) / 86400000);
+const euro = (n) => n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+const totali = (p) => { const imp = p.righe.reduce((s, r) => s + r[3], 0); const iva = Math.round(imp * p.iva) / 100; return { imp, iva, tot: imp + iva }; };
+
+/* ===================== AZIONE SUGGERITA ===================== */
+// Solo lettura: guarda il preventivo corrente e gli appuntamenti, non cambia niente. Il motivo è sempre scritto.
+// «Verifica la pratica» solo per contraddizioni concrete, con scritto cosa non torna e un tasto per andare a vedere.
+function suggerita(p) {
+	const apps = appDi(p.id), pvs = prevDi(p.id), pv = pvs.at(-1) ?? null;
+	const futuri = apps.filter((a) => aperte(a) && a.giorno >= OGGI);
+	const passatiProposti = apps.filter((a) => a.stato === 'proposto' && a.giorno < OGGI);
+	const lavoroAttivo = apps.find((a) => aperte(a) && a.tipo !== 'sopralluogo' && a.tipo !== 'altro');
+	const sopr = apps.filter((a) => a.tipo === 'sopralluogo');
+	const soprAperto = sopr.find((a) => aperte(a) && a.giorno >= OGGI);
+	const soprSvolto = sopr.some((a) => a.stato === 'svolto');
+	const accettate = pvs.filter((v) => v.stato === 'accettata');
+	// contraddizioni concrete
+	if (p.archiviata || chiusa(p)) {
+		if (futuri.length) return { testo: 'Verifica la pratica', motivo: `Pratica «${NOMI_STATO[p.stato]}», ma c'è ancora un appuntamento attivo: ${NOMI_TIPO[futuri[0].tipo].toLowerCase()} ${giornoBreve(futuri[0].giorno)} alle ${futuri[0].inizio}. Annullalo o riapri la pratica.`, azione: 'imp-' + futuri[0].id };
+		return null;
+	}
+	if (passatiProposti.length) { const a = passatiProposti[0]; return { testo: 'Verifica la pratica', motivo: `${NOMI_TIPO[a.tipo]} del ${giornoBreve(a.giorno)} ancora «proposto»: non è stato confermato né annullato. Cosa è successo?`, azione: 'imp-' + a.id }; }
+	if (pv?.stato === 'rifiutata' && lavoroAttivo) return { testo: 'Verifica la pratica', motivo: `Preventivo ${pv.numero} registrato come rifiutato, ma ${NOMI_TIPO[lavoroAttivo.tipo].toLowerCase()} ancora confermato per ${giornoBreve(lavoroAttivo.giorno)}.`, azione: 'imp-' + lavoroAttivo.id };
+	if (accettate.length > 1 || (accettate.length === 1 && pv && pv.stato !== 'accettata' && pv.stato !== 'bozza' && pv.stato !== 'superata')) return { testo: 'Verifica la pratica', motivo: `${pvs.length} versioni del preventivo e non è chiaro quale valga: ${pvs.map((v) => (v.numero ?? 'bozza v' + v.n) + ' ' + NOMI_PREV[v.stato].toLowerCase()).join(', ')}.`, azione: 'prev' };
+	// passi normali
+	if (p.stato === 'in_corso') {
+		if (lavoroAttivo) return { testo: 'Lavoro in corso', motivo: `Prossima giornata ${giornoBreve(lavoroAttivo.giorno)} alle ${lavoroAttivo.inizio}.`, azione: null };
+		return { testo: 'Programma o chiudi', motivo: 'Nessuna prossima giornata pianificata. Verifica se programmare un altro intervento o aggiornare lo stato.', azione: 'nuovo-lavoro' };
+	}
+	if (pv?.stato === 'accettata') {
+		if (lavoroAttivo?.stato === 'proposto') return { testo: 'Conferma la data del lavoro', motivo: `Preventivo accettato. Lavoro proposto per ${giornoBreve(lavoroAttivo.giorno)}, non ancora confermato.`, azione: 'imp-' + lavoroAttivo.id };
+		if (lavoroAttivo) return { testo: 'Tutto programmato', motivo: `Lavoro confermato per ${giornoBreve(lavoroAttivo.giorno)} alle ${lavoroAttivo.inizio}.${p.stato !== 'programmata' ? ` Lo stato è ancora «${NOMI_STATO[p.stato]}»: aggiornalo quando vuoi.` : ''}`, azione: p.stato !== 'programmata' ? 'stato' : null };
+		return { testo: 'Programma il lavoro', motivo: 'Preventivo registrato come accettato. Nessun appuntamento di lavoro presente.', azione: 'nuovo-lavoro' };
+	}
+	if (pv?.stato === 'rifiutata') return { testo: 'Decidi come chiudere', motivo: 'Preventivo registrato come rifiutato. La pratica è ancora aperta.', azione: 'stato' };
+	if (pv?.stato === 'inviata') return { testo: 'In attesa della risposta', motivo: `Preventivo inviato ${quando(pv.inviato)} (${giorniDa(pv.inviato)} giorni fa). Quando il cliente risponde, registralo qui.`, azione: 'prev' };
+	if (pv?.stato === 'pronta') return { testo: 'Mandalo al cliente e segna inviato', motivo: `PDF ${pv.numero} pronto. L'invio lo fai tu (WhatsApp o email); poi registralo.`, azione: 'prev' };
+	if (pv?.stato === 'bozza') return { testo: 'Completa la bozza e genera il PDF', motivo: 'Preventivo in bozza, nessun numero ancora.', azione: 'prev-' + pv.id };
+	if (soprAperto?.stato === 'proposto') return { testo: 'Conferma il sopralluogo', motivo: `Sopralluogo proposto per ${giornoBreve(soprAperto.giorno)} alle ${soprAperto.inizio}, non confermato.`, azione: 'imp-' + soprAperto.id };
+	if (soprAperto) return { testo: 'Sopralluogo fissato', motivo: `${giornoBreve(soprAperto.giorno)} alle ${soprAperto.inizio}. Dopo, prepara il preventivo.`, azione: null };
+	if (soprSvolto) return { testo: 'Prepara il preventivo', motivo: 'Sopralluogo svolto, nessun preventivo ancora.', azione: 'prev' };
+	if (!sopr.length) return { testo: 'Fissa il sopralluogo', motivo: p.stato === 'nuova' ? 'Richiesta nuova, nessun appuntamento.' : 'Nessun sopralluogo in agenda.', azione: 'nuovo-sopralluogo' };
+	return { testo: 'Nessun passo suggerito', motivo: 'Dati non sufficienti per suggerire un passo.', azione: null };
+}
+
+/* ===================== OGGI: cosa fare ===================== */
+// Regola: 1) prima ciò che richiede attenzione oggi (appuntamenti imminenti da confermare, con il motivo scritto);
+// 2) poi tutto il resto dalla cosa più vecchia, con scritto da quanto attende. La categoria da sola non decide l'urgenza.
+function daFare() {
+	const out = [];
+	for (const p of D.pratiche) {
+		if (p.archiviata || chiusa(p)) continue;
+		const pv = prevCorrente(p.id);
+		const imminente = appDi(p.id).find((a) => a.stato === 'proposto' && a.giorno >= OGGI && a.giorno <= piuGiorni(OGGI, 1));
+		if (imminente) out.push({ oggi: true, p, cosa: 'Da confermare', det: `${NOMI_TIPO[imminente.tipo]} ${imminente.giorno === OGGI ? 'oggi' : giornoBreve(imminente.giorno)} alle ${imminente.inizio} · ancora proposto`, da: imminente.giorno + 'T' + imminente.inizio });
+		else if (pv?.stato === 'pronta') out.push({ p, cosa: 'Preventivo da mandare', det: `${pv.numero} · ${p.servizio}`, da: pv.generato });
+		else if (pv?.stato === 'accettata' && !appDi(p.id).some((a) => aperte(a) && a.tipo !== 'sopralluogo' && a.tipo !== 'altro') && p.stato !== 'in_corso') out.push({ p, cosa: 'Lavoro da programmare', det: `${p.servizio} · accettato ${quando(pv.accettato)}`, da: pv.accettato });
+		else if (p.stato === 'nuova') out.push({ p, cosa: 'Nuova richiesta', det: `${p.servizio} · ${p.comune}`, da: p.ricevuta });
+		else if (!pv && appDi(p.id).some((a) => a.tipo === 'sopralluogo' && a.stato === 'svolto')) { const s = appDi(p.id).filter((a) => a.tipo === 'sopralluogo' && a.stato === 'svolto').at(-1); out.push({ p, cosa: 'Preventivo da preparare', det: `${p.servizio} · sopralluogo fatto ${quando(s.giorno)}`, da: s.giorno + 'T' + s.fine }); }
+		else { const s = appDi(p.id).find((a) => a.stato === 'proposto' && a.giorno >= OGGI); if (s) out.push({ p, cosa: 'Da confermare', det: `${NOMI_TIPO[s.tipo]} ${giornoBreve(s.giorno)} alle ${s.inizio}`, da: p.ricevuta }); }
+	}
+	for (const x of out) x.attesa = x.oggi ? '' : (giorniDa(x.da) >= 1 ? `attende da ${giorniDa(x.da)} ${giorniDa(x.da) === 1 ? 'giorno' : 'giorni'}` : 'di oggi');
+	return out.sort((a, b) => (b.oggi ? 1 : 0) - (a.oggi ? 1 : 0) || a.da.localeCompare(b.da));
+}
+function inAttesa() {
+	return D.pratiche.filter((p) => !chiusa(p) && prevCorrente(p.id)?.stato === 'inviata').map((p) => ({ p, pv: prevCorrente(p.id) })).sort((a, b) => a.pv.inviato.localeCompare(b.pv.inviato));
+}
+
+/* ===================== ICONE (linea sottile) ===================== */
+const I = {
+	oggi: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+	agenda: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+	pratiche: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>',
+	clienti: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+	altro: '<svg class="ico" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>',
+	freccia: '<svg class="ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
+	indietro: '<svg class="ico" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+	tel: '<svg class="ico" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
+	mail: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+	luogo: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+	piu: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'
+};
+
+/* ===================== ROUTER ===================== */
+let vista = 'oggi', param = null, filtroPratiche = 'da_gestire', cercaTesto = '', agendaVista = 'giorno', agendaGiorno = OGGI, ritorno = [];
+const SEZIONI = [['oggi', 'Oggi'], ['agenda', 'Agenda'], ['pratiche', 'Pratiche'], ['clienti', 'Clienti'], ['altro', 'Altro']];
+function vai(v, p = null, { indietro = false } = {}) {
+	chiudiTendina(true); chiudiVisore();
+	if (!indietro && (vista !== v || param !== p)) ritorno.push([vista, param]);
+	if (ritorno.length > 20) ritorno.shift();
+	if (SEZIONI.some(([k]) => k === v)) { ritorno = []; cercaTesto = ''; }
+	vista = v; param = p;
+	try { history.replaceState(null, '', '#' + v + (p ? '-' + p : '')); } catch {}
+	render();
+	scrollTo({ top: 0 });
+}
+function torna() { const x = ritorno.pop() ?? ['oggi', null]; vai(x[0], x[1], { indietro: true }); }
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (visore) chiudiVisore(); else if (tendinaAperta) chiudiTendina(); } if (visore && e.key === 'ArrowRight') visoreVai(1); if (visore && e.key === 'ArrowLeft') visoreVai(-1); });
+function render() {
+	const app = document.getElementById('app');
+	app.className = 'app' + (D.senzaRete ? ' con-rete' : '');
+	document.getElementById('rete').hidden = !D.senzaRete;
+	const r = { oggi, agenda, pratiche, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: impegno, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti }[vista] ?? oggi;
+	app.innerHTML = `<div class="schermo" key="${vista}-${param}">${r(param)}</div>`;
+	const sezione = { p: 'pratiche', cliente: 'clienti', imp: 'agenda', prev: 'pratiche', pdf: 'pratiche', avvisi: 'altro', sistema: 'altro', impostazioni: 'altro', sito: 'altro', tutteOggi: 'oggi', crediti: 'altro' }[vista] ?? vista;
+	const nuove = D.avvisi.filter((a) => !a.letto).length;
+	document.getElementById('barra').innerHTML = SEZIONI.map(([k, n]) => `<button type="button" class="${sezione === k ? 'attiva' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}">${I[k]}${n}${k === 'altro' && nuove ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
+}
+const testa = (titolo, sotto = '', destra = '') => `<div class="testa"><div><h1>${titolo}</h1>${sotto ? `<p class="sotto">${sotto}</p>` : ''}</div>${destra}</div>`;
+const bottoneIndietro = (testo = 'Indietro') => `<button type="button" class="indietro" onclick="torna()">${I.indietro}${testo}</button>`;
+
+/* ===================== SCHERMATE ===================== */
+function oggi() {
+	const apps = D.appuntamenti.filter((a) => a.giorno === OGGI && aperte(a)).sort((a, b) => a.inizio.localeCompare(b.inizio));
+	const df = daFare();
+	const att = inAttesa();
+	const rigaApp = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num">${a.inizio}</span><span class="cosa"><b>${p ? p.nome : a.titolo}</b><span>${NOMI_TIPO[a.tipo]}${p ? ' · ' + p.servizio : ''} · ${a.luogo}${a.stato === 'proposto' ? ' · <em>da confermare</em>' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; };
+	const rigaDf = (x) => `<li><button type="button" class="riga ${x.oggi ? 'urgente' : ''}" onclick="vai('p','${x.p.id}')"><span class="punto"></span><span class="cosa"><b>${x.cosa} · ${x.p.nome}</b><span>${x.det}${x.attesa ? ' · ' + x.attesa : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`;
+	const rigaAtt = (x) => `<li><button type="button" class="riga" onclick="vai('p','${x.p.id}')"><span class="ora num">${giorniDa(x.pv.inviato)} g</span><span class="cosa"><b>${x.p.nome}</b><span>${x.pv.numero} · inviato ${quando(x.pv.inviato)} · ${euro(totali(x.pv).tot)}</span></span><span class="freccia">${I.freccia}</span></button></li>`;
+	const blocco = (titolo, lista, riga, vedi, vuoto, nota = '') => `<section class="riquadro"><h2>${titolo} <span class="conta">${lista.length ? (lista.length > 3 ? `mostrati 3 di ${lista.length}` : lista.length) : ''}</span></h2>${lista.length ? `<ul class="lista">${lista.slice(0, 3).map(riga).join('')}</ul>` : `<p class="vuoto">${vuoto}</p>`}${lista.length > 3 ? `<button type="button" class="vedi" onclick="${vedi}">Vedi tutti (${lista.length})</button>` : ''}${nota ? `<p class="nota" style="margin-top:8px">${nota}</p>` : ''}</section>`;
+	// il prossimo appuntamento in evidenza: nel prototipo l'ora «adesso» è fissa alle 8:00 del 13 ottobre
+	const prossimo = apps.find((a) => a.inizio >= '08:00') ?? apps[0];
+	const pp = prossimo?.praticaId ? pratica(prossimo.praticaId) : null;
+	const hero = prossimo ? `<section class="prossimo"><div><small>Prossimo appuntamento</small><span class="ora-grande num">${prossimo.inizio}</span><b>${pp ? esc(pp.nome) : esc(prossimo.titolo)}</b><span class="dett">${NOMI_TIPO[prossimo.tipo]}${pp ? ' · ' + esc(pp.servizio) : ''} · ${esc(prossimo.luogo)}</span>${prossimo.stato === 'proposto' ? '<span class="dett" style="margin-top:6px"><span class="tag">da confermare</span></span>' : ''}</div><button type="button" class="btn piccolo" onclick="vai('imp','${prossimo.id}')">Apri</button></section>` : `<section class="prossimo"><div><small>Oggi</small><b style="margin-top:0">Nessun appuntamento</b><span class="dett">Giornata libera in agenda.</span></div><button type="button" class="btn piccolo" onclick="vai('agenda')">Agenda</button></section>`;
+	return testa('Oggi', giornoLungo(OGGI) + ' · Fabri')
+		+ hero
+		+ blocco('Appuntamenti di oggi', apps, rigaApp, "vai('agenda')", 'Nessun appuntamento oggi.', 'In ordine di orario.')
+		+ blocco('Da fare', df, rigaDf, "vai('tutteOggi')", 'Niente da fare. Bene così.', 'Ordine: prima ciò che richiede attenzione oggi (in arancione, col motivo), poi il resto dalla cosa più vecchia.')
+		+ blocco('In attesa', att, rigaAtt, "vai('pratiche')", 'Nessun preventivo in attesa di risposta.', 'Preventivi inviati senza risposta, dal più vecchio.');
+}
+function tutteOggi() {
+	const df = daFare();
+	return bottoneIndietro('Oggi') + testa('Da fare', `${df.length} cose: prima quelle di oggi, poi dalla più vecchia`) + `<section class="riquadro"><ul class="lista">${df.map((x) => `<li><button type="button" class="riga ${x.oggi ? 'urgente' : ''}" onclick="vai('p','${x.p.id}')"><span class="punto"></span><span class="cosa"><b>${x.cosa} · ${x.p.nome}</b><span>${x.det}${x.attesa ? ' · ' + x.attesa : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul></section>`;
+}
+
+function pratiche() {
+	const FILTRI = [['da_gestire', 'Da gestire', (r) => !r.archiviata && ['nuova', 'in_valutazione', 'chiusa_da_confermare'].includes(r.stato)], ['da_programmare', 'Da programmare', (r) => !r.archiviata && r.stato === 'da_programmare'], ['programmata', 'Programmate', (r) => !r.archiviata && r.stato === 'programmata'], ['in_corso', 'In corso', (r) => !r.archiviata && r.stato === 'in_corso'], ['chiuse', 'Chiuse', (r) => !r.archiviata && chiusa(r)], ['tutte', 'Tutte', () => true]];
+	const f = FILTRI.find((x) => x[0] === filtroPratiche);
+	const t = cercaTesto.trim().toLowerCase();
+	// con un testo nella ricerca si cerca in tutte le pratiche, non solo nel filtro
+	const corrisponde = (r) => [r.nome, r.codice, r.comune, r.servizio].some((x) => x.toLowerCase().includes(t)) || r.tel.replace(/\D/g, '').includes(t.replace(/\D/g, '') || '§');
+	const lista = D.pratiche.filter(t ? corrisponde : f[2]).sort((a, b) => b.ricevuta.localeCompare(a.ricevuta));
+	const etichettaPrev = (p) => { const pv = prevCorrente(p.id); return pv ? `<span class="tag ${pv.stato === 'accettata' ? 'ok' : pv.stato === 'pronta' ? 'att' : pv.stato === 'rifiutata' ? 'err' : ''}">${NOMI_PREV[pv.stato]}</span>` : ''; };
+	return testa('Pratiche', `${D.pratiche.filter((p) => !p.archiviata && !chiusa(p)).length} aperte`, `<button type="button" class="btn piccolo linea proposta" onclick="toast('Funzione da realizzare: oggi la Gestione non ha l\\'inserimento a mano. Serve il server.')">${I.piu} A mano <span class="tag prop">da realizzare</span></button>`)
+		+ `<input id="cerca" class="cerca" type="search" placeholder="Cerca nome, codice, comune, telefono" value="${esc(cercaTesto)}" oninput="cercaTesto=this.value;render();const c=document.getElementById('cerca');c.focus();c.setSelectionRange(c.value.length,c.value.length)">`
+		+ (t ? `<p class="nota" style="margin-bottom:10px">Risultati in tutte le pratiche: ${lista.length}. <button type="button" class="link" onclick="cercaTesto='';render()">Svuota</button></p>` : `<div class="chips">${FILTRI.map(([k, n, fn]) => `<button type="button" class="${k === filtroPratiche ? 'attivo' : ''}" onclick="filtroPratiche='${k}';render()">${n} <span>${D.pratiche.filter(fn).length}</span></button>`).join('')}</div>`)
+		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(p.nome)}${p.stato === 'nuova' ? ' <span class="tag att">nuova</span>' : ''}</b><span>${esc(p.servizio)} · ${esc(p.comune)} · ${NOMI_STATO[p.stato]}</span>${etichettaPrev(p)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : vuotoGrande(t ? 'Nessun risultato' : 'Nessuna pratica qui', t ? `Niente per «${esc(cercaTesto)}». Prova con il cognome o il comune.` : 'Con questo filtro non c\'è niente da mostrare.')}</section>`;
+}
+const vuotoGrande = (titolo, testo) => `<div class="vuoto-grande">${I.pratiche.replace('class="ico"', 'class="ico" style="width:36px;height:36px"')}<b>${titolo}</b>${testo}</div>`;
+
+function schedaPratica(id) {
+	const p = pratica(id);
+	if (!p) return testa('Pratica non trovata');
+	const apps = appDi(id), pvs = prevDi(id), pv = pvs.at(-1), sug = suggerita(p), cl = p.clienteId ? cliente(p.clienteId) : null;
+	const prossimo = apps.find((a) => aperte(a) && a.giorno >= OGGI);
+	const azioneSug = sug?.azione ? (sug.azione === 'nuovo-sopralluogo' ? `apriNuovoApp('${id}','sopralluogo')` : sug.azione === 'nuovo-lavoro' ? `apriNuovoApp('${id}','inizio_lavori')` : sug.azione === 'stato' ? `apriStato('${id}')` : sug.azione === 'prev' ? "document.getElementById('prev').scrollIntoView({behavior:'smooth'})" : sug.azione.startsWith('imp-') ? `vai('imp','${sug.azione.slice(4)}')` : sug.azione.startsWith('prev-') ? `vai('prev','${sug.azione.slice(5)}')` : sug.azione === 'agenda' ? "vai('agenda')" : '') : '';
+	const bloccoPrev = () => {
+		if (!pvs.length) return `<p class="nota">Nessun preventivo.</p><div class="azioni">${p.stima && !p.stima.startsWith('Da fare') ? `<button type="button" class="btn piccolo" onclick="creaPreventivo('${id}',true)">Crea dalla stima</button>` : ''}<button type="button" class="btn piccolo linea" onclick="creaPreventivo('${id}',false)">Crea vuoto</button></div>`;
+		return pvs.map((v) => { const t = totali(v); return `<div class="versione"><div class="testa-v"><b>${v.numero ?? 'Bozza v' + v.n}</b><span class="tag ${v.stato === 'accettata' ? 'ok' : v.stato === 'pronta' ? 'att' : v.stato === 'rifiutata' ? 'err' : ''}">${NOMI_PREV[v.stato]}</span></div><p class="nota num">${v.righe.length} voci · ${euro(t.tot)} IVA ${v.iva}% inclusa</p>${v.inviato ? `<p class="nota">Inviato ${quando(v.inviato)} via ${CANALI[v.canale]} · registrato a mano da Fabri, l'app non ha spedito nulla</p>` : ''}${v.accettato ? `<p class="nota">Accettato ${quando(v.accettato)} · ${CANALI[v.accettatoCanale]} · registrato a mano</p>` : ''}${v.rifiutato ? `<p class="nota">Rifiutato ${quando(v.rifiutato)} · ${v.motivo}</p>` : ''}<div class="azioni">${v.stato === 'bozza' ? `<button type="button" class="btn piccolo" onclick="vai('prev','${v.id}')">Apri la bozza</button><button type="button" class="btn piccolo pericolo" onclick="apriConferma('Eliminare la bozza v${v.n}?','Non ha ancora un numero: sparisce e basta. Le versioni già generate restano.','Elimina la bozza',()=>eliminaBozza('${v.id}'))">Elimina</button>` : `<button type="button" class="btn piccolo linea" onclick="vai('pdf','${v.id}')">Vedi PDF</button>`}${v.stato === 'pronta' ? `<button type="button" class="btn piccolo" onclick="apriRegistra('${v.id}','inviata')">Segna inviato</button>` : ''}${v.stato === 'inviata' ? `<button type="button" class="btn piccolo" onclick="apriRegistra('${v.id}','accettata')">Accettato</button><button type="button" class="btn piccolo linea" onclick="apriRegistra('${v.id}','rifiutata')">Rifiutato</button>` : ''}${['inviata', 'rifiutata', 'accettata'].includes(v.stato) && v === pv ? `<button type="button" class="btn piccolo linea" onclick="nuovaVersione('${id}')">Rivedi preventivo</button>` : ''}</div>${v.stato === 'pronta' ? '<p class="nota" style="margin-top:8px">Scaricare il PDF non vuol dire averlo inviato: dopo averlo mandato al cliente, premi «Segna inviato».</p>' : ''}</div>`; }).join('');
+	};
+	return bottoneIndietro('Pratiche')
+		+ `<div class="intesta"><p class="codice"><span class="num">${p.codice}</span> · ricevuta ${quando(p.ricevuta)} <span class="tag">PROVA</span></p><h1>${p.nome}</h1></div>`
+		+ `<div class="sommario"><div><small>Stato attuale</small><b>${NOMI_STATO[p.stato]}</b></div><div><small>Prossimo appuntamento</small><b>${prossimo ? `${giornoBreve(prossimo.giorno)} ${prossimo.inizio}` : '—'}</b>${prossimo ? `<span class="nota" style="display:block;font-size:13px">${NOMI_TIPO[prossimo.tipo]}${prossimo.stato === 'proposto' ? ' · da confermare' : ''}</span>` : ''}</div></div>`
+		+ (sug ? `<section class="riquadro suggerita"><h2>Azione suggerita</h2><p class="motivo">${sug.motivo}</p>${sug.azione ? `<button type="button" class="btn" onclick="${azioneSug}">${sug.testo}</button>` : `<p><b>${sug.testo}</b></p>`}<p class="nota" style="margin-top:8px">Suggerimento di lettura: non cambia niente da solo.</p></section>` : '')
+		+ `<section class="riquadro"><h2>Chi è</h2><div class="contatti"><span>${I.tel}<span class="num">${p.tel}</span></span>${p.email ? `<span>${I.mail}${p.email}</span>` : ''}</div><dl class="coppia" style="margin-top:12px"><dt>Indirizzo lavoro</dt><dd>${p.indirizzoLavoro}</dd><dt>Indirizzo cliente</dt><dd>${p.indirizzoCliente || cl?.indirizzo || '<span class="nota">non indicato</span>'}</dd><dt>Cliente</dt><dd>${cl ? `<button type="button" class="link" onclick="vai('cliente','${cl.id}')">${cl.nome} · scheda</button>` : `<span class="nota">non collegato</span> <button type="button" class="link" onclick="collegaCliente('${id}')">Crea e collega</button>`}</dd></dl></section>`
+		+ `<section class="riquadro"><h2>Cosa chiede</h2><dl class="coppia"><dt>Lavoro</dt><dd><b>${p.servizio}</b></dd><dt>Dettagli</dt><dd>${p.dettagli}</dd>${p.preferenze ? `<dt>Preferenze</dt><dd>${p.preferenze}</dd>` : ''}${p.messaggio ? `<dt>Messaggio</dt><dd>«${p.messaggio}»</dd>` : ''}</dl><div style="margin-top:12px"><small class="nota">Stima mostrata al cliente</small><p class="stima">${p.stima || '—'}</p>${p.stimaNota ? `<p class="nota">${p.stimaNota}</p>` : ''}</div>${fotoDi(p).length ? `<h2 style="margin-top:14px">Foto allegate <span class="conta">${fotoDi(p).length}</span></h2>${galleria(p)}` : '<p class="nota" style="margin-top:12px">Nessuna foto allegata alla richiesta.</p>'}</section>`
+		+ `<section class="riquadro" id="prev"><h2>Preventivo</h2>${bloccoPrev()}</section>`
+		+ `<section class="riquadro"><h2>Appuntamenti ${!chiusa(p) ? `<button type="button" class="link" onclick="apriNuovoApp('${id}')">+ Nuovo</button>` : ''}</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num" style="min-width:70px">${giornoBreve(a.giorno)}<br><span class="nota">${a.inizio}</span></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')} · <span class="tag ${a.stato === 'confermato' ? 'ok' : a.stato === 'proposto' ? 'att' : a.stato === 'annullato' ? 'err' : ''}">${NOMI_APP[a.stato]}</span></span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : `<p class="nota">Nessun appuntamento.${!chiusa(p) ? ` <button type="button" class="link" onclick="apriNuovoApp('${id}')">Fissa il primo</button>` : ''}</p>`}</section>`
+		+ `<section class="riquadro"><h2>Note interne</h2><textarea class="campo" rows="3" placeholder="Solo per il titolare: gli operatori e il cliente non le vedono" onchange="salvaNote('${id}',this.value)">${esc(p.note)}</textarea><p class="nota" style="margin-top:6px">Si salvano quando esci dal campo.</p></section>`
+		+ `<section class="riquadro"><h2>Stato</h2><div class="contatti" style="align-items:center;justify-content:space-between"><span><b>${NOMI_STATO[p.stato]}</b>${p.archiviata ? ' <span class="tag">Archiviata</span>' : ''}</span>${chiusa(p) ? `<button type="button" class="btn piccolo linea" onclick="riapri('${id}')">Riapri la pratica</button>` : `<button type="button" class="btn piccolo linea" onclick="apriStato('${id}')">Cambia stato</button>`}</div><p class="nota" style="margin-top:8px">${chiusa(p) ? 'Pratica chiusa: per lavorarci ancora, riaprila.' : 'Lo stato lo cambi tu: preventivo accettato, appuntamento svolto e lavoro concluso sono fatti diversi.'}</p></section>`
+		+ `<section class="riquadro"><h2>Storico</h2><ul class="storico">${[...p.storico].reverse().map(([q, t]) => `<li><span class="q num">${quando(q)}</span><span>${esc(t)}</span></li>`).join('')}</ul></section>`;
+}
+
+function agenda() {
+	const giorni = agendaVista === 'giorno' ? [agendaGiorno] : Array.from({ length: 7 }, (_, i) => piuGiorni(lunediDi(agendaGiorno), i));
+	const sposta = (n) => { agendaGiorno = piuGiorni(agendaGiorno, agendaVista === 'giorno' ? n : 7 * n); render(); };
+	window._sposta = sposta;
+	const titolo = agendaVista === 'giorno' ? giornoLungo(agendaGiorno) : `${giornoBreve(giorni[0])} – ${giornoBreve(giorni[6])}`;
+	return testa('Agenda', '', `<button type="button" class="btn piccolo proposta" onclick="apriNuovoApp(null,null,'${agendaGiorno}')">${I.piu} Nuovo <span class="tag prop" style="background:#fff;color:#2f4a8a">da realizzare</span></button>`)
+		+ `<div class="agenda-testa"><button type="button" class="tondo" aria-label="Prima" onclick="_sposta(-1)">${I.indietro}</button><span class="titolo">${titolo.charAt(0).toUpperCase() + titolo.slice(1)}</span><button type="button" class="tondo" aria-label="Dopo" onclick="_sposta(1)">${I.freccia}</button></div>`
+		+ `<div class="chips"><button type="button" class="${agendaVista === 'giorno' ? 'attivo' : ''}" onclick="agendaVista='giorno';render()">Giorno</button><button type="button" class="${agendaVista === 'settimana' ? 'attivo' : ''}" onclick="agendaVista='settimana';render()">Settimana</button><button type="button" onclick="agendaGiorno='${OGGI}';render()">Oggi</button></div>`
+		+ giorni.map((g) => { const lista = D.appuntamenti.filter((a) => a.giorno === g && a.stato !== 'annullato').sort((a, b) => a.inizio.localeCompare(b.inizio)); return `<section class="giorno ${lista.length ? '' : 'libero'}"><h3 class="${g === OGGI ? 'oggi' : ''}">${agendaVista === 'giorno' ? 'Impegni' : giornoBreve(g)}${g === OGGI ? '<span>oggi</span>' : ''}${d(g).getUTCDay() === 0 ? '<span>domenica</span>' : ''}</h3>${lista.length ? `<ul class="lista">${lista.map((a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num">${a.inizio}<br><span class="nota" style="font-weight:400;font-size:12px">${a.fine}</span></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]} · ${a.chi.map(nomeOp).join(', ')}${a.stato === 'proposto' ? ' · <em>da confermare</em>' : a.stato === 'svolto' ? ' · svolto' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : '<p class="vuoto">Libero</p>'}</section>`; }).join('')
+		+ `<p class="nota" style="margin-top:6px">«Nuovo» dall'Agenda: funzione da realizzare (oggi si crea solo dalla pratica; userebbe la stessa funzione del server).</p>`;
+}
+
+function impegno(id) {
+	const a = D.appuntamenti.find((x) => x.id === id);
+	if (!a) return testa('Impegno non trovato');
+	const p = a.praticaId ? pratica(a.praticaId) : null;
+	const cop = p ? fotoDi(p)[0] : null;
+	return bottoneIndietro()
+		+ testa(esc(p ? p.nome : a.titolo), `${NOMI_TIPO[a.tipo]} · ${giornoLungo(a.giorno)} · ${a.inizio}–${a.fine}`)
+		+ (cop ? `<button type="button" style="padding:0;border:0;background:none;width:100%;text-align:left" onclick="apriVisore('${p.id}',0)"><img class="copertina" src="${src(cop)}" alt="${esc(FOTO[cop]?.[0] ?? '')}"></button>` : '')
+		+ `<section class="riquadro"><dl class="coppia"><dt>Stato</dt><dd><span class="tag ${a.stato === 'confermato' ? 'ok' : a.stato === 'proposto' ? 'att' : a.stato === 'annullato' ? 'err' : ''}">${NOMI_APP[a.stato]}</span>${a.deroga ? ` <span class="tag att">sovrapposizione accettata</span>` : ''}${a.stato === 'annullato' && a.motivo ? ` <span class="nota">· ${esc(a.motivo)}</span>` : ''}</dd><dt>Dove</dt><dd>${I.luogo} ${esc(a.luogo)}</dd><dt>Chi</dt><dd>${a.chi.map(nomeOp).join(', ')}</dd>${p ? `<dt>Cliente</dt><dd>${esc(p.nome)} · <span class="num">${p.tel}</span></dd><dt>Lavoro</dt><dd>${esc(p.servizio)} · ${esc(p.dettagli)}</dd>` : ''}</dl>
+		<div class="azioni">${p ? `<button type="button" class="btn piccolo linea" onclick="vai('p','${p.id}')">Apri pratica</button>` : ''}${a.stato === 'proposto' ? `<button type="button" class="btn piccolo" onclick="azioneApp('${a.id}','conferma')">Conferma</button>` : ''}${a.stato === 'confermato' ? `<button type="button" class="btn piccolo" onclick="azioneApp('${a.id}','svolto')">Segna svolto</button>` : ''}${aperte(a) ? `<button type="button" class="btn piccolo linea" onclick="apriSposta('${a.id}')">Sposta</button><button type="button" class="btn piccolo pericolo" onclick="apriAnnulla('${a.id}')">Annulla</button>` : ''}</div></section>`
+		+ `<section class="riquadro"><h2>Note dell'appuntamento</h2><textarea class="campo" rows="2" placeholder="es. citofono rotto, chiamare arrivando" onchange="salvaNoteApp('${a.id}',this.value)">${esc(a.note ?? '')}</textarea><p class="nota" style="margin-top:6px">Le vede chi va: ${a.chi.map(nomeOp).join(', ')}.</p></section>`
+		+ `<p class="nota">Conferma, sposta, svolto e annulla passano dal server (funzioni della Fase 2A): qui sono simulati.</p>`;
+}
+
+function clienti() {
+	const t = cercaTesto.trim().toLowerCase();
+	const lista = D.clienti.filter((c) => !t || c.nome.toLowerCase().includes(t) || c.tel.replace(/\D/g, '').includes(t.replace(/\D/g, '') || '§')).sort((a, b) => a.nome.localeCompare(b.nome));
+	return testa('Clienti', `${D.clienti.length} in anagrafica`, `<button type="button" class="btn piccolo linea" onclick="apriCliente(null)">${I.piu} Nuovo</button>`)
+		+ `<input id="cerca" class="cerca" type="search" placeholder="Cerca per nome o telefono" value="${esc(cercaTesto)}" oninput="cercaTesto=this.value;render();const c=document.getElementById('cerca');c.focus();c.setSelectionRange(c.value.length,c.value.length)">`
+		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((c) => { const n = D.pratiche.filter((p) => p.clienteId === c.id).length; return `<li><button type="button" class="riga" onclick="vai('cliente','${c.id}')"><span class="punto"></span><span class="cosa"><b>${esc(c.nome)}</b><span class="num">${c.tel} · ${n} pratic${n === 1 ? 'a' : 'he'}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun cliente trovato', `Niente per «${esc(cercaTesto)}».`)}</section>`
+		+ `<p class="nota">Le richieste dal sito non sono ancora clienti: diventano clienti da «Chi è → Crea e collega» nella pratica.</p>`;
+}
+function schedaCliente(id) {
+	const c = cliente(id);
+	if (!c) return testa('Cliente non trovato');
+	const prs = D.pratiche.filter((p) => p.clienteId === id).sort((a, b) => b.ricevuta.localeCompare(a.ricevuta));
+	return bottoneIndietro('Clienti') + testa(esc(c.nome))
+		+ `<section class="riquadro"><div class="contatti"><span>${I.tel}<span class="num">${c.tel}</span></span>${c.email ? `<span>${I.mail}${esc(c.email)}</span>` : ''}</div><dl class="coppia" style="margin-top:12px"><dt>Indirizzo</dt><dd>${esc(c.indirizzo) || '<span class="nota">non indicato</span>'}</dd>${c.note ? `<dt>Note</dt><dd>${esc(c.note)}</dd>` : ''}</dl><div class="azioni"><button type="button" class="btn piccolo linea" onclick="apriCliente('${c.id}')">Modifica cliente</button></div></section>`
+		+ `<section class="riquadro"><h2>Pratiche collegate <span class="conta">${prs.length}</span></h2>${prs.length ? `<ul class="lista">${prs.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(p.servizio)}</b><span>${p.codice} · ${NOMI_STATO[p.stato]}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuna pratica collegata.</p>'}</section>`;
+}
+function apriCliente(id) {
+	const c = id ? cliente(id) : { nome: '', tel: '', email: '', indirizzo: '', note: '' };
+	apriTendina(`<h3>${id ? 'Modifica cliente' : 'Nuovo cliente'}</h3>
+	<label class="campo">Nome e cognome<input class="campo" name="cl-nome" value="${esc(c.nome)}" autocomplete="off"></label>
+	<label class="campo">Telefono<input class="campo num" name="cl-tel" value="${esc(c.tel)}" inputmode="tel"></label>
+	<label class="campo">Email (facoltativa)<input class="campo" name="cl-email" value="${esc(c.email)}" inputmode="email"></label>
+	<label class="campo">Indirizzo<input class="campo" name="cl-indirizzo" value="${esc(c.indirizzo)}"></label>
+	<label class="campo">Note (facoltative)<input class="campo" name="cl-note" value="${esc(c.note ?? '')}"></label>
+	<div id="cl-esito"></div>
+	<div class="azioni"><button type="button" class="btn pieno" onclick="salvaCliente('${id ?? ''}')">${id ? 'Salva le modifiche' : 'Crea il cliente'}</button><button type="button" class="btn linea pieno" onclick="chiudiTendina()">Annulla</button></div>`);
+	setTimeout(() => document.querySelector('[name="cl-nome"]')?.focus(), 50);
+}
+function salvaCliente(id) {
+	if (bloccoRete()) return;
+	const v = (n) => (valore(n) ?? '').trim();
+	const dati = { nome: v('cl-nome'), tel: v('cl-tel'), email: v('cl-email'), indirizzo: v('cl-indirizzo'), note: v('cl-note') };
+	if (dati.nome.length < 2) return esito('cl-esito', 'Serve il nome del cliente.');
+	if (dati.tel.replace(/\D/g, '').length < 6) return esito('cl-esito', 'Controlla il telefono: troppo corto.');
+	if (dati.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dati.email)) return esito('cl-esito', 'L\'email non sembra giusta (manca la @ o il punto).');
+	const doppio = D.clienti.find((c) => c.id !== id && c.tel.replace(/\D/g, '') === dati.tel.replace(/\D/g, ''));
+	if (doppio && !id) return esito('cl-esito', `Questo numero è già di <b>${esc(doppio.nome)}</b>. <button type="button" class="link" onclick="chiudiTendina();vai('cliente','${doppio.id}')">Apri la sua scheda</button>`, 'att');
+	if (id) { Object.assign(cliente(id), dati); salva(); chiudiTendina(); render(); toast('Cliente aggiornato.'); }
+	else { const c = { id: nuovoId('c'), ...dati }; D.clienti.push(c); salva(); chiudiTendina(); toast('Cliente creato.'); vai('cliente', c.id); }
+}
+
+function altro() {
+	const nuove = D.avvisi.filter((a) => !a.letto).length;
+	const voce = (ico, nome, azione, nota = '') => `<li><button type="button" onclick="${azione}">${ico}${nome}${nota ? `<span class="nota">${nota}</span>` : ''}<span class="freccia">${I.freccia}</span></button></li>`;
+	return testa('Altro')
+		+ `<ul class="voci">${voce(I.mail, 'Avvisi', "vai('avvisi')", nuove ? `${nuove} da leggere` : '')}${voce(I.pratiche, 'Impostazioni dei preventivi', "vai('impostazioni')")}${voce(I.oggi, 'Sito: prezzi e testi', "vai('sito')")}${voce(I.altro, 'Stato del sistema', "vai('sistema')")}</ul>`
+		+ `<h2 style="margin:20px 0 8px">Solo per la prova</h2><ul class="voci"><li><button type="button" onclick="cambiaRete()">${I.altro}Simula «senza rete»<span class="nota">${D.senzaRete ? 'attivo' : 'spento'}</span></button></li>${voce(I.pratiche, 'Foto dimostrative', "vai('crediti')", 'fonti')}<li><button type="button" onclick="apriConferma('Ripristinare i dati di prova?','Tutto quello che hai inserito nel prototipo sparisce e tornano i dati di partenza.','Ripristina',azzera)">${I.altro}Ripristina i dati di prova</button></li></ul>`
+		+ `<p class="nota" style="margin-top:14px">Fabri · titolare · <button type="button" class="link" onclick="toast('Nel prototipo non c\\'è il login.')">Esci</button></p>`;
+}
+function cambiaRete(valore = !D.senzaRete) {
+	D.senzaRete = valore; salva();
+	// niente render(): quello che stai scrivendo in un campo deve restare lì. Si aggiornano solo il banner e il margine.
+	document.getElementById('rete').hidden = !D.senzaRete;
+	document.getElementById('app').className = 'app' + (D.senzaRete ? ' con-rete' : '');
+	if (vista === 'altro') render();
+	toast(D.senzaRete ? 'Rete simulata assente. Puoi girare e leggere; i salvataggi aspettano.' : 'Di nuovo in linea. Quello che avevi scritto è ancora qui: salvalo di nuovo.');
+}
+function crediti() {
+	return bottoneIndietro('Altro') + testa('Foto dimostrative', 'Da sostituire con le foto vere')
+		+ `<section class="riquadro"><p>Le fotografie del prototipo sono di repertorio, prese da Pexels (uso libero, anche commerciale). <b>Non sono lavori di ArtigianaMente</b>: servono solo a far vedere com'è fatta ogni schermata.</p><p class="nota" style="margin-top:8px">Stanno nella cartella <span class="num">foto/</span> (800 px) e <span class="num">foto/mini/</span> (240 px quadrate). Per sostituirne una basta un file con lo stesso nome.</p></section>`
+		+ `<section class="riquadro"><ul class="lista">${Object.entries(FOTO).map(([n, [desc, autore, id]]) => `<li><div class="riga con-mini"><img class="mini" src="${mini(n)}" alt="" loading="lazy" width="52" height="52"><span class="cosa"><b>${esc(desc)}</b><span>${n}.jpg · ${esc(autore)} · pexels.com/photo/${id}</span></span></div></li>`).join('')}</ul></section>`;
+}
+function avvisi() {
+	D.avvisi.forEach((a) => (a.letto = true)); salva();
+	return bottoneIndietro('Altro') + testa('Avvisi')
+		+ `<section class="riquadro"><ul class="lista">${D.avvisi.map((a) => `<li><button type="button" class="riga" onclick="${a.praticaId ? `vai('p','${a.praticaId}')` : ''}"><span class="punto"></span><span class="cosa"><b>${a.titolo}</b><span>${a.testo} · ${quando(a.quando)}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul></section>`
+		+ `<section class="riquadro"><h2>Email di avviso (prova)</h2><p class="nota" style="margin-bottom:8px">In modalità prova restano qui: non parte niente.</p><ul class="lista">${D.email.map((m) => `<li><div class="riga" style="grid-template-columns:1fr"><span class="cosa"><b>${m.oggetto}</b><span>${quando(m.quando)} · ${m.stato}</span></span></div></li>`).join('')}</ul></section>`;
+}
+function sistema() {
+	return bottoneIndietro('Altro') + testa('Stato del sistema')
+		+ `<section class="riquadro"><dl class="coppia"><dt>Ultimo backup</dt><dd>13 ott, 03:10 · 9 ore fa · 4,2 MB</dd><dt>Esito</dt><dd><span class="tag ok">ok</span></dd><dt>Spazio</dt><dd>database 4,2 MB di 500 MB · foto 38 MB di 1 GB</dd></dl><p class="nota" style="margin-top:10px">Informazioni tecniche: stanno qui, non in Oggi. Un errore che blocca il lavoro compare invece dove avviene.</p></section>`;
+}
+function impostazioni() {
+	return bottoneIndietro('Altro') + testa('Impostazioni dei preventivi') + `<section class="riquadro"><dl class="coppia"><dt>Intestazione</dt><dd>ArtigianaMente · Cavallino-Treporti · P. IVA …</dd><dt>IVA ammesse</dt><dd>10%, 22%</dd><dt>Validità</dt><dd>30 giorni</dd><dt>Condizioni</dt><dd>Acconto 30% all'accettazione · saldo a fine lavori</dd></dl><p class="nota" style="margin-top:10px">Nel prototipo è solo una lista: la pagina vera esiste già (Fase 2B) e non va ridisegnata.</p></section>`;
+}
+function sito() {
+	return bottoneIndietro('Altro') + testa('Sito: prezzi e testi') + `<section class="riquadro"><p>Bozza del sito, prezzi «da», domande frequenti, ferie, revisioni e pubblicazione.</p><p class="nota" style="margin-top:10px">Pagina già esistente nella Gestione; nel prototipo non è ridisegnata.</p></section>`;
+}
+
+/* ===================== PREVENTIVO ===================== */
+function creaPreventivo(praticaId, dallaStima) {
+	if (bloccoRete()) return;
+	const p = pratica(praticaId);
+	const righe = dallaStima ? righeDaStima(p) : [['', '1', 0, 0]];
+	const pv = { id: nuovoId('p'), praticaId, n: prevDi(praticaId).length + 1, numero: null, stato: 'bozza', righe, iva: 22 };
+	D.preventivi.push(pv);
+	p.storico.push([adessoIso(), `Preventivo v${pv.n} in bozza${dallaStima ? ' (dalla stima)' : ''}`]);
+	salva(); vai('prev', pv.id);
+}
+function righeDaStima(p) {
+	const s = { Imbiancatura: [['Preparazione e protezione ambienti', '1', 120, 120], ['Tinteggiatura pareti, 2 mani', '50 m²', 14, 700], ['Tinteggiatura soffitti', '28 m²', 12, 336]], Parquet: [['Posa parquet prefinito rovere, flottante', '40 m²', 38, 1520], ['Materiale: prefinito rovere naturale 14 mm', '40 m²', 32, 1280], ['Tappetino e profili', '1', 110, 110]], 'Montaggio mobili': [['Montaggio armadio grande', '1', 220, 220], ['Montaggio letto', '1', 90, 90]], Falegnameria: [['Riparazione porta interna (regolazione e piallatura)', '1', 75, 75]] };
+	return (s[p.servizio] ?? [['Lavoro come da sopralluogo', '1', 0, 0]]).map((r) => [...r]);
+}
+function nuovaVersione(praticaId) {
+	if (bloccoRete()) return;
+	const vecchio = prevCorrente(praticaId);
+	if (vecchio.stato === 'inviata') vecchio.stato = 'superata';
+	const pv = { id: nuovoId('p'), praticaId, n: vecchio.n + 1, numero: null, stato: 'bozza', righe: vecchio.righe.map((r) => [...r]), iva: vecchio.iva };
+	D.preventivi.push(pv);
+	pratica(praticaId).storico.push([adessoIso(), `Nuova versione v${pv.n} in bozza`]);
+	salva(); vai('prev', pv.id);
+}
+function editorPreventivo(id) {
+	const pv = D.preventivi.find((x) => x.id === id);
+	if (!pv) return testa('Preventivo non trovato');
+	const p = pratica(pv.praticaId), t = totali(pv), bozza = pv.stato === 'bozza';
+	return bottoneIndietro('Pratica')
+		+ testa(bozza ? `Bozza v${pv.n}` : pv.numero, `${p.nome} · ${p.servizio}`)
+		+ `<section class="riquadro"><h2>Voci</h2><table class="righe"><thead><tr><th>Descrizione</th><th>Q.tà</th><th>Importo</th></tr></thead><tbody>${pv.righe.map((r, i) => `<tr><td>${bozza ? `<input class="campo" style="margin:0;padding:6px 8px;font-size:14px" value="${r[0]}" placeholder="Descrizione" onchange="pv_riga('${id}',${i},0,this.value)">` : r[0]}</td><td>${bozza ? `<input class="campo num" style="margin:0;padding:6px 8px;font-size:14px;width:70px" value="${r[1]}" onchange="pv_riga('${id}',${i},1,this.value)">` : r[1]}</td><td class="num">${bozza ? `<input class="campo num" style="margin:0;padding:6px 8px;font-size:14px;width:90px;text-align:right" value="${r[3]}" inputmode="decimal" onchange="pv_riga('${id}',${i},3,this.value)">` : euro(r[3])}</td></tr>`).join('')}</tbody></table>${bozza ? `<div class="azioni"><button type="button" class="btn piccolo linea" onclick="pv_aggiungi('${id}')">+ Voce</button>${pv.righe.length > 1 ? `<button type="button" class="btn piccolo linea" onclick="pv_togli('${id}')">− Ultima voce</button>` : ''}</div>` : ''}
+		<div class="totali num"><span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${bozza ? `<select class="campo" style="width:auto;margin:0;padding:4px 8px;font-size:14px" onchange="pv_iva('${id}',this.value)"><option ${pv.iva === 10 ? 'selected' : ''}>10</option><option ${pv.iva === 22 ? 'selected' : ''}>22</option></select>%` : pv.iva + '%'}</span><span>${euro(t.iva)}</span><span><b>Totale</b></span><span><b>${euro(t.tot)}</b></span></div></section>`
+		+ (bozza ? `<section class="riquadro"><h2>Genera il PDF</h2><p class="nota">Il server assegna il numero, crea il PDF privato e lo verifica. Il PDF non parte da solo verso il cliente.</p><ul class="passi-pdf" id="passi-pdf" hidden><li>Numero assegnato</li><li>PDF creato</li><li>PDF verificato</li></ul><div class="azioni"><button type="button" class="btn" id="btn-genera" onclick="generaPdf('${id}')">Genera PDF</button></div></section>` : `<section class="riquadro"><div class="azioni"><button type="button" class="btn linea" onclick="vai('pdf','${id}')">Vedi il PDF</button>${pv.stato === 'pronta' ? `<button type="button" class="btn" onclick="apriRegistra('${id}','inviata')">Segna inviato</button>` : ''}</div></section>`);
+}
+function pv_riga(id, i, k, v) { const pv = D.preventivi.find((x) => x.id === id); if (k === 3) { const n = parseFloat(String(v).replace(',', '.')) || 0; pv.righe[i][3] = Math.round(n * 100) / 100; } else pv.righe[i][k] = v; salva(); render(); }
+function pv_aggiungi(id) { D.preventivi.find((x) => x.id === id).righe.push(['', '1', 0, 0]); salva(); render(); }
+function pv_togli(id) { D.preventivi.find((x) => x.id === id).righe.pop(); salva(); render(); }
+function pv_iva(id, v) { D.preventivi.find((x) => x.id === id).iva = +v; salva(); render(); }
+function generaPdf(id) {
+	if (bloccoRete()) return;
+	const pv = D.preventivi.find((x) => x.id === id);
+	if (pv.righe.some((r) => !r[0].trim())) return toast('Ogni voce ha bisogno di una descrizione.');
+	const ul = document.getElementById('passi-pdf'); ul.hidden = false;
+	document.getElementById('btn-genera').disabled = true;
+	const li = ul.querySelectorAll('li');
+	setTimeout(() => (li[0].classList.add('fatto')), 350);
+	setTimeout(() => (li[1].classList.add('fatto')), 900);
+	setTimeout(() => {
+		li[2].classList.add('fatto');
+		pv.numero = `P-2026-${String(D.prossimoNumero++).padStart(4, '0')}`; pv.stato = 'pronta'; pv.generato = adessoIso();
+		pratica(pv.praticaId).storico.push([adessoIso(), `Preventivo ${pv.numero} generato`]);
+		salva(); toast(`${pv.numero} pronto. Adesso lo mandi tu al cliente.`); setTimeout(() => vai('p', pv.praticaId), 500);
+	}, 1500);
+}
+function anteprimaPdf(id) {
+	const pv = D.preventivi.find((x) => x.id === id), p = pratica(pv.praticaId), t = totali(pv);
+	return bottoneIndietro() + `<span class="filigrana">Anteprima dimostrativa del PDF · il file vero lo fa il server</span>
+	<article class="pdf"><p class="marchio">ARTIGIANA<span>MENTE</span></p><p class="nota">Cavallino-Treporti (VE) · 339 828 4863 · P. IVA …</p><hr><h3>Preventivo ${pv.numero ?? '(bozza)'}</h3><p class="nota">del ${quando(pv.generato ?? OGGI)} · valido 30 giorni</p><p style="margin-top:10px"><b>${p.nome}</b><br>${p.indirizzoCliente || p.indirizzoLavoro}<br>Lavoro: ${p.servizio} · ${p.indirizzoLavoro}</p><hr><table class="righe"><tbody>${pv.righe.map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="num">${euro(r[3])}</td></tr>`).join('')}</tbody></table><div class="totali num"><span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span><span><b>Totale</b></span><span><b>${euro(t.tot)}</b></span></div><hr><p class="nota">Esclusioni: opere murarie non indicate, smaltimenti speciali. Acconto 30% all'accettazione, saldo a fine lavori. Tempi da concordare dopo l'accettazione.</p></article>`;
+}
+
+/* ===================== TENDINE (moduli) ===================== */
+let tendinaAperta = null;
+function apriTendina(html) {
+	chiudiTendina(true);
+	const s = document.getElementById('strato');
+	s.innerHTML = `<div class="velo" onclick="chiudiTendina()"></div><div class="tendina" role="dialog" aria-modal="true"><div class="maniglia"></div>${html}</div>`;
+	tendinaAperta = true;
+}
+function chiudiTendina(subito = false) {
+	const s = document.getElementById('strato');
+	tendinaAperta = false;
+	if (!s.firstChild) return;
+	if (subito) { s.innerHTML = ''; return; }
+	s.querySelector('.velo').classList.add('via'); s.querySelector('.tendina').classList.add('via');
+	setTimeout(() => (s.innerHTML = ''), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300);
+}
+// Conferma prima di un'azione che butta via qualcosa: titolo, spiegazione, tasto, cosa fare.
+let _conferma = null;
+function apriConferma(titolo, testo, tasto, fai) {
+	_conferma = fai;
+	apriTendina(`<h3>${titolo}</h3><p class="nota" style="margin-bottom:12px">${testo}</p><div class="azioni"><button type="button" class="btn pericolo pieno" onclick="const f=_conferma;_conferma=null;chiudiTendina();f&&f()">${tasto}</button><button type="button" class="btn linea pieno" onclick="_conferma=null;chiudiTendina()">Lascia stare</button></div>`);
+}
+function eliminaBozza(pvId) {
+	if (bloccoRete()) return;
+	const pv = D.preventivi.find((x) => x.id === pvId); if (!pv || pv.stato !== 'bozza') return;
+	D.preventivi = D.preventivi.filter((x) => x.id !== pvId);
+	pratica(pv.praticaId).storico.push([adessoIso(), `Bozza v${pv.n} del preventivo eliminata`]);
+	salva(); render(); toast('Bozza eliminata.');
+}
+function riapri(id) {
+	if (bloccoRete()) return;
+	const p = pratica(id); p.stato = 'in_valutazione'; p.archiviata = false;
+	p.storico.push([adessoIso(), 'Pratica riaperta · stato: In valutazione']);
+	salva(); render(); toast('Pratica riaperta.');
+}
+function salvaNoteApp(id, v) { if (bloccoRete()) return; const a = D.appuntamenti.find((x) => x.id === id); a.note = v.trim(); salva(); toast('Nota salvata.'); }
+function bloccoRete() { if (D.senzaRete) { toast('Senza rete: niente viene salvato finché non torna la connessione. Quello che scrivi resta qui.'); return true; } return false; }
+let toastT;
+function toast(testo) { let t = document.getElementById('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); } t.textContent = testo; clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 3200); }
+
+const scelte = (nome, opzioni, scelto) => `<div class="scelte">${opzioni.map(([v, n]) => `<label><input type="radio" name="${nome}" value="${v}" ${v === scelto ? 'checked' : ''}>${n}</label>`).join('')}</div>`;
+const valore = (nome) => document.querySelector(`[name="${nome}"]:checked`)?.value ?? document.querySelector(`[name="${nome}"]`)?.value;
+
+// Nuovo appuntamento: dalla pratica (cliente già scelto) o dall'Agenda (giorno già scelto). Stesso modulo.
+function apriNuovoApp(praticaId, tipo = null, giorno = null) {
+	const p = praticaId ? pratica(praticaId) : null;
+	const tipoDef = tipo ?? (p && prevCorrente(p.id)?.stato === 'accettata' ? 'inizio_lavori' : 'sopralluogo');
+	const opzPratiche = D.pratiche.filter((x) => !chiusa(x)).map((x) => `<option value="${x.id}" ${x.id === praticaId ? 'selected' : ''}>${x.nome} · ${x.servizio}</option>`).join('');
+	apriTendina(`<h3>Nuovo appuntamento</h3><p class="nota">${p ? `${p.nome} · ${p.servizio}` : 'Dall\'Agenda: scegli la pratica.'}</p>
+	${p ? '' : `<label class="campo">Pratica<select class="campo" name="na-pratica"><option value="">Senza pratica (altro)</option>${opzPratiche}</select></label>`}
+	<label class="campo">Tipo</label>${scelte('na-tipo', Object.entries(NOMI_TIPO), tipoDef)}
+	<label class="campo">Giorno<input class="campo num" type="date" name="na-giorno" value="${giorno ?? piuGiorni(OGGI, 1)}"></label>
+	<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="campo">Dalle<input class="campo num" type="time" name="na-inizio" value="09:00"></label><label class="campo">Alle<input class="campo num" type="time" name="na-fine" value="${tipoDef === 'sopralluogo' ? '09:45' : '17:00'}"></label></div>
+	<label class="campo">Chi va</label><div class="scelte">${OPERATORI.map((o) => `<label><input type="checkbox" name="na-chi" value="${o.id}" ${o.id === 'fabri' ? 'checked' : ''}>${o.nome}</label>`).join('')}</div>
+	<label class="campo">Dove<input class="campo" name="na-luogo" value="${p ? p.indirizzoLavoro : ''}" placeholder="Indirizzo"></label>
+	<div id="na-esito"></div>
+	<div class="azioni"><button type="button" class="btn pieno" onclick="salvaNuovoApp('${praticaId ?? ''}')">Proponi appuntamento</button></div>
+	<p class="nota" style="margin-top:8px">«Proponi»: nasce come proposto, poi lo confermi. Il controllo delle sovrapposizioni lo fa il server.</p>`);
+}
+function salvaNuovoApp(praticaIdFisso, deroga = '') {
+	if (bloccoRete()) return;
+	const praticaId = praticaIdFisso || valore('na-pratica') || null;
+	const a = { id: nuovoId('a'), praticaId, tipo: valore('na-tipo'), giorno: valore('na-giorno'), inizio: valore('na-inizio'), fine: valore('na-fine'), chi: [...document.querySelectorAll('[name="na-chi"]:checked')].map((x) => x.value), stato: 'proposto', luogo: valore('na-luogo') || 'da indicare', titolo: praticaId ? undefined : 'Impegno' };
+	if (!a.giorno || !a.inizio || !a.fine || a.fine <= a.inizio) return esito('na-esito', 'Controlla giorno e orari: la fine deve venire dopo l\'inizio.');
+	if (!a.chi.length) return esito('na-esito', 'Scegli almeno una persona.');
+	const conflitti = D.appuntamenti.filter((x) => x.giorno === a.giorno && aperte(x) && x.chi.some((c) => a.chi.includes(c)) && x.inizio < a.fine && x.fine > a.inizio);
+	if (conflitti.length && !deroga) {
+		const c = conflitti[0], pc = c.praticaId ? pratica(c.praticaId) : null;
+		return esito('na-esito', `<b>Sovrapposizione.</b> ${c.chi.map(nomeOp).join(' e ')} ${c.chi.length > 1 ? 'sono' : 'è'} già ${c.inizio}–${c.fine}: ${pc ? pc.nome : c.titolo}, ${NOMI_TIPO[c.tipo].toLowerCase()}. Cambia orario o persona, oppure accetta la sovrapposizione con una nota.<label class="campo">Nota (obbligatoria)<input class="campo" name="na-deroga" placeholder="es. Marco si sposta alle 14"></label><div class="azioni"><button type="button" class="btn piccolo linea" onclick="const n=valore('na-deroga');if(!n.trim())return toast('Scrivi la nota.');salvaNuovoApp('${praticaIdFisso}',n)">Accetta la sovrapposizione</button></div>`, 'att');
+	}
+	if (deroga) a.deroga = deroga;
+	D.appuntamenti.push(a);
+	if (praticaId) pratica(praticaId).storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} proposto per il ${quando(a.giorno)} ore ${a.inizio}${deroga ? ' (sovrapposizione accettata)' : ''}`]);
+	salva(); chiudiTendina(); toast('Appuntamento proposto. Confermalo quando il cliente dice sì.');
+	praticaId ? vai('p', praticaId) : vai('agenda');
+}
+function esito(id, html, tipo = 'err') { document.getElementById(id).innerHTML = `<div class="avviso ${tipo}">${html}</div>`; }
+
+function azioneApp(id, cosa) {
+	if (bloccoRete()) return;
+	const a = D.appuntamenti.find((x) => x.id === id), p = a.praticaId ? pratica(a.praticaId) : null;
+	if (cosa === 'conferma') { a.stato = 'confermato'; p?.storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} confermato (${quando(a.giorno)} ore ${a.inizio})`]); toast('Confermato.'); }
+	if (cosa === 'svolto') { a.stato = 'svolto'; p?.storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} segnato svolto`]); toast('Segnato svolto. Lo stato della pratica resta a te.'); }
+	salva(); render();
+}
+function apriSposta(id) {
+	const a = D.appuntamenti.find((x) => x.id === id);
+	apriTendina(`<h3>Sposta l'appuntamento</h3><p class="nota">${NOMI_TIPO[a.tipo]} · oggi ${giornoBreve(a.giorno)} ${a.inizio}–${a.fine}</p>
+	<label class="campo">Nuovo giorno<input class="campo num" type="date" name="sp-giorno" value="${a.giorno}"></label>
+	<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="campo">Dalle<input class="campo num" type="time" name="sp-inizio" value="${a.inizio}"></label><label class="campo">Alle<input class="campo num" type="time" name="sp-fine" value="${a.fine}"></label></div>
+	<div id="sp-esito"></div><div class="azioni"><button type="button" class="btn pieno" onclick="salvaSposta('${id}')">Sposta</button></div>`);
+}
+function salvaSposta(id) {
+	if (bloccoRete()) return;
+	const a = D.appuntamenti.find((x) => x.id === id);
+	const g = valore('sp-giorno'), i = valore('sp-inizio'), f = valore('sp-fine');
+	if (!g || !i || !f || f <= i) return esito('sp-esito', 'Controlla giorno e orari.');
+	const c = D.appuntamenti.find((x) => x.id !== id && x.giorno === g && aperte(x) && x.chi.some((k) => a.chi.includes(k)) && x.inizio < f && x.fine > i);
+	if (c) { const pc = c.praticaId ? pratica(c.praticaId) : null; return esito('sp-esito', `<b>Orario occupato.</b> ${c.chi.map(nomeOp).join(' e ')}: ${c.inizio}–${c.fine}, ${pc ? pc.nome : c.titolo}. Scegli un altro orario.`, 'att'); }
+	const prima = `${quando(a.giorno)} ${a.inizio}`;
+	a.giorno = g; a.inizio = i; a.fine = f;
+	if (a.praticaId) pratica(a.praticaId).storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} spostato da ${prima} a ${quando(g)} ${i}`]);
+	salva(); chiudiTendina(); toast('Spostato.'); render();
+}
+function apriAnnulla(id) {
+	apriTendina(`<h3>Annulla l'appuntamento</h3><label class="campo">Motivo (obbligatorio)<input class="campo" name="an-motivo" placeholder="es. il cliente ha rimandato"></label><div class="azioni"><button type="button" class="btn pericolo" onclick="salvaAnnulla('${id}')">Annulla l'appuntamento</button><button type="button" class="btn linea" onclick="chiudiTendina()">Tieni</button></div>`);
+}
+function salvaAnnulla(id) {
+	if (bloccoRete()) return;
+	const m = valore('an-motivo'); if (!m.trim()) return toast('Scrivi il motivo.');
+	const a = D.appuntamenti.find((x) => x.id === id); a.stato = 'annullato'; a.motivo = m;
+	if (a.praticaId) pratica(a.praticaId).storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} annullato: ${m}`]);
+	salva(); chiudiTendina(); toast('Annullato.'); torna();
+}
+
+// Registrare a mano: inviato / accettato / rifiutato. Sono fatti che Fabri dichiara, non automatismi.
+function apriRegistra(pvId, azione) {
+	const pv = D.preventivi.find((x) => x.id === pvId);
+	const titoli = { inviata: 'Segna inviato', accettata: 'Registra l\'accettazione', rifiutata: 'Registra il rifiuto' };
+	apriTendina(`<h3>${titoli[azione]}</h3><p class="nota">${pv.numero} · ${euro(totali(pv).tot)}</p>
+	${azione !== 'rifiutata' ? `<label class="campo">Come</label>${scelte('rg-canale', Object.entries(CANALI), 'whatsapp')}` : `<label class="campo">Motivo (obbligatorio)<input class="campo" name="rg-motivo" placeholder="es. troppo caro, ha scelto un altro"></label>`}
+	<label class="campo">Quando<input class="campo num" type="date" name="rg-quando" value="${OGGI}"></label>
+	<label class="campo">Nota (facoltativa)<input class="campo" name="rg-nota"></label>
+	<div class="azioni"><button type="button" class="btn pieno" onclick="salvaRegistra('${pvId}','${azione}')">${titoli[azione]}</button></div>
+	<p class="nota" style="margin-top:8px">${azione === 'inviata' ? 'Il PDF l\'hai mandato tu: qui lo registri soltanto.' : 'Registrazione a mano: lo stato della pratica resta a te.'}</p>`);
+}
+function salvaRegistra(pvId, azione) {
+	if (bloccoRete()) return;
+	const pv = D.preventivi.find((x) => x.id === pvId), p = pratica(pv.praticaId), q = valore('rg-quando') + 'T' + new Date().toTimeString().slice(0, 5);
+	if (azione === 'inviata') { pv.stato = 'inviata'; pv.inviato = q; pv.canale = valore('rg-canale'); p.storico.push([q, `Preventivo ${pv.numero} segnato inviato (${CANALI[pv.canale]})`]); toast('Registrato come inviato: nessun messaggio è partito da qui.'); }
+	if (azione === 'accettata') { pv.stato = 'accettata'; pv.accettato = q; pv.accettatoCanale = valore('rg-canale'); p.storico.push([q, `Preventivo ${pv.numero} registrato come accettato (${CANALI[pv.accettatoCanale]})`]); toast('Accettazione registrata. Adesso: programma il lavoro.'); }
+	if (azione === 'rifiutata') { const m = valore('rg-motivo'); if (!m.trim()) return toast('Scrivi il motivo.'); pv.stato = 'rifiutata'; pv.rifiutato = q; pv.motivo = m; p.storico.push([q, `Preventivo ${pv.numero} registrato come rifiutato: ${m}`]); toast('Rifiuto registrato.'); }
+	salva(); chiudiTendina(); vai('p', p.id, { indietro: true });
+}
+function apriStato(id) {
+	const p = pratica(id);
+	apriTendina(`<h3>Cambia stato</h3><p class="nota">Adesso: ${NOMI_STATO[p.stato]}</p>${scelte('st-nuovo', Object.entries(NOMI_STATO).filter(([k]) => k !== 'nuova' && k !== 'chiusa_da_confermare'), p.stato)}<label class="campo">Nota (facoltativa)<input class="campo" name="st-nota"></label><div class="azioni"><button type="button" class="btn pieno" onclick="salvaStato('${id}')">Salva stato</button></div>`);
+}
+function salvaStato(id) {
+	if (bloccoRete()) return;
+	const p = pratica(id), s = valore('st-nuovo');
+	if (s !== p.stato) { p.stato = s; p.storico.push([adessoIso(), `Stato: ${NOMI_STATO[s]}${valore('st-nota') ? ' · ' + valore('st-nota') : ''}`]); }
+	salva(); chiudiTendina(); render(); toast('Stato salvato.');
+}
+function salvaNote(id, v) { if (bloccoRete()) return; pratica(id).note = v; salva(); toast('Note salvate.'); }
+function collegaCliente(id) {
+	if (bloccoRete()) return;
+	const p = pratica(id);
+	const c = { id: nuovoId('c'), nome: p.nome, tel: p.tel, email: p.email, indirizzo: p.indirizzoCliente || p.indirizzoLavoro };
+	D.clienti.push(c); p.clienteId = c.id; p.storico.push([adessoIso(), 'Cliente creato e collegato']);
+	salva(); render(); toast('Cliente creato dalla richiesta e collegato.');
+}
+
+/* ===================== AVVIO ===================== */
+carica();
+// se il telefono perde davvero la rete, il prototipo si comporta come con la simulazione
+addEventListener('offline', () => { cambiaRete(true); toast('Senza rete. Puoi girare e leggere; i salvataggi aspettano.'); });
+addEventListener('online', () => { cambiaRete(false); toast('Di nuovo in linea. Quello che avevi scritto è ancora qui: salvalo di nuovo.'); });
+const h = location.hash.slice(1);
+if (h) { const [v, ...rest] = h.split('-'); vista = v; param = rest.length ? rest.join('-') : null; }
+render();
+</script>
+</body></html>
