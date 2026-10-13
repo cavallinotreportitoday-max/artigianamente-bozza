@@ -394,43 +394,206 @@ textarea.testo-proposta { font-size: 15px; line-height: 1.5; background: #fbfbfa
 	@media (hover: hover) { .erica-fab:hover { box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18); } }
 }
 
-@media (prefers-reduced-motion: reduce) { .schermo, .velo, .tendina, .toast, .visore { animation: none !important; } .btn, .chips button, .scelte label, .barra nav button::after, .giorni-strip button b, .persona, .tondo-cerca, .erica-fab { transition: none !important; } .erica-fab { animation: none !important; } }
+
+/* ---- Scheda pratica come la pagina di un lavoro del sito: valori misurati su ristrutturazioni.html (Copertina, v3-lato) ---- */
+.pr-testa { display: grid; gap: 20px; margin: 6px 0 8px; }
+.pr-titolo { font-size: 34px; line-height: 1.08; font-weight: 300; letter-spacing: -0.68px; color: var(--nero); }
+.pr-intro { margin-top: 10px; font-size: 16px; line-height: 1.6; font-weight: 300; color: var(--testo); }
+.pr-lista { display: none; }
+.pr-img { position: relative; border-radius: 20px; overflow: hidden; background: var(--fondo); aspect-ratio: 16 / 9; }
+.pr-img img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+.pr-img.vuota { display: grid; place-items: center; }
+.pr-vuota-testo { display: grid; justify-items: center; gap: 6px; color: var(--grigio); font-size: 14px; }
+.pr-indietro { position: absolute; top: 14px; left: 14px; z-index: 2; width: 42px; height: 42px; display: grid; place-items: center; border: 0; border-radius: 10px; background: #fff; color: var(--nero); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); transition: transform 160ms var(--ease-out); }
+.pr-indietro:active { transform: scale(0.94); }
+.pr-indietro svg { width: 20px; height: 20px; }
+.pr-pill { position: absolute; top: 19px; left: 66px; z-index: 2; display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 13px; border-radius: 8px; background: #fff; color: var(--nero); font-size: 13px; line-height: 1; font-weight: 600; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14); pointer-events: none; }
+.pr-pill svg { width: 15px; height: 15px; }
+.pr-conta { position: absolute; right: 12px; bottom: 12px; z-index: 1; padding: 4px 10px; border-radius: 6px; background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 12px; line-height: 1.2; font-weight: 500; font-variant-numeric: tabular-nums; pointer-events: none; }
+.pr-freccia { position: absolute; top: 50%; z-index: 2; width: 32px; height: 32px; margin-top: -16px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.92); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); color: var(--nero); opacity: 0; transition: opacity 160ms ease, transform 160ms var(--ease-out); }
+.pr-freccia svg { width: 16px; height: 16px; }
+.pr-freccia.prec { left: 12px; } .pr-freccia.succ { right: 12px; }
+.pr-freccia:disabled { visibility: hidden; }
+.pr-freccia:active { transform: scale(0.94); }
+.pr-img:hover .pr-freccia, .pr-freccia:focus-visible { opacity: 1; }
+@media (hover: none) { .pr-freccia { display: none; } }
+.pr-punti { display: flex; justify-content: center; gap: 2px; margin-top: 10px; }
+.pr-punto { width: 24px; height: 16px; display: grid; place-items: center; padding: 0 3px; border: 0; background: none; }
+.pr-punto::before { content: ''; width: 6px; height: 6px; border-radius: 3px; background: #c7c7c7; transition: width 220ms var(--ease-out), background-color 160ms ease; }
+.pr-punto.attivo::before { width: 18px; background: var(--nero); }
+.pr-due { display: block; }
+.pr-lato { margin: 18px 0 8px; order: -1; }
+.pr-due { display: flex; flex-direction: column; }
+.pr-card { padding: 24px; border: 1px solid #dddddd; border-radius: 16px; background: #fff; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); }
+.pr-prezzo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin: 0 0 6px; font-size: 22px; line-height: 1.25; font-weight: 300; color: #222; }
+.pr-prezzo strong { font-weight: 600; color: #222; text-decoration: underline; text-underline-offset: 4px; }
+.pr-prezzo small { font-size: 15px; color: #6a6a6a; }
+.pr-condizione { font-size: 14px; line-height: 1.45; font-weight: 300; color: #222; }
+.pr-dettagli { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; padding: 6px 0; border: 0; background: none; font-size: 14px; font-weight: 600; color: #222; text-decoration: underline; text-underline-offset: 3px; }
+.pr-dettagli svg { width: 16px; height: 16px; transform: rotate(90deg); }
+.pr-box { display: grid; grid-template-columns: 1fr 1fr; margin: 18px 0 0; overflow: hidden; border: 1px solid #b0b0b0; border-radius: 12px; }
+.pr-cella { display: grid; gap: 2px; min-height: 58px; padding: 10px 12px; background: #fff; color: #222; text-decoration: none; align-content: center; }
+.pr-cella + .pr-cella { border-left: 1px solid #b0b0b0; }
+.pr-cella.intera { grid-column: 1 / -1; border-left: 0; border-top: 1px solid #b0b0b0; }
+a.pr-cella:hover { background: #f7f7f7; }
+.pr-et { font-size: 10px; line-height: 1.2; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #222; }
+.pr-val { font-size: 15px; line-height: 1.3; font-weight: 400; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-azione { margin-top: 16px; }
+.pr-solo { margin-top: 16px; font-size: 16px; font-weight: 600; color: #222; text-align: center; }
+.pr-nota { margin: 10px 0 0; text-align: center; font-size: 14px; line-height: 1.45; font-weight: 300; color: #6a6a6a; }
+.pr-tel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 14px; padding: 4px 0; border: 0; background: none; font-size: 14px; color: #222; text-decoration: underline; text-underline-offset: 3px; }
+.pr-tel svg { width: 16px; height: 16px; }
+.pr-testo .sez > h2 { font-size: 22px; line-height: 1.25; font-weight: 500; letter-spacing: -0.22px; margin-bottom: 14px; }
+.pr-testo .sez { padding: 28px 0; }
+.pr-testo .sez:first-child { border-top: 0; padding-top: 20px; }
+@media (min-width: 900px) {
+	.pr-testa { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 24px clamp(40px, 5vw, 72px); margin-top: 0; }
+	.pr-media { order: -1; }
+	.pr-capo { padding-top: 4px; }
+	.pr-titolo { font-size: clamp(34px, 2.9vw, 41.76px); letter-spacing: -0.02em; }
+	.pr-intro { margin-top: 12px; font-size: 17px; }
+	.pr-lista { display: grid; gap: 22px; margin: 28px 0 0; padding: 28px 0 0; border-top: 1px solid var(--linea); list-style: none; }
+	.pr-lista li { display: flex; gap: 18px; align-items: flex-start; }
+	.pr-lista svg { width: 26px; height: 26px; margin-top: 2px; color: #222; stroke-width: 1.3; }
+	.pr-lista strong { display: block; font-size: 16px; line-height: 1.35; font-weight: 600; color: #222; }
+	.pr-lista small { display: block; margin-top: 2px; font-size: 15px; line-height: 1.45; font-weight: 300; color: #6a6a6a; }
+	.pr-img { aspect-ratio: 4 / 3; }
+	.pr-due { display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: clamp(40px, 6vw, 86px); align-items: stretch; }
+	.pr-lato { order: 0; margin: 0; padding-top: 20px; }
+	.pr-box-fisso { position: sticky; top: calc(var(--proto-h) + 24px); }
+}
+
+@media (min-width: 900px) { body[data-vista="p"] .erica-fab, body[data-vista="prev"] .erica-fab { display: none; } }
+
+/* ---- Preventivo come la pagina Preventivo del sito (valori misurati su preventivo.html) ---- */
+.pv-scelto { display: flex; align-items: center; gap: 10px; padding: 6px 0 2px; font-size: 17px; font-weight: 300; color: var(--nero); flex-wrap: wrap; }
+.pv-scelto-icona { width: 44px; height: 44px; border-radius: 50%; background: #f6f6f5; display: grid; place-items: center; flex: none; }
+.pv-scelto-icona svg { width: 24px; height: 24px; }
+.pv-scelto-t { font-size: 17px; font-weight: 600; letter-spacing: 0; line-height: 1.3; }
+.pv-scelto-p { color: var(--testo); }
+.pv-griglia { margin-top: 14px; display: grid; gap: 14px; }
+.pv-passi { display: grid; gap: 13px; align-content: start; }
+.pv-passo { background: #fff; border: 1px solid #e6e6e6; border-radius: 18px; }
+.pv-passo.aperto { border-color: #cfcfcf; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.08); }
+.pv-passo-testa { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 18px 20px; color: var(--nero); }
+.pv-passo:not(.aperto) .pv-passo-testa { cursor: pointer; }
+.pv-num { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #f3f3f3; color: #8a8a8a; font-size: 15px; font-weight: 600; }
+.pv-passo.aperto .pv-num { background: var(--nero); color: #fff; }
+.pv-passo.fatto .pv-num { background: var(--nero); color: #fff; }
+.pv-num svg { width: 18px; height: 18px; }
+.pv-passo-titolo { font-size: 18px; line-height: 1.3; font-weight: 600; }
+.pv-passo-titolo small { display: block; font-size: 13px; font-weight: 300; color: #6b6b6b; margin-top: 2px; }
+.pv-modifica { font-size: 15px; font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
+.pv-passo-corpo { display: grid; gap: 14px; padding: 2px 20px 22px; }
+.pv-aiuto { margin: -4px 0 0; font-size: 13px; line-height: 1.5; font-weight: 300; color: #6b6b6b; }
+.pv-importo { position: relative; display: block; }
+.pv-importo input { padding-right: 30px !important; text-align: right; width: 100%; }
+.pv-importo span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #6b6b6b; font-size: 14px; pointer-events: none; }
+.pv-aggiungi { justify-self: start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 12px; border: 1px solid #d9d9d9; border-radius: 10px; background: #fff; font-size: 15px; font-weight: 500; color: var(--nero); }
+.pv-aggiungi svg { width: 20px; height: 20px; }
+.pv-carte { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pv-carta { position: relative; display: grid; gap: 6px; align-content: start; padding: 16px 42px 16px 16px; border: 1px solid #d9d9d9; border-radius: 14px; background: #fff; color: var(--nero); cursor: pointer; transition: border-color 160ms ease, box-shadow 160ms ease; }
+.pv-carta input { position: absolute; opacity: 0; width: 0; height: 0; }
+.pv-carta svg { width: 26px; height: 26px; margin-bottom: 8px; }
+.pv-carta b { font-size: 15px; line-height: 1.3; font-weight: 600; }
+.pv-carta small { font-size: 13px; line-height: 1.45; font-weight: 300; color: #6b6b6b; }
+.pv-carta.scelta, .pv-carta:has(input:checked) { border: 2px solid var(--nero); padding: 15px 41px 15px 15px; }
+.pv-segno { position: absolute; top: 15px; right: 15px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid #c9c9c9; background: #fff; display: grid; place-items: center; color: transparent; }
+.pv-segno svg { width: 14px; height: 14px; margin: 0; stroke-width: 2.4; }
+.pv-carta:has(input:checked) .pv-segno { background: var(--nero); border-color: var(--nero); color: #fff; }
+.pv-avanti { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding-top: 4px; }
+.pv-avanti-nota { font-size: 13px; line-height: 1.4; color: #6b6b6b; }
+.pv-avanti-nota b { display: block; color: var(--nero); font-weight: 600; }
+.pv-avanti .btn { min-height: 48px; padding: 0 28px; min-width: 140px; }
+.pv-ris-in { display: grid; gap: 14px; padding: 28px; background: #fff; border: 1px solid #e6e6e6; border-radius: 20px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.08); }
+.pv-ris-label { font-size: 12px; line-height: 18px; font-weight: 600; letter-spacing: 1.33px; text-transform: uppercase; color: #6b6b6b; }
+.pv-ris-titolo { margin-top: -6px; font-size: 22px; line-height: 1.2; font-weight: 500; color: var(--nero); }
+.pv-ris-sotto { margin-top: -8px; font-size: 13px; line-height: 1.5; font-weight: 300; color: #6b6b6b; }
+.pv-ris-voci { list-style: none; margin: 0; padding: 14px 0 0; border-top: 1px solid #e6e6e6; display: grid; gap: 8px; font-size: 14px; color: #333; }
+.pv-ris-voci li { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+.pv-ris-voci small { color: #6b6b6b; }
+.pv-ris-voci b { font-weight: 500; color: var(--nero); }
+.pv-ris-tot { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding-top: 12px; border-top: 1px solid #e6e6e6; font-size: 14px; color: #6b6b6b; }
+.pv-ris-cifra { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; color: var(--nero); }
+.pv-ris-cifra b { font-size: 28px; line-height: 1.2; font-weight: 500; letter-spacing: -0.3px; }
+.pv-ris-tel { font-size: 13px; line-height: 1.5; font-weight: 300; color: #6b6b6b; }
+.pv-foglio-barra, .pv-fondo { display: none; }
+@media (max-width: 899px) {
+	body[data-vista="prev"] .barra, body[data-vista="prev"] #erica-fab { display: none; }
+	body[data-vista="prev"] .app { padding-bottom: 200px; }
+	.pv-solo-largo { display: none; }
+	.pv-foglio-barra { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: center; height: 56px; margin: -6px -14px 4px; }
+	.pv-foglio-titolo { text-align: center; font-size: 16px; font-weight: 600; color: var(--nero); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.pv-foglio-chiudi { width: 44px; height: 44px; border: 0; border-radius: 50%; background: none; display: grid; place-items: center; color: var(--nero); }
+	.pv-scelto { display: none; }
+	.pv-passo { border: 0; box-shadow: none !important; border-radius: 0; background: none; }
+	.pv-passo:not(.aperto) { display: none; }
+	.pv-passo-testa { display: block; padding: 4px 4px 16px; }
+	.pv-passo-testa .pv-num, .pv-passo-testa .pv-modifica { display: none; }
+	.pv-passo-titolo { font-size: 28px; line-height: 1.15; letter-spacing: -0.56px; }
+	.pv-passo-corpo { padding: 0 4px; }
+	.pv-avanti { display: none; }
+	.pv-carte { grid-template-columns: 1fr; }
+	.pv-carta { grid-template-columns: 34px 1fr; gap: 6px 14px; padding: 16px 46px 16px 16px; }
+	.pv-carta svg:first-of-type { grid-row: span 2; margin: 0; }
+	.pv-carta.scelta, .pv-carta:has(input:checked) { padding: 15px 45px 15px 15px; }
+	.pv-segno { top: 50%; margin-top: -11px; }
+	.pv-ris { display: none; }
+	.pv-ris.su-tel { display: block; }
+	.pv-fondo { display: block; position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 45; background: #f3f3f3; border-radius: 24px; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.04); padding-top: 11px; }
+	.pv-strada { display: flex; gap: 3px; margin: 0 18px 9px; }
+	.pv-strada i { flex: 1; height: 3px; border-radius: 2px; background: #d6d6d6; }
+	.pv-strada i.si { background: var(--nero); }
+	.pv-fondo-nota { padding: 0 18px 10px; font-size: 13px; line-height: 1.35; color: #6b6b6b; }
+	.pv-fondo-nota b { display: block; color: var(--nero); font-weight: 600; font-size: 14px; }
+	.pv-fondo-barra { display: flex; align-items: center; gap: 10px; margin: 0 5px 5px; padding: 9px 9px 9px 16px; background: #fff; border-radius: 20px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); }
+	.pv-fondo-stima { flex: 1; display: grid; gap: 2px; line-height: 1.25; }
+	.pv-fondo-stima small { font-size: 12px; color: #6b6b6b; }
+	.pv-fondo-stima b { font-size: 17px; font-weight: 600; }
+	.pv-fondo-dietro { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #d9d9d9; background: #fff; display: grid; place-items: center; color: var(--nero); flex: none; }
+	.pv-fondo-barra .btn { min-height: 48px; padding: 0 24px; }
+}
+@media (min-width: 900px) {
+	.pv-griglia { grid-template-columns: minmax(0, 528px) minmax(0, 400px); gap: 48px; justify-content: start; align-items: start; }
+	.pv-ris { position: sticky; top: calc(var(--proto-h) + 24px); }
+}
+
+@media (prefers-reduced-motion: reduce) { .schermo, .velo, .tendina, .toast, .visore { animation: none !important; } .btn, .chips button, .scelte label, .barra nav button::after, .giorni-strip button b, .persona, .tondo-cerca, .erica-fab, .pr-indietro, .pr-freccia, .pr-punto::before { transition: none !important; } .erica-fab { animation: none !important; } }
 
 /* schermo largo: intestazione compatta in alto come nel sito (logo, voci al centro con riga sotto, nome a destra) */
 @media (min-width: 900px) {
 	:root { --barra-h: 0px; }
-	/* barra verticale a sinistra come Instagram: solo icone fino a 1279 px, icone e nomi da 1280 px; «Altro» in fondo */
-	:root { --rail: 76px; }
+	/* Barra a sinistra con le misure di Instagram (dallo screenshot di Gian, schermo 1440):
+	   logo in alto a 42 px, icone 24 px col centro a 30 px dal bordo, una voce ogni 47 px, gruppo al centro,
+	   «Altro» (il menu) in fondo, il profilo come ultima voce del gruppo. Sotto 1280 px solo icone (72 px), da 1280 icone e scritta (244 px). */
+	:root { --rail: 72px; }
 	.app { max-width: 1180px; margin: 0 auto 0 var(--rail); padding: calc(var(--proto-h) + 28px) 40px 56px; }
 	@media (min-width: 1440px) { .app { margin-left: calc(var(--rail) + (100vw - var(--rail) - 1180px) / 2); } }
 	.app.con-rete { padding-top: calc(var(--proto-h) + 80px); }
 	.rete { left: var(--rail); }
-	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; align-items: stretch; padding: 22px 12px 18px; border-top: 0; border-right: 1px solid var(--linea); }
-	.barra .marchio-barra { display: block; font-size: 0; letter-spacing: 0; text-align: center; margin: 4px 0 44px; }
-	.barra .marchio-barra::before { content: 'A'; display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1.5px solid var(--nero); border-radius: 10px; font-size: 17px; font-weight: 600; letter-spacing: 0; }
-	.barra nav { display: flex; flex-direction: column; gap: 6px; flex: 1; max-width: none; margin: 0; }
-	.barra nav button { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 12px; min-height: 50px; font-size: 16px; font-weight: 400; color: var(--nero); border-radius: 12px; transition: background-color 160ms ease; }
-	.barra nav button svg { width: 26px; height: 26px; }
-	.barra nav button .et { display: none; }
+	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; padding: 0 0 66px; border-top: 0; border-right: 1px solid var(--linea); }
+	.barra .marchio-barra { display: block; flex: none; height: 24px; margin: 30px 0 0 18px; font-size: 0; letter-spacing: 0; line-height: 24px; }
+	.barra .marchio-barra::before { content: 'A'; display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1.6px solid var(--nero); border-radius: 7px; font-size: 13px; font-weight: 600; letter-spacing: 0; }
+	.barra nav { display: flex; flex-direction: column; gap: 0; flex: 1; max-width: none; margin: 0; }
+	.barra nav > button:first-child { margin-top: auto; }
+	.barra nav button { display: flex; align-items: center; justify-content: flex-start; gap: 16px; height: 47px; min-height: 0; margin: 0 6px; padding: 0 12px; font-size: 16px; line-height: 1; font-weight: 400; color: var(--nero); border-radius: 8px; transition: background-color 160ms ease; }
+	.barra nav button svg { width: 24px; height: 24px; stroke-width: 1.6; }
+	.barra nav button .avatar { width: 24px; height: 24px; font-size: 11px; }
+	.barra nav button.attiva .avatar { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--nero); }
+	.barra nav button .et { display: none; white-space: nowrap; }
 	.barra nav button::after { display: none; }
-	.barra nav button.attiva { font-weight: 600; }
-	.barra nav button.attiva svg { stroke-width: 2.2; }
+	.barra nav button.attiva { font-weight: 700; }
+	.barra nav button.attiva svg { stroke-width: 2.4; }
 	@media (hover: hover) { .barra nav button:hover { background: var(--chiaro); } }
 	.barra nav button.in-fondo { margin-top: auto; }
-	.barra .pallino { top: 6px; right: 6px; border: 2px solid #fff; height: 20px; }
-	.barra .barra-destra { display: flex; justify-content: center; padding-top: 10px; }
+	.barra .pallino { position: absolute; top: 6px; left: 30px; right: auto; height: 20px; min-width: 20px; border: 2px solid #fff; }
+	.barra .barra-destra { display: none; }
 	.barra .solo-largo { display: flex; }
-	.barra .barra-destra .avatar { width: 32px; height: 32px; font-size: 13px; }
 	@media (min-width: 1280px) {
 		:root { --rail: 244px; }
-		.barra { padding: 26px 14px 20px; }
-		.barra .marchio-barra { font-size: 14px; letter-spacing: 3px; text-align: left; padding-left: 12px; margin-bottom: 40px; }
+		.barra .marchio-barra { font-size: 14px; letter-spacing: 3px; margin-left: 18px; }
 		.barra .marchio-barra::before { display: none; }
-		.barra nav button { justify-content: flex-start; }
 		.barra nav button .et { display: inline; }
-		.barra nav button .pallino { position: static; margin-left: auto; border: 0; }
-		.barra .barra-destra { justify-content: flex-start; align-items: center; gap: 12px; padding: 12px 12px 0; font-size: 15px; font-weight: 500; color: var(--nero); }
-		.barra .barra-destra .et-nome { display: inline; }
 	}
 	h1 { font-size: 40px; }
 	.testa .marchio { display: none; }
@@ -450,9 +613,6 @@ textarea.testo-proposta { font-size: 15px; line-height: 1.5; background: #fbfbfa
 	.principale .btn { width: auto; }
 	.prossimo { padding: 22px 24px 24px; }
 	.prossimo .azioni .btn { flex: none; min-width: 140px; }
-	.voce { grid-template-columns: 1fr 100px 130px 40px; }
-	.voce input:first-child { grid-column: auto; }
-	.intest-voci { display: grid; grid-template-columns: 1fr 100px 130px 40px; gap: 8px; color: var(--grigio); font-size: 13px; padding-bottom: 4px; }
 	.giorni-strip, .agenda-testa .solo-tel { display: none; }
 	.settimana { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
 	.settimana .colonna { border: 1px solid var(--linea); border-radius: 12px; padding: 10px; min-height: 380px; }
@@ -783,10 +943,11 @@ function render() {
 	app.innerHTML = `<div class="schermo" key="${vista}-${param}">${r(param)}</div>`;
 	const sezione = { p: 'pratiche', cliente: 'clienti', imp: 'agenda', prev: 'pratiche', pdf: 'pratiche', avvisi: 'altro', sistema: 'altro', impostazioni: 'altro', sito: 'altro', tutteOggi: 'oggi', crediti: 'altro', lavoro: 'lavori', erica: 'oggi', materiali: operatore() ? 'materiali' : 'altro', login: 'oggi' }[vista] ?? vista;
 	const nuove = D.avvisi.filter((a) => !a.letto).length;
-	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca" title="Cerca">${I.cerca}<span class="et">Cerca</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" title="${n}">${I[k]}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
+	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca" title="Cerca">${I.cerca}<span class="et">Cerca</span></button><button type="button" class="solo-largo ${vista === 'altro' ? 'attiva' : ''}" onclick="vai('altro')" title="Profilo">${avatar(D.utente, operatore())}<span class="et">Profilo</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" title="${n}">${I[k]}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
 	// Erica in basso a destra (solo Fabri, non dentro Erica)
 	const fab = document.getElementById('erica-fab'), dvF = ericaDaVedere();
 	const mostraFab = !operatore() && vista !== 'erica';
+	document.body.dataset.vista = vista;
 	app.classList.toggle('con-fab', mostraFab);
 	fab.innerHTML = mostraFab ? `<button type="button" class="erica-fab" onclick="vai('erica')" aria-label="Erica${dvF.length ? ', ' + dvF.length + ' da vedere' : ''}">${ericaAvatar()}${dvF.length ? `<span class="badge">${dvF.length}</span>` : ''}<b>Erica</b><span class="mini-p">${[...new Set(dvF.map((e) => e.praticaId).filter(Boolean))].slice(0, 3).map((pid) => { const f = fotoDi(pratica(pid))[0]; return f ? `<img src="${mini(f)}" alt="">` : `<span>${esc(pratica(pid).nome.charAt(0))}</span>`; }).join('')}</span></button>` : '';
 }
@@ -848,23 +1009,56 @@ function schedaPratica(id) {
 		return pvs.map((v) => { const t = totali(v); return `<div class="versione"><div class="testa-v"><b>${v.numero ?? 'Bozza v' + v.n}</b>${tagPrev(v)}</div><p class="nota num">${v.righe.length} voci · ${euro(t.tot)} con IVA ${v.iva}%</p>${v.inviato ? `<p class="nota">Inviato ${quando(v.inviato)} via ${CANALI[v.canale]} (registrato da te)</p>` : ''}${v.accettato ? `<p class="nota">Accettato ${quando(v.accettato)} · ${CANALI[v.accettatoCanale]}</p>` : ''}${v.rifiutato ? `<p class="nota">Rifiutato ${quando(v.rifiutato)} · ${esc(v.motivo)}</p>` : ''}<div class="azioni">${v.stato === 'bozza' ? `<button type="button" class="btn piccolo" onclick="vai('prev','${v.id}')">Apri la bozza</button><button type="button" class="btn piccolo pericolo" onclick="apriConferma('Eliminare la bozza v${v.n}?','Non ha ancora un numero: sparisce e basta. Le versioni già generate restano.','Elimina la bozza',()=>eliminaBozza('${v.id}'))">Elimina</button>` : `<button type="button" class="btn piccolo linea" onclick="vai('pdf','${v.id}')">Vedi PDF</button>`}${v.stato === 'pronta' ? `<button type="button" class="btn piccolo" onclick="apriRegistra('${v.id}','inviata')">Segna inviato</button>` : ''}${v.stato === 'inviata' ? `<button type="button" class="btn piccolo" onclick="apriRegistra('${v.id}','accettata')">Accettato</button><button type="button" class="btn piccolo linea" onclick="apriRegistra('${v.id}','rifiutata')">Rifiutato</button>` : ''}${['inviata', 'rifiutata', 'accettata'].includes(v.stato) && v === pv ? `<button type="button" class="btn piccolo linea" onclick="nuovaVersione('${id}')">Rivedi preventivo</button>` : ''}</div>${v.stato === 'pronta' ? '<p class="nota" style="margin-top:8px">Lo mandi tu al cliente (WhatsApp o email). Poi premi «Segna inviato».</p>' : ''}</div>`; }).join('');
 	};
 	const storico = [...p.storico].reverse();
-	const testata = `<div class="testata">${f.length ? `<div class="copertina-p"><img src="${src(f[0])}" alt="${esc(FOTO[f[0]]?.[0] ?? '')}"><button type="button" aria-label="Apri le foto" onclick="apriVisore('${id}',0)"></button><span class="quante">${I.foto} ${f.length}</span></div>` : ''}<h1>${esc(titoloLavoro(p))}</h1><p class="codice">${esc(p.nome)} · <span class="num">${p.codice}</span> · ricevuta ${quando(p.ricevuta)}</p><div class="stati">${tagStato(p)}${prossimo ? `<span class="tag">${I.orologio} ${NOMI_TIPO[prossimo.tipo]} ${giornoBreve(prossimo.giorno)} ${prossimo.inizio}${prossimo.stato === 'proposto' ? ', da confermare' : ''}</span>` : ''}${p.archiviata ? '<span class="tag">Archiviata</span>' : ''}</div></div>`;
-	const principale = sug ? `<section class="principale"><span class="etichetta">Prossimo passo</span><p class="motivo">${sug.motivo}</p>${sug.azione ? `<button type="button" class="btn" onclick="${azioneSug}">${sug.testo}</button>` : `<p class="solo-testo">${sug.testo}</p>`}<button type="button" class="chiedi-erica" onclick="chiediAEricaPratica('${id}')">${I.erica} Chiedi a Erica</button></section>` : `<button type="button" class="chiedi-erica sola" onclick="chiediAEricaPratica('${id}')">${I.erica} Chiedi a Erica</button>`;
-	const colA = `<div class="foglio">
+	// --- Apertura come la pagina di un lavoro del sito (Copertina.svelte): titolo leggero e lista con icone, foto con freccia, etichetta e contatore
+	const conta = (st) => st === 'nuova' ? 'eye' : st === 'in_corso' ? 'attrezzi' : st === 'programmata' ? 'agenda' : chiusa(p) ? 'spunta' : 'pratiche';
+	const lista = [
+		[I.pratiche, 'Lavoro richiesto', p.dettagli],
+		[I.luogo, 'Dove si lavora', p.indirizzoLavoro],
+		[I.orologio, 'Prossimo appuntamento', prossimo ? `${NOMI_TIPO[prossimo.tipo]} ${giornoBreve(prossimo.giorno)}, ${prossimo.inizio}–${prossimo.fine}${prossimo.stato === 'proposto' ? ' · da confermare' : ''}` : 'Nessuno in agenda'],
+		[I.clienti, 'Squadra', prossimo ? prossimo.chi.map(nomeOp).join(', ') : 'Da decidere'],
+		[I.mail, 'Richiesta', `${p.aMano ? 'Inserita a mano (' + CANALI[p.aMano] + ')' : 'Dal sito'} · ${quando(p.ricevuta)}`]
+	];
+	const media = f.length ? `<div class="pr-media"><div class="pr-img" data-pr="${id}"><img id="pr-foto" src="${src(f[0])}" alt="${esc(FOTO[f[0]]?.[0] ?? '')}" onclick="apriVisore('${id}',fotoTesta.i)">
+			<button type="button" class="pr-indietro" aria-label="Indietro" onclick="torna()">${I.indietro}</button>
+			<span class="pr-pill">${I[conta(p.stato)] ?? ''}${NOMI_STATO[p.stato]}</span>
+			${f.length > 1 ? `<span class="pr-conta"><span id="pr-n">1</span> / ${f.length}</span><button type="button" class="pr-freccia prec" aria-label="Foto precedente" onclick="fotoTestaVai(-1)" disabled>${I.indietro}</button><button type="button" class="pr-freccia succ" aria-label="Foto successiva" onclick="fotoTestaVai(1)">${I.freccia}</button>` : ''}
+		</div>${f.length > 1 ? `<div class="pr-punti">${f.map((_, i) => `<button type="button" class="pr-punto ${i === 0 ? 'attivo' : ''}" aria-label="Foto ${i + 1}" onclick="fotoTestaA(${i})"></button>`).join('')}</div>` : ''}</div>`
+		: `<div class="pr-media"><div class="pr-img vuota"><button type="button" class="pr-indietro" aria-label="Indietro" onclick="torna()">${I.indietro}</button><span class="pr-pill">${NOMI_STATO[p.stato]}</span><span class="pr-vuota-testo">${I.foto}Nessuna foto allegata</span></div></div>`;
+	fotoTesta = { id, i: 0 };
+	const testata = `<div class="pr-testa"><div class="pr-capo"><h1 class="pr-titolo">${esc(titoloLavoro(p))}</h1><p class="pr-intro">${esc(p.nome)} · <span class="num">${p.codice}</span>${p.archiviata ? ' · archiviata' : ''}</p>
+		<ul class="pr-lista">${lista.map(([ico, t, x]) => `<li>${ico}<span><strong>${t}</strong><small>${esc(x)}</small></span></li>`).join('')}</ul></div>${media}</div>`;
+	// --- Riquadro che resta visibile mentre scorri (come «Da 4.000 €» del sito): valore, stato, prossimo, telefono, passo principale
+	const tot = pv ? totali(pv).tot : null;
+	const card = `<div class="pr-card">
+		<p class="pr-prezzo">${pv ? `<span>Preventivo <strong class="num">${euro(tot)}</strong></span><small>IVA inclusa</small>` : `<span>Stima <strong class="num">${esc(p.stima) || '—'}</strong></span><small>${p.stima && !p.stima.startsWith('Da') ? 'IVA inclusa' : ''}</small>`}</p>
+		<p class="pr-condizione">${pv ? `${pv.numero ?? 'Bozza v' + pv.n} · ${NOMI_PREV[pv.stato].toLowerCase()}${pv.inviato && pv.stato === 'inviata' ? ' ' + quando(pv.inviato) + ', ' + giorniDa(pv.inviato) + ' giorni fa' : ''}${pv.accettato ? ' ' + quando(pv.accettato) : ''}` : 'Nessun preventivo: è la stima che ha visto il cliente.'}</p>
+		<button type="button" class="pr-dettagli" onclick="document.getElementById('prev').scrollIntoView({behavior:'smooth',block:'start'})">${pv ? 'Dettagli del preventivo' : 'Prepara il preventivo'}${I.freccia}</button>
+		<div class="pr-box"><div class="pr-cella"><span class="pr-et">Stato</span><span class="pr-val">${NOMI_STATO[p.stato]}</span></div><div class="pr-cella"><span class="pr-et">Prossimo</span><span class="pr-val">${prossimo ? `${giornoBreve(prossimo.giorno)} ${prossimo.inizio}` : 'Nessuno'}</span></div><a class="pr-cella intera" href="tel:${p.tel.replace(/\s/g, '')}"><span class="pr-et">Telefono · ${esc(p.nome)}</span><span class="pr-val num">${p.tel}</span></a></div>
+		${sug?.azione ? `<button type="button" class="btn pieno pr-azione" onclick="${azioneSug}">${sug.testo}</button>` : `<p class="pr-solo">${sug ? sug.testo : 'Nessun passo da fare'}</p>`}
+		${sug ? `<p class="pr-nota">${sug.motivo}</p>` : ''}
+	</div>
+	<a class="pr-tel" href="tel:${p.tel.replace(/\s/g, '')}">${I.tel}Oppure chiama ${esc(p.nome.split(' ')[0] === 'Famiglia' ? p.nome : p.nome.split(' ')[0])}</a>
+	<button type="button" class="pr-tel" onclick="chiediAEricaPratica('${id}')">${I.erica}Chiedi a Erica</button>`;
+	const sezioni = `
 		<section class="sez"><h2>Cliente ${cl ? `<button type="button" class="link" onclick="vai('cliente','${cl.id}')">Scheda</button>` : `<button type="button" class="link" onclick="collegaCliente('${id}')">Crea e collega</button>`}</h2><p><b>${esc(p.nome)}</b>${cl ? '' : ' <span class="nota">· richiesta dal sito, non ancora in rubrica</span>'}</p><div class="contatti" style="margin-top:6px"><span>${I.tel}<a class="num" href="tel:${p.tel.replace(/\s/g, '')}">${p.tel}</a></span>${p.email ? `<span>${I.mail}<a href="mailto:${esc(p.email)}">${esc(p.email)}</a></span>` : ''}</div><dl class="coppia" style="margin-top:10px"><dt>Dove si lavora</dt><dd>${esc(p.indirizzoLavoro)}</dd><dt>Dove abita</dt><dd>${esc(p.indirizzoCliente || cl?.indirizzo || '') || '<span class="nota">non indicato</span>'}</dd></dl></section>
 		<section class="sez"><h2>Lavoro richiesto</h2><dl class="coppia"><dt>Lavoro</dt><dd><b>${esc(p.servizio)}</b></dd><dt>Dettagli</dt><dd>${esc(p.dettagli)}</dd>${p.preferenze ? `<dt>Preferenze</dt><dd>${esc(p.preferenze)}</dd>` : ''}${p.messaggio ? `<dt>Messaggio</dt><dd>«${esc(p.messaggio)}»</dd>` : ''}<dt>Stima vista dal cliente</dt><dd><span class="stima">${esc(p.stima) || '—'}</span>${p.stimaNota ? `<br><span class="nota">${esc(p.stimaNota)}</span>` : ''}</dd></dl></section>
-		${f.length ? `<section class="sez"><h2>Foto <span class="conta">${f.length}</span></h2>${galleria(p)}</section>` : ''}
 		<section class="sez" id="prev"><h2>Preventivo</h2>${bloccoPrev()}</section>
-	</div>`;
-	const colB = `<div class="foglio">
 		<section class="sez"><h2>Appuntamenti ${!chiusa(p) ? `<button type="button" class="link" onclick="apriNuovoApp('${id}')">+ Nuovo</button>` : ''}</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')} · ${durata(a)}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : `<p class="nota">Nessun appuntamento.${!chiusa(p) ? ` <button type="button" class="link" onclick="apriNuovoApp('${id}')">Fissa il primo</button>` : ''}</p>`}</section>
 		<section class="sez"><h2>Materiali <span class="conta">${matDi(id).length || ''}</span>${!chiusa(p) ? ` <button type="button" class="link" onclick="apriMateriale(null,'${id}')">+ Aggiungi</button>` : ''}</h2>${matDi(id).length ? `<ul class="lista">${matDi(id).map((m) => rigaMat(m)).join('')}</ul>` : `<p class="nota">Nessun materiale. ${!chiusa(p) ? `<button type="button" class="link" onclick="preparaErica('${id}','materiali')">Fatti proporre la lista da Erica</button>` : ''}</p>`}</section>
 		<section class="sez"><h2>Note interne</h2><textarea class="campo" rows="3" placeholder="Solo per te: operatori e cliente non le vedono" onchange="salvaNote('${id}',this.value)">${esc(p.note)}</textarea><p class="nota" style="margin-top:6px">Si salvano quando esci dal campo.</p></section>
 		<section class="sez"><h2>Stato</h2><div class="contatti" style="align-items:center;justify-content:space-between"><span>${tagStato(p)}</span>${chiusa(p) ? `<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn piccolo linea" onclick="riapri('${id}')">Riapri</button><button type="button" class="btn piccolo linea" onclick="archivia('${id}',${!p.archiviata})">${p.archiviata ? 'Togli dall\'archivio' : 'Archivia'}</button></span>` : `<button type="button" class="btn piccolo linea" onclick="apriStato('${id}')">Cambia stato</button>`}</div><p class="nota" style="margin-top:8px">${chiusa(p) ? 'Pratica chiusa: per lavorarci ancora, riaprila.' : 'Lo stato lo cambi tu: preventivo accettato, appuntamento svolto e lavoro concluso sono passi diversi.'}</p></section>
-		<section class="sez"><h2>Storico <span class="conta">${storico.length}</span></h2><ul class="storico">${(storicoAperto === id ? storico : storico.slice(0, 4)).map(([q, t]) => `<li><span class="q num">${quando(q)}</span><span>${esc(t)}</span></li>`).join('')}</ul>${storico.length > 4 && storicoAperto !== id ? `<button type="button" class="vedi" onclick="storicoAperto='${id}';render()">Tutto lo storico (${storico.length})</button>` : ''}</section>
-	</div>`;
-	return bottoneIndietro('Pratiche') + testata + principale + `<div class="due">${colA}${colB}</div>`;
+		<section class="sez"><h2>Storico <span class="conta">${storico.length}</span></h2><ul class="storico">${(storicoAperto === id ? storico : storico.slice(0, 4)).map(([q, t]) => `<li><span class="q num">${quando(q)}</span><span>${esc(t)}</span></li>`).join('')}</ul>${storico.length > 4 && storicoAperto !== id ? `<button type="button" class="vedi" onclick="storicoAperto='${id}';render()">Tutto lo storico (${storico.length})</button>` : ''}</section>`;
+	return testata + `<div class="pr-due"><div class="pr-testo">${sezioni}</div><aside class="pr-lato" aria-label="Riepilogo e passo principale"><div class="pr-box-fisso">${card}</div></aside></div>`;
 }
+let fotoTesta = { id: null, i: 0 };
+function fotoTestaA(i) {
+	const p = pratica(fotoTesta.id); if (!p) return; const f = fotoDi(p); if (i < 0 || i >= f.length) return;
+	fotoTesta.i = i; document.getElementById('pr-foto').src = src(f[i]);
+	const n = document.getElementById('pr-n'); if (n) n.textContent = i + 1;
+	document.querySelectorAll('.pr-punto').forEach((b, k) => b.classList.toggle('attivo', k === i));
+	const pr = document.querySelector('.pr-freccia.prec'), su = document.querySelector('.pr-freccia.succ'); if (pr) pr.disabled = i === 0; if (su) su.disabled = i === f.length - 1;
+}
+function fotoTestaVai(d) { fotoTestaA(fotoTesta.i + d); }
 
 function agenda() {
 	// Telefono: striscia dei 7 giorni della settimana + impegni del giorno scelto. Schermo largo: le 7 giornate affiancate.
@@ -1027,19 +1221,37 @@ function nuovaVersione(praticaId) {
 	pratica(praticaId).storico.push([adessoIso(), `Nuova versione v${pv.n} in bozza`]);
 	salva(); vai('prev', pv.id);
 }
+// Preventivo: stessa struttura e misure della pagina Preventivo del sito (preventivo.html: passi tr2-passo, scelte pv-carta, riquadro «risultato»;
+// sul telefono foglio a tutto schermo pv-foglio con la barra dei passi in fondo tr2-avanti).
+let pvPasso = 1, pvPassoId = null;
+const PASSI_PV = [['Le voci del lavoro', 'le voci'], ['Quale IVA?', 'l\'IVA'], ['Controlla e genera il PDF', 'il PDF']];
 function editorPreventivo(id) {
 	const pv = D.preventivi.find((x) => x.id === id);
 	if (!pv) return bottoneIndietro('Pratica') + testa('Preventivo non trovato');
-	const p = pratica(pv.praticaId), t = totali(pv), bozza = pv.stato === 'bozza';
-	const voci = bozza
-		? `<div class="intest-voci"><span>Descrizione</span><span>Quantità</span><span>Importo €</span><span></span></div>${pv.righe.map((r, i) => `<div class="voce"><input class="campo" value="${esc(r[0])}" placeholder="Descrizione" aria-label="Descrizione voce ${i + 1}" onchange="pv_riga('${id}',${i},0,this.value)"><input class="campo num" value="${esc(r[1])}" placeholder="Quantità" aria-label="Quantità" onchange="pv_riga('${id}',${i},1,this.value)"><input class="campo num" value="${r[3]}" inputmode="decimal" style="text-align:right" placeholder="Importo €" aria-label="Importo in euro" onchange="pv_riga('${id}',${i},3,this.value)"><button type="button" class="togli" aria-label="Togli la voce ${i + 1}" title="Togli questa voce" onclick="pv_togli('${id}',${i})">${I.cestino}</button></div>`).join('')}<div class="azioni"><button type="button" class="btn piccolo tinta" onclick="pv_aggiungi('${id}')">${I.piu} Aggiungi una voce</button></div>`
-		: pv.righe.map((r) => `<div class="voce sola-lettura"><span>${esc(r[0])}</span><span class="q num">${esc(r[1])}</span><span class="num">${euro(r[3])}</span></div>`).join('');
-	return bottoneIndietro('Pratica')
-		+ testa(bozza ? `Bozza v${pv.n}` : pv.numero, `${esc(p.nome)} · ${titoloLavoro(p)}`)
-		+ `<div class="foglio"><section class="sez"><h2>Voci <span class="conta">${pv.righe.length}</span></h2>${voci}
-		<div class="totali num"><span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${bozza ? `<select class="campo" style="width:auto;margin:0;padding:5px 8px;font-size:14px" aria-label="Aliquota IVA" onchange="pv_iva('${id}',this.value)"><option ${pv.iva === 10 ? 'selected' : ''}>10</option><option ${pv.iva === 22 ? 'selected' : ''}>22</option></select>%` : pv.iva + '%'}</span><span>${euro(t.iva)}</span><span><b>Totale</b></span><span><b>${euro(t.tot)}</b></span></div></section>
-		${bozza ? `<section class="sez"><h2>Genera il PDF</h2><p class="nota">Riceve il numero e diventa un PDF da mandare. Non parte da solo verso il cliente.</p><ul class="passi-pdf" id="passi-pdf" hidden><li>Numero assegnato</li><li>PDF creato</li><li>PDF controllato</li></ul><div class="azioni"><button type="button" class="btn" id="btn-genera" onclick="generaPdf('${id}')">Genera PDF</button></div></section>` : `<section class="sez"><div class="azioni" style="margin-top:0"><button type="button" class="btn linea" onclick="vai('pdf','${id}')">Vedi il PDF</button>${pv.stato === 'pronta' ? `<button type="button" class="btn" onclick="apriRegistra('${id}','inviata')">Segna inviato</button>` : ''}</div></section>`}</div>`;
+	if (pvPassoId !== id) { pvPassoId = id; pvPasso = 1; }
+	const p = pratica(pv.praticaId), t = totali(pv), bozza = pv.stato === 'bozza', st = D.impostazioni;
+	const icoServ = I[(SERVIZI.find(([n]) => n === p.servizio) ?? [0, 'pratiche'])[1]] ?? I.pratiche;
+	const scelto = `<div class="pv-scelto"><span class="pv-scelto-icona">${icoServ}</span><h1 class="pv-scelto-t">${bozza ? `Bozza v${pv.n}` : pv.numero}</h1><span class="pv-scelto-p">· ${esc(p.nome)} · ${esc(titoloLavoro(p))}</span></div>`;
+	// riquadro a destra (come «Il tuo progetto»)
+	const ris = `<aside class="pv-ris ${pvPasso === 3 ? 'su-tel' : ''}"><div class="pv-ris-in"><span class="pv-ris-label">Il tuo preventivo</span><p class="pv-ris-titolo">${esc(titoloLavoro(p))}</p><p class="pv-ris-sotto">${esc(p.nome)} · ${esc(p.indirizzoLavoro)}</p>
+		<ul class="pv-ris-voci">${pv.righe.map((r) => `<li><span>${esc(r[0]) || '<em>voce senza descrizione</em>'}${r[1] ? ` <small>${esc(r[1])}</small>` : ''}</span><b class="num">${euro(r[3])}</b></li>`).join('')}</ul>
+		<div class="pv-ris-tot num"><span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span></div>
+		<p class="pv-ris-cifra num"><span>Totale</span><b>${euro(t.tot)}</b></p>
+		${bozza ? `<ul class="passi-pdf" id="passi-pdf" hidden><li>Numero assegnato</li><li>PDF creato</li><li>PDF controllato</li></ul><button type="button" class="btn pieno" id="btn-genera" onclick="generaPdf('${id}')">Genera PDF</button><p class="pv-ris-tel">Il PDF non parte da solo: lo mandi tu (WhatsApp o email), poi «Segna inviato».</p>`
+		: `<div class="azioni" style="margin-top:4px"><button type="button" class="btn linea pieno" onclick="vai('pdf','${id}')">Vedi il PDF</button>${pv.stato === 'pronta' ? `<button type="button" class="btn pieno" onclick="apriRegistra('${id}','inviata')">Segna inviato</button>` : ''}</div><p class="pv-ris-tel">${NOMI_PREV[pv.stato]}${pv.generato ? ' · generato ' + quando(pv.generato) : ''}</p>`}</div></aside>`;
+	if (!bozza) return bottoneIndietro('Pratica') + scelto + `<div class="pv-griglia"><div class="pv-passi"><section class="pv-passo aperto"><div class="pv-passo-testa"><span class="pv-num">${I.spunta}</span><span class="pv-passo-titolo">Voci del preventivo</span></div><div class="pv-passo-corpo">${pv.righe.map((r) => `<div class="voce sola-lettura"><span>${esc(r[0])}</span><span class="q num">${esc(r[1])}</span><span class="num">${euro(r[3])}</span></div>`).join('')}</div></section></div>${ris.replace('su-tel', '')}</div>`;
+	const corpo = [
+		`<p class="pv-aiuto">Una riga per ogni lavoro o materiale. L'importo è senza IVA.</p><div class="intest-voci"><span>Descrizione</span><span>Quantità</span><span>Importo</span><span></span></div>${pv.righe.map((r, i) => `<div class="voce"><input class="campo" value="${esc(r[0])}" placeholder="Descrizione" aria-label="Descrizione voce ${i + 1}" onchange="pv_riga('${id}',${i},0,this.value)"><input class="campo num" value="${esc(r[1])}" placeholder="Quantità" aria-label="Quantità" onchange="pv_riga('${id}',${i},1,this.value)"><span class="pv-importo"><input class="campo num" value="${r[3]}" inputmode="decimal" placeholder="Importo" aria-label="Importo in euro" onchange="pv_riga('${id}',${i},3,this.value)"><span>€</span></span><button type="button" class="togli" aria-label="Togli la voce ${i + 1}" title="Togli questa voce" onclick="pv_togli('${id}',${i})">${I.cestino}</button></div>`).join('')}<button type="button" class="pv-aggiungi" onclick="pv_aggiungi('${id}')">${I.piu} Aggiungi una voce</button>`,
+		`<p class="pv-aiuto">Scegli l'aliquota per questo cliente.</p><div class="pv-carte">${[[10, 'casa', 'Lavori sulla casa', 'Ristrutturazioni, imbiancatura, umidità, parquet'], [22, 'martello', 'Servizi', 'Falegnameria, montaggio mobili, traslochi']].map(([v, ico, n, x]) => `<label class="pv-carta ${pv.iva === v ? 'scelta' : ''}"><input type="radio" name="pv-iva" value="${v}" ${pv.iva === v ? 'checked' : ''} onchange="pv_iva('${id}',${v})">${I[ico]}<b>IVA ${v}% · ${n}</b><small>${x}</small><span class="pv-segno">${I.spunta}</span></label>`).join('')}</div>`,
+		`<p class="pv-aiuto">Queste condizioni vanno su ogni PDF. Si cambiano in Altro → Impostazioni dei preventivi.</p><dl class="coppia"><dt>Validità</dt><dd>${st.validita} giorni</dd><dt>Acconto</dt><dd>${st.acconto}% all'accettazione, saldo a fine lavori</dd><dt>Esclusioni</dt><dd>${esc(st.esclusioni)}</dd><dt>Tempi</dt><dd>${esc(st.tempi)}</dd></dl>`
+	];
+	const passo = (n) => { const aperto = pvPasso === n, fatto = pvPasso > n; return `<section class="pv-passo ${aperto ? 'aperto' : ''} ${fatto ? 'fatto' : ''}"><div class="pv-passo-testa" ${!aperto ? `onclick="pvVai(${n})" role="button" tabindex="0"` : ''}><span class="pv-num">${n}</span><span class="pv-passo-titolo">${PASSI_PV[n - 1][0]}${fatto ? `<small>${n === 1 ? `${pv.righe.length} voci · ${euro(t.imp)}` : n === 2 ? `IVA ${pv.iva}%` : ''}</small>` : ''}</span>${fatto ? '<span class="pv-modifica">Modifica</span>' : ''}</div>${aperto ? `<div class="pv-passo-corpo">${corpo[n - 1]}<div class="pv-avanti"><p class="pv-avanti-nota"><b>Passo ${n} di 3</b>${n < 3 ? `<span>Poi: ${PASSI_PV[n][1]}</span>` : '<span>Ultimo passo</span>'}</p>${n < 3 ? `<button type="button" class="btn" onclick="pvVai(${n + 1})">Avanti</button>` : ''}</div></div>` : ''}</section>`; };
+	// telefono: barra in alto con la X e barra dei passi in fondo
+	const foglioTesta = `<div class="pv-foglio-barra"><span></span><span class="pv-foglio-titolo">${bozza ? `Bozza v${pv.n}` : pv.numero} · ${esc(p.nome)}</span><button type="button" class="pv-foglio-chiudi" aria-label="Chiudi" onclick="torna()">${I.chiudi}</button></div>`;
+	const fondo = `<div class="pv-fondo"><div class="pv-strada">${[1, 2, 3].map((n) => `<i class="${n <= pvPasso ? 'si' : ''}"></i>`).join('')}</div><p class="pv-fondo-nota"><b>Passo ${pvPasso} di 3</b><span>${pvPasso < 3 ? 'Poi: ' + PASSI_PV[pvPasso][1] : 'Ultimo passo'}</span></p><div class="pv-fondo-barra"><span class="pv-fondo-stima num"><small>Totale con IVA</small><b>${euro(t.tot)}</b></span>${pvPasso > 1 ? `<button type="button" class="pv-fondo-dietro" aria-label="Passo prima" onclick="pvVai(${pvPasso - 1})">${I.indietro}</button>` : ''}${pvPasso < 3 ? `<button type="button" class="btn" onclick="pvVai(${pvPasso + 1})">Avanti</button>` : `<button type="button" class="btn" id="btn-genera-2" onclick="generaPdf('${id}')">Genera PDF</button>`}</div></div>`;
+	return `<div class="pv-pagina">${foglioTesta}<div class="pv-solo-largo">${bottoneIndietro('Pratica')}</div>${scelto}<div class="pv-griglia"><div class="pv-passi">${[1, 2, 3].map(passo).join('')}</div>${ris}</div>${fondo}</div>`;
 }
+function pvVai(n) { pvPasso = n; render(); }
 function pv_riga(id, i, k, v) { const pv = D.preventivi.find((x) => x.id === id); if (k === 3) { const n = parseFloat(String(v).replace(',', '.')) || 0; pv.righe[i][3] = Math.round(n * 100) / 100; } else pv.righe[i][k] = v; salva(); render(); }
 function pv_aggiungi(id) { D.preventivi.find((x) => x.id === id).righe.push(['', '1', 0, 0]); salva(); render(); }
 function pv_togli(id, i) { const pv = D.preventivi.find((x) => x.id === id); if (pv.righe.length === 1) return toast('Serve almeno una voce: cambiala invece di toglierla.'); pv.righe.splice(i, 1); salva(); render(); toast('Voce tolta.'); }
@@ -1050,7 +1262,7 @@ function generaPdf(id) {
 	if (pv.righe.some((r) => !r[0].trim())) return toast('Ogni voce ha bisogno di una descrizione.');
 	if (pv.righe.some((r) => !(r[3] > 0))) return toast('Ogni voce ha bisogno di un importo.');
 	const ul = document.getElementById('passi-pdf'); ul.hidden = false;
-	document.getElementById('btn-genera').disabled = true;
+	['btn-genera', 'btn-genera-2'].forEach((k) => { const b = document.getElementById(k); if (b) b.disabled = true; });
 	const li = ul.querySelectorAll('li');
 	setTimeout(() => (li[0].classList.add('fatto')), 350);
 	setTimeout(() => (li[1].classList.add('fatto')), 900);
