@@ -1,271 +1,314 @@
 <!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#1b1b1e"><meta name="robots" content="noindex"><link rel="icon" href="../icone/gestione-192.png">
 <title>Gestione ArtigianaMente · prototipo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Prototipo della Gestione (B-01, v4). Una sola pagina, dati finti, nessun server.
-   Identità del sito ArtigianaMente: bianco, nero #1B1B1E, Hanken Grotesk, angoli tondi, icone a linea.
-   Il colore (verde/arancio/rosso) serve solo a distinguere gli stati, sempre con la parola accanto.
-   Movimento: curva del sito, aperture 400 ms, chiusure 300 ms, cambio schermata 250 ms; con «Riduci movimento» niente animazioni. */
+@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 200; font-display: swap; src: url('../fonts/hanken-grotesk-latin-200-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 300; font-display: swap; src: url('../fonts/hanken-grotesk-latin-300-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/hanken-grotesk-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/hanken-grotesk-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/hanken-grotesk-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/hanken-grotesk-latin-700-normal.woff2') format('woff2'); }
+/* Prototipo della Gestione (B-01, v5). Una sola pagina, dati finti, nessun server.
+   Impostazioni prese dal sito (src/app.css, DESIGN.md, Icon.svelte, Galleria.svelte), non a occhio:
+   colori, Hanken Grotesk, pulsanti .v3-btn (52 px, angoli 10, sfumatura nera), scelte .v3-tipo (44 px, bordo #d9d9d9),
+   riquadro importante .v3-prezzo (bordo + ombra, angoli 16), campi nel riquadro .v3-lato__date (etichetta 10 px maiuscola),
+   contatore foto .v3-galleria__conta, intestazione .mm-header (logo 14 px spaziato 3 px, voci 12 px con riga sotto),
+   icone a linea con tratto 1.3, curve e tempi delle animazioni (--molla, --scende, 400/300/250/150 ms).
+   La composizione è adattata alla Gestione: liste fitte e leggibili in cantiere, barra fissa in basso sul telefono. */
 :root {
-	--nero: #1b1b1e; --bianco: #ffffff; --fondo: #f4f4f2; --grigio: #6f6f6f; --grigio-chiaro: #9a9a9a; --linea: #e8e8e6; --tinta: #efefec;
+	--nero: #1b1b1e; --testo: #333333; --grigio: #6b6b6b; --bordo: #cccccc; --bordo-scelta: #d9d9d9; --bordo-campo: #b0b0b0;
+	--bianco: #ffffff; --chiaro: #f4f4f4; --fondo: #f6f6f5; --linea: #e6e6e6;
+	--ombra: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.08);
+	--ombra-card: 0 6px 16px rgba(0, 0, 0, 0.12);
+	--nero-sfumato: linear-gradient(180deg, #2d2d30 0%, #1b1b1e 55%, #111112 100%);
 	--ok: #1f7a3a; --ok-f: #e4f2e8; --att: #a85d12; --att-f: #fbeedb; --err: #b3261e; --err-f: #fbe4e2; --prop: #2f4a8a; --prop-f: #e6ebf5;
 	--font: 'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	--molla: cubic-bezier(.22, 1, .36, 1); --t-apri: 400ms; --t-chiudi: 300ms; --t-passo: 250ms;
-	--r: 18px; --rb: 12px; --rt: 6px; --barra-h: 64px; --proto-h: 28px;
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	--molla: cubic-bezier(0.32, 0.72, 0, 1); --molla-morbida: cubic-bezier(0.22, 1, 0.36, 1); --scende: cubic-bezier(0.4, 0, 0.7, 0.8);
+	--t-tendina: 400ms; --t-chiudi: 300ms; --t-passo: 250ms; --t-rapido: 150ms; --t-breve: 200ms;
+	--r: 14px; --rb: 10px; --rt: 6px; --barra-h: 64px; --proto-h: 28px; --hh: 64px;
 	color-scheme: light;
 }
 html, body { height: 100%; }
-body { margin: 0; background: var(--fondo); color: var(--nero); font-family: var(--font); font-size: 16px; line-height: 1.4; -webkit-font-smoothing: antialiased; }
+body { margin: 0; background: var(--bianco); color: var(--testo); font-family: var(--font); font-size: 16px; line-height: 1.45; font-weight: 400; -webkit-font-smoothing: antialiased; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 button { font: inherit; color: inherit; cursor: pointer; }
+a, button, label { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 h1, h2, h3, p { margin: 0; }
-h1 { font-size: 28px; font-weight: 500; letter-spacing: -0.5px; line-height: 1.15; text-wrap: balance; }
-h2 { font-size: 15px; font-weight: 600; letter-spacing: 0; }
-h3 { font-size: 18px; font-weight: 600; }
+h1 { font-size: 32px; font-weight: 300; letter-spacing: -0.2px; line-height: 1.15; color: var(--nero); text-wrap: balance; }
+h2 { font-size: 17px; font-weight: 600; color: var(--nero); }
+h3 { font-size: 20px; font-weight: 500; color: var(--nero); }
 a { color: inherit; }
 img { display: block; max-width: 100%; }
 .num { font-variant-numeric: tabular-nums; }
-:focus-visible { outline: 2px solid var(--nero); outline-offset: 2px; }
+::selection { background: var(--nero); color: var(--bianco); }
+:focus-visible { outline: 2px solid var(--nero); outline-offset: 2px; border-radius: 8px; }
+b, strong { font-weight: 600; color: var(--nero); }
 
 /* marchio del sito: ARTIGIANA pieno, MENTE leggero, lettere spaziate */
-.marchio { font-weight: 600; letter-spacing: 3px; font-size: 12px; text-transform: uppercase; }
-.marchio span { font-weight: 300; }
+.marchio { font-weight: 600; letter-spacing: 3px; font-size: 14px; line-height: 1; text-transform: uppercase; color: var(--nero); white-space: nowrap; }
+.marchio span { font-weight: 200; }
 
 /* scritta fissa del prototipo */
 .proto { position: fixed; top: 0; left: 0; right: 0; z-index: 50; height: calc(var(--proto-h) + env(safe-area-inset-top, 0px)); padding: calc(6px + env(safe-area-inset-top, 0px)) 16px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--nero); color: #fff; font-size: 12px; letter-spacing: 0.3px; text-align: center; }
-.proto b { font-weight: 600; }
+.proto b { font-weight: 600; color: #fff; }
 .rete { position: fixed; top: calc(var(--proto-h) + env(safe-area-inset-top, 0px)); left: 0; right: 0; z-index: 49; padding: 8px 16px; background: #fff4e5; color: #6b3d00; border-bottom: 1px solid #f0d9b5; font-size: 14px; display: flex; gap: 10px; align-items: center; }
 
 /* struttura a telefono */
-.app { max-width: 480px; margin: 0 auto; min-height: 100%; padding: calc(var(--proto-h) + 12px + env(safe-area-inset-top, 0px)) 16px calc(var(--barra-h) + 24px + env(safe-area-inset-bottom, 0px)); }
-.app.con-rete { padding-top: calc(var(--proto-h) + 66px + env(safe-area-inset-top, 0px)); }
-.schermo { animation: entra var(--t-passo) var(--molla); }
-@keyframes entra { from { opacity: 0; transform: translateY(8px); } }
-.testa { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 10px 0 18px; }
-.testa .sotto { color: var(--grigio); font-size: 15px; margin-top: 4px; }
-.testa .marchio { display: block; color: var(--grigio); margin-bottom: 10px; }
-.indietro { display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; padding: 10px 0 2px; margin-left: -4px; color: var(--grigio); font-size: 15px; }
-.indietro svg { width: 20px; height: 20px; }
+.app { max-width: 520px; margin: 0 auto; min-height: 100%; padding: calc(var(--proto-h) + 10px + env(safe-area-inset-top, 0px)) 20px calc(var(--barra-h) + 24px + env(safe-area-inset-bottom, 0px)); }
+.app.con-rete { padding-top: calc(var(--proto-h) + 64px + env(safe-area-inset-top, 0px)); }
+.schermo { animation: entra var(--t-passo) var(--ease-out); }
+@keyframes entra { from { opacity: 0; transform: translateY(6px); } }
+.testa { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 14px 0 18px; }
+.testa > div:first-child { flex: 1 1 160px; min-width: 0; }
+.testa .sotto { color: var(--grigio); font-size: 15px; margin-top: 6px; }
+.testa .marchio { display: block; margin-bottom: 14px; font-size: 12px; }
+.indietro { display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; padding: 12px 0 0; margin-left: -6px; color: var(--grigio); font-size: 15px; font-weight: 500; }
+.indietro svg { width: 22px; height: 22px; }
 
-/* barra delle sezioni */
-.barra { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(10px); border-top: 1px solid var(--linea); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
-.barra nav { max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
-.barra button { background: none; border: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0 4px; border-radius: var(--rb); color: var(--grigio); font-size: 11px; font-weight: 500; position: relative; }
-.barra button svg { width: 24px; height: 24px; stroke-width: 1.5; }
-.barra button.attiva { color: var(--nero); }
-.barra button.attiva svg { stroke-width: 2; }
-.barra .pallino { position: absolute; top: 2px; right: calc(50% - 22px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--nero); color: #fff; font-size: 11px; font-weight: 600; display: grid; place-items: center; }
-.barra .marchio-barra { display: none; }
-svg.ico { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; width: 20px; height: 20px; flex: none; }
+/* icone: stesso stile del sito (tratto 1.3, angoli tondi) */
+svg.ico { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.3; width: 22px; height: 22px; flex: none; }
+svg.ico path { vector-effect: non-scaling-stroke; }
 
-/* fogli e sezioni: un foglio bianco, dentro sezioni separate da una riga sottile */
-.foglio { background: var(--bianco); border-radius: var(--r); padding: 4px 18px; margin-bottom: 14px; }
-.sez { padding: 16px 0; }
-.sez + .sez { border-top: 1px solid var(--linea); }
+/* barra delle sezioni: sul telefono fissa in basso, bianca, icona + nome per tutte e cinque */
+.barra { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; background: var(--bianco); border-top: 1px solid var(--linea); padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px)); }
+.barra nav { max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+.barra button { background: none; border: 0; display: grid; justify-items: center; gap: 3px; padding: 7px 0 5px; border-radius: var(--rb); color: var(--grigio); font-size: 11px; line-height: 1.2; font-weight: 500; position: relative; transition: color 160ms ease; }
+.barra button svg { width: 24px; height: 24px; }
+.barra button.attiva { color: var(--nero); font-weight: 600; }
+.barra button.attiva svg { stroke-width: 1.8; }
+.barra button::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 0; height: 2px; background: currentColor; transform: scaleX(0); transition: transform 220ms var(--ease-out); }
+.barra button.attiva::after { transform: scaleX(1); }
+.barra .pallino { position: absolute; top: 3px; right: calc(50% - 22px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--nero); color: #fff; font-size: 11px; font-weight: 600; display: grid; place-items: center; }
+.barra .marchio-barra, .barra .barra-destra { display: none; }
+
+/* sezioni: fondo bianco, righe sottili; i riquadri solo per quello che conta */
+.foglio { margin-bottom: 8px; }
+.sez { padding: 18px 0; border-top: 1px solid var(--linea); }
+.sez:first-child { border-top: 0; padding-top: 6px; }
 .sez > h2 { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .sez > h2 .conta { font-weight: 400; color: var(--grigio); font-size: 14px; }
 .sez > h2 .link { font-size: 14px; }
-.riquadro { background: var(--bianco); border-radius: var(--r); padding: 16px 18px; margin-bottom: 14px; }
-.riquadro > h2 { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.riquadro { padding: 18px 0; border-top: 1px solid var(--linea); }
+.riquadro:first-child { border-top: 0; }
+.riquadro > h2 { margin-bottom: 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .riquadro > h2 .conta { font-weight: 400; color: var(--grigio); font-size: 14px; }
+.card { border: 1px solid #dddddd; border-radius: 16px; background: var(--bianco); box-shadow: var(--ombra); padding: 18px 20px; }
+.etichetta { display: block; font-size: 12px; line-height: 18px; font-weight: 600; letter-spacing: 1.33px; text-transform: uppercase; color: var(--grigio); }
 
-/* liste */
+/* liste: nomi, orari, importi e stati ben leggibili; il secondario in #333, mai troppo chiaro */
 .lista { list-style: none; margin: 0; padding: 0; }
 .lista li + li { border-top: 1px solid var(--linea); }
-.riga { width: 100%; text-align: left; background: none; border: 0; padding: 13px 0; display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
-.riga .ora { font-weight: 600; font-size: 16px; min-width: 50px; line-height: 1.2; }
-.riga .ora small { display: block; font-weight: 400; font-size: 12px; color: var(--grigio); }
+.riga { width: 100%; text-align: left; background: none; border: 0; padding: 14px 0; display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; color: var(--testo); }
+.riga .ora { font-weight: 600; font-size: 17px; min-width: 52px; line-height: 1.2; color: var(--nero); }
+.riga .ora small { display: block; font-weight: 400; font-size: 12px; color: var(--grigio); margin-top: 2px; }
 .riga .cosa { min-width: 0; }
-.riga .cosa b { font-weight: 600; display: block; font-size: 16px; }
-.riga .cosa span { display: block; color: var(--grigio); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
-.riga .cosa span.tag { display: inline-flex; margin-top: 5px; }
+.riga .cosa b { font-weight: 600; display: block; font-size: 16px; color: var(--nero); }
+.riga .cosa span { display: block; color: var(--testo); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+.riga .cosa span.tag { display: inline-flex; margin-top: 6px; }
 .riga .cosa b span.tag { margin: 0 0 0 6px; vertical-align: middle; }
-.riga .freccia { color: var(--grigio-chiaro); }
-.riga .freccia svg { width: 18px; height: 18px; }
+.riga .freccia { color: var(--bordo); }
+.riga .freccia svg { width: 20px; height: 20px; }
 .riga .punto { width: 10px; height: 10px; border-radius: 50%; background: var(--nero); }
 .riga.urgente .punto { background: var(--att); }
-.riga.con-mini { grid-template-columns: 56px 1fr auto; }
-.vedi { display: block; width: 100%; margin-top: 6px; padding: 11px; border-radius: var(--rb); border: 0; background: var(--tinta); font-size: 14px; font-weight: 500; color: var(--nero); text-align: center; }
+.riga.con-mini { grid-template-columns: 60px 1fr auto; }
+.vedi { display: block; width: 100%; margin-top: 8px; min-height: 44px; padding: 0 16px; border-radius: var(--rb); border: 1px solid var(--bordo-scelta); background: var(--bianco); font-size: 15px; font-weight: 500; color: var(--nero); text-align: center; }
 .vuoto { color: var(--grigio); font-size: 15px; padding: 6px 0; }
 .nota { color: var(--grigio); font-size: 14px; }
-.tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: var(--tinta); color: #4a4a4a; white-space: nowrap; line-height: 1.2; }
+.tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: var(--rt); background: var(--chiaro); color: var(--testo); white-space: nowrap; line-height: 1.25; }
 .tag.ok { background: var(--ok-f); color: var(--ok); }
 .tag.att { background: var(--att-f); color: var(--att); }
 .tag.err { background: var(--err-f); color: var(--err); }
 .tag.prop { background: var(--prop-f); color: var(--prop); }
 .tag.pieno { background: var(--nero); color: #fff; }
-.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
-.chips button { white-space: nowrap; padding: 8px 13px; border-radius: 999px; border: 1px solid var(--linea); background: var(--bianco); font-size: 14px; }
-.chips button span { color: var(--grigio); }
-.chips button.attivo { background: var(--nero); border-color: var(--nero); color: #fff; }
-.chips button.attivo span { color: #ccc; }
-.cerca { width: 100%; font: inherit; font-size: 16px; padding: 12px 14px; border-radius: var(--rb); border: 1px solid var(--linea); background: var(--bianco); margin-bottom: 10px; }
 
-/* pulsanti */
-.btn { text-decoration: none; font-weight: 600; font-size: 15px; padding: 13px 18px; border-radius: var(--rb); border: 1px solid var(--nero); background: var(--nero); color: #fff; display: inline-flex; align-items: center; gap: 8px; justify-content: center; transition: transform 150ms var(--molla); }
-.btn:active { transform: scale(0.98); }
-.btn.linea { background: var(--bianco); color: var(--nero); }
-.btn.tinta { background: var(--tinta); border-color: var(--tinta); color: var(--nero); }
-.btn.piccolo { padding: 9px 13px; font-size: 14px; }
+/* scelte a bottone come nel sito (.v3-tipo): 44 px, bordo #d9d9d9, la scelta attiva è nera */
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chips button, .scelte label { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 14px; border: 1px solid var(--bordo-scelta); border-radius: var(--rb); background: var(--bianco); font-size: 15px; font-weight: 500; color: var(--nero); white-space: nowrap; transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease, transform 160ms var(--ease-out); }
+.chips button:active, .scelte label:active { transform: scale(0.97); }
+.chips button span { color: var(--grigio); font-weight: 400; }
+.chips button.attivo, .scelte label:has(input:checked) { background: var(--nero); border-color: var(--nero); color: #fff; }
+.chips button.attivo span { color: #cfcfcf; }
+.scelte { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.scelte label svg { width: 20px; height: 20px; }
+.scelte input { position: absolute; opacity: 0; width: 0; height: 0; }
+.cerca { width: 100%; font: inherit; font-size: 16px; min-height: 52px; padding: 0 18px; border-radius: 26px; border: 1px solid var(--bordo-scelta); background: var(--bianco); margin-bottom: 12px; box-shadow: var(--ombra); }
+.cerca:focus { outline: 2px solid var(--nero); outline-offset: 0; }
+
+/* pulsanti come nel sito (.v3-btn): 52 px, angoli 10, sfumatura nera, testo 16 px peso 500 */
+.btn { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 24px; border: 1px solid transparent; border-radius: var(--rb); background-color: var(--nero); background-image: var(--nero-sfumato); background-origin: border-box; color: #fff; font: inherit; font-size: 16px; line-height: 1; font-weight: 500; text-decoration: none; cursor: pointer; transition: transform 160ms var(--ease-out), filter var(--t-rapido) ease; }
+.btn:active { transform: scale(0.97); filter: brightness(0.9); }
+@media (hover: hover) and (pointer: fine) { .btn:not(.linea):not(.grigio):not(.pericolo):hover { filter: brightness(1.18); } }
+.btn.linea { background: transparent; border-color: var(--nero); color: var(--nero); }
+.btn.grigio, .btn.tinta { background: var(--bianco); border-color: var(--bianco); color: var(--nero); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+.btn.piccolo { min-height: 44px; padding: 0 16px; font-size: 15px; }
 .btn.pieno { width: 100%; }
 .btn.pericolo { background: var(--bianco); color: var(--err); border-color: #e3b7b4; }
 .btn[disabled] { opacity: 0.45; cursor: default; }
-.azioni { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.link { background: none; border: 0; padding: 4px 0; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; }
-.proposta { opacity: 0.8; }
+.btn svg { width: 20px; height: 20px; }
+.azioni { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.link { background: none; border: 0; padding: 4px 0; font-size: 15px; color: var(--nero); text-decoration: underline; text-underline-offset: 3px; }
+.proposta { opacity: 0.85; }
 
-/* Oggi */
-.prossimo { background: var(--nero); color: #fff; border-radius: var(--r); padding: 18px 18px 16px; margin-bottom: 14px; }
-.prossimo small { display: block; font-size: 13px; color: #b9b9b9; margin-bottom: 8px; }
-.prossimo .ora-grande { font-size: 44px; font-weight: 600; letter-spacing: -1.5px; line-height: 1; }
-.prossimo .ora-grande em { font-style: normal; font-size: 16px; font-weight: 400; letter-spacing: 0; color: #b9b9b9; margin-left: 10px; }
-.prossimo b { display: block; font-size: 20px; font-weight: 600; margin-top: 8px; }
-.prossimo .dett { display: block; color: #cfcfcf; font-size: 15px; margin-top: 2px; }
-.prossimo .tag { background: rgba(255, 255, 255, 0.16); color: #fff; }
-.prossimo .azioni { margin-top: 14px; }
-.prossimo .btn { background: #fff; color: var(--nero); border-color: #fff; }
-.prossimo .btn.linea { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.4); }
-.attesa { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 10px 0; width: 100%; text-align: left; background: none; border: 0; }
+/* Oggi: il prossimo appuntamento nel riquadro importante del sito (bordo + ombra) */
+.prossimo { border: 1px solid #dddddd; border-radius: 16px; background: var(--bianco); box-shadow: var(--ombra-card); padding: 18px 20px 20px; margin: 4px 0 20px; }
+.prossimo small { display: block; font-size: 12px; line-height: 18px; font-weight: 600; letter-spacing: 1.33px; text-transform: uppercase; color: var(--grigio); margin-bottom: 6px; }
+.prossimo .ora-grande { font-size: 44px; font-weight: 500; letter-spacing: -1px; line-height: 1; color: var(--nero); }
+.prossimo .ora-grande em { font-style: normal; font-size: 15px; font-weight: 400; letter-spacing: 0; color: var(--grigio); margin-left: 10px; }
+.prossimo b { display: block; font-size: 20px; font-weight: 600; margin-top: 10px; }
+.prossimo .dett { display: block; color: var(--testo); font-size: 15px; margin-top: 2px; }
+.prossimo .azioni { margin-top: 16px; }
+.prossimo .azioni .btn { flex: 1; }
+.attesa { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 0; width: 100%; text-align: left; background: none; border: 0; color: var(--testo); }
 .attesa + .attesa { border-top: 1px solid var(--linea); }
-.attesa b { font-weight: 600; font-size: 15px; display: block; }
-.attesa span { color: var(--grigio); font-size: 13px; display: block; }
+.attesa b { font-weight: 600; font-size: 16px; display: block; }
+.attesa span { color: var(--testo); font-size: 14px; display: block; }
 .attesa .giorni { font-size: 13px; color: var(--grigio); white-space: nowrap; }
-.attesa .giorni b { font-size: 18px; display: inline; color: var(--nero); }
+.attesa .giorni b { font-size: 20px; display: inline; }
 .vuoto-grande { text-align: center; padding: 28px 16px; color: var(--grigio); }
-.vuoto-grande svg { width: 36px; height: 36px; margin: 0 auto 10px; stroke-width: 1.2; }
-.vuoto-grande b { display: block; color: var(--nero); font-weight: 600; margin-bottom: 4px; }
+.vuoto-grande svg { width: 36px; height: 36px; margin: 0 auto 10px; }
+.vuoto-grande b { display: block; font-weight: 600; margin-bottom: 4px; }
 
-/* scheda pratica */
-.testata { margin-bottom: 14px; }
-.testata .copertina-p { position: relative; border-radius: var(--r); overflow: hidden; background: var(--tinta); aspect-ratio: 16 / 8; max-height: 190px; margin-bottom: 14px; }
+/* scheda pratica: foto contenuta col contatore del sito, titolo leggero, stato, poi il passo principale */
+.testata { margin-bottom: 16px; }
+.testata .copertina-p { position: relative; border-radius: var(--r); overflow: hidden; background: var(--chiaro); aspect-ratio: 16 / 8; max-height: 180px; margin: 12px 0 14px; }
 .testata .copertina-p img { width: 100%; height: 100%; object-fit: cover; }
 .testata .copertina-p button { position: absolute; inset: 0; width: 100%; border: 0; background: none; padding: 0; }
-.testata .copertina-p .quante { position: absolute; right: 10px; bottom: 10px; background: rgba(27, 27, 30, 0.75); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 999px; pointer-events: none; }
-.testata .codice { color: var(--grigio); font-size: 14px; margin-top: 6px; }
+.testata .copertina-p .quante { position: absolute; right: 12px; bottom: 12px; padding: 4px 10px; border-radius: var(--rt); background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 12px; line-height: 1.2; font-weight: 500; font-variant-numeric: tabular-nums; pointer-events: none; display: inline-flex; gap: 6px; align-items: center; }
+.testata .copertina-p .quante svg { width: 14px; height: 14px; }
+.testata .codice { color: var(--testo); font-size: 15px; margin-top: 6px; }
 .testata .stati { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center; }
-.principale { background: var(--bianco); border: 1.5px solid var(--nero); border-radius: var(--r); padding: 14px 16px; margin-bottom: 14px; }
-.principale .motivo { font-size: 15px; margin-bottom: 10px; }
+.principale { border: 1px solid #dddddd; border-radius: 16px; background: var(--bianco); box-shadow: var(--ombra); padding: 16px 20px 18px; margin-bottom: 20px; }
+.principale .motivo { font-size: 16px; color: var(--nero); margin: 4px 0 12px; }
 .principale .btn { width: 100%; }
-.principale .solo-testo { font-weight: 600; font-size: 16px; }
-.contatti { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 15px; }
-.contatti span { display: inline-flex; gap: 6px; align-items: center; }
-.contatti a { text-decoration: none; }
-.coppia { display: grid; grid-template-columns: 112px 1fr; gap: 7px 12px; font-size: 15px; margin: 0; }
+.principale .solo-testo { font-weight: 600; font-size: 17px; color: var(--nero); margin-top: 4px; }
+.contatti { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 15px; }
+.contatti span { display: inline-flex; gap: 7px; align-items: center; }
+.contatti a { text-decoration: none; font-weight: 500; color: var(--nero); }
+.coppia { display: grid; grid-template-columns: 118px 1fr; gap: 8px 12px; font-size: 15px; margin: 0; }
 .coppia dt { color: var(--grigio); }
-.coppia dd { margin: 0; }
+.coppia dd { margin: 0; color: var(--testo); }
 .coppia dd .tag { vertical-align: middle; }
-.stima { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
-.versione { border: 1px solid var(--linea); border-radius: var(--rb); padding: 12px 14px; margin-top: 10px; }
+.stima { font-size: 24px; font-weight: 500; color: var(--nero); letter-spacing: -0.2px; }
+.versione { border: 1px solid var(--linea); border-radius: 12px; padding: 14px 16px; margin-top: 10px; }
 .versione .testa-v { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-.versione .testa-v b { font-weight: 600; font-size: 16px; }
+.versione .testa-v b { font-weight: 600; font-size: 17px; }
 .storico { list-style: none; margin: 0; padding: 0; font-size: 14px; }
-.storico li { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 6px 0; border-top: 1px solid var(--linea); }
+.storico li { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 7px 0; border-top: 1px solid var(--linea); }
 .storico li:first-child { border-top: 0; }
 .storico .q { color: var(--grigio); }
-textarea.campo, input.campo, select.campo { width: 100%; font: inherit; font-size: 16px; padding: 11px 13px; border-radius: var(--rb); border: 1px solid #d6d6d4; background: var(--bianco); margin-top: 6px; }
-textarea.campo { resize: vertical; }
-label.campo { display: block; font-size: 14px; color: var(--grigio); margin-top: 12px; }
-label.campo input, label.campo select, label.campo textarea { color: var(--nero); }
-.scelte { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.scelte label { padding: 9px 13px; border: 1px solid #d0d0d0; border-radius: 999px; font-size: 15px; background: var(--bianco); color: var(--nero); }
-.scelte label:has(input:checked) { background: var(--nero); border-color: var(--nero); color: #fff; }
-.scelte input { position: absolute; opacity: 0; width: 0; height: 0; }
-.avviso { padding: 10px 12px; border-radius: var(--rb); font-size: 14px; margin-top: 10px; }
+textarea.campo, input.campo, select.campo { width: 100%; font: inherit; font-size: 16px; min-height: 48px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--bordo-campo); background: var(--bianco); margin-top: 6px; color: var(--nero); }
+textarea.campo { resize: vertical; line-height: 1.45; }
+textarea.campo:focus, input.campo:focus, select.campo:focus { outline: 2px solid var(--nero); outline-offset: -1px; }
+label.campo { display: block; font-size: 14px; color: var(--grigio); margin-top: 14px; }
+label.campo > span.etichetta { margin-bottom: 2px; }
+/* campi affiancati nello stesso riquadro, come nel sito (etichetta maiuscola piccola, valore sotto) */
+.campi-box { display: grid; grid-template-columns: 1fr 1fr; margin-top: 14px; overflow: hidden; border: 1px solid var(--bordo-campo); border-radius: 12px; }
+.campi-box.tre { grid-template-columns: 1.3fr 1fr 1fr; }
+.campi-box label { display: grid; gap: 2px; min-height: 58px; padding: 9px 12px; background: var(--bianco); font-size: 10px; line-height: 1.2; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--nero); }
+.campi-box label + label { border-left: 1px solid var(--bordo-campo); }
+.campi-box input { width: 100%; min-width: 0; border: 0; padding: 0; margin: 0; font: inherit; font-size: 14px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--nero); background: transparent; }
+.campi-box input:focus { outline: none; }
+.campi-box label:focus-within { background: #f7f7f7; }
+.avviso { padding: 12px 14px; border-radius: 12px; font-size: 14px; margin-top: 12px; line-height: 1.45; }
 .avviso.ok { background: var(--ok-f); color: var(--ok); }
 .avviso.err { background: var(--err-f); color: var(--err); }
 .avviso.att { background: var(--att-f); color: #6b3d00; }
 
 /* fotografie (dimostrative, da sostituire: cartella foto/, elenco in Altro → Foto dimostrative) */
-.mini { width: 56px; height: 56px; border-radius: var(--rb); object-fit: cover; background: var(--tinta); flex: none; }
-.mini-vuota { width: 56px; height: 56px; border-radius: var(--rb); background: var(--tinta); display: grid; place-items: center; color: var(--grigio-chiaro); flex: none; }
+.mini { width: 60px; height: 60px; border-radius: var(--rb); object-fit: cover; background: var(--chiaro); flex: none; }
+.mini-vuota { width: 60px; height: 60px; border-radius: var(--rb); background: var(--chiaro); display: grid; place-items: center; color: var(--bordo); flex: none; }
 .galleria { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.galleria button { position: relative; padding: 0; border: 0; background: var(--tinta); border-radius: var(--rb); overflow: hidden; aspect-ratio: 1; }
+.galleria button { position: relative; padding: 0; border: 0; background: var(--chiaro); border-radius: var(--rb); overflow: hidden; aspect-ratio: 1; }
 .galleria img { width: 100%; height: 100%; object-fit: cover; }
-.galleria .piu { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(27, 27, 30, 0.55); color: #fff; font-weight: 600; font-size: 18px; }
-.didascalia { color: var(--grigio-chiaro); font-size: 12px; margin-top: 8px; }
-.copertina { width: 100%; aspect-ratio: 16 / 8; max-height: 190px; object-fit: cover; border-radius: var(--r); margin-bottom: 14px; }
-.visore { position: fixed; inset: 0; z-index: 80; background: #000; color: #fff; display: flex; flex-direction: column; animation: sfuma var(--t-apri) var(--molla); touch-action: pan-y; }
-.visore.via { animation: sfuma-via var(--t-chiudi) var(--molla) forwards; }
-.visore .vt { display: flex; justify-content: space-between; align-items: center; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px; font-size: 14px; }
-.visore .vt button { background: rgba(255, 255, 255, 0.12); border: 0; color: #fff; font-size: 14px; font-weight: 600; padding: 8px 14px; border-radius: 999px; }
+.galleria .piu { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.55); color: #fff; font-weight: 500; font-size: 18px; }
+.didascalia { color: var(--grigio); font-size: 12px; margin-top: 8px; }
+.copertina { width: 100%; aspect-ratio: 16 / 8; max-height: 180px; object-fit: cover; border-radius: var(--r); margin-bottom: 14px; }
+.visore { position: fixed; inset: 0; z-index: 80; background: #000; color: #fff; display: flex; flex-direction: column; animation: sfuma var(--t-tendina) var(--molla); touch-action: pan-y; }
+.visore.via { animation: sfuma-via var(--t-passo) ease forwards; }
+.visore .vt { display: flex; justify-content: space-between; align-items: center; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.visore .vt button { background: rgba(255, 255, 255, 0.92); border: 0; color: var(--nero); font-size: 14px; font-weight: 500; min-height: 36px; padding: 0 14px; border-radius: 18px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); }
 .visore .vimg { flex: 1; display: grid; place-items: center; min-height: 0; padding: 0 8px; }
-.visore .vimg img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px; }
+.visore .vimg img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 6px; }
 .visore .vb { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)); font-size: 13px; color: #bbb; }
-.visore .vb button { background: rgba(255, 255, 255, 0.12); border: 0; color: #fff; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; flex: none; }
-.visore .vb button[disabled] { opacity: 0.3; }
+.visore .vb button { background: rgba(255, 255, 255, 0.92); border: 0; color: var(--nero); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); transition: transform 160ms var(--ease-out); }
+.visore .vb button:active { transform: scale(0.94); }
+.visore .vb button[disabled] { visibility: hidden; }
 
 /* preventivo: voci */
-.voce { display: grid; grid-template-columns: 1fr 1fr 36px; gap: 6px; align-items: center; padding: 10px 0; border-top: 1px solid var(--linea); }
-.voce input:first-child { grid-column: 1 / -1; }
+.voce { display: grid; grid-template-columns: 1fr 1fr 40px; gap: 8px; align-items: center; padding: 12px 0; border-top: 1px solid var(--linea); }
 .voce:first-child { border-top: 0; }
-.voce input.campo { margin: 0; padding: 8px 10px; font-size: 15px; }
-.voce .togli { width: 36px; height: 38px; border: 0; background: none; color: var(--grigio); border-radius: var(--rb); display: grid; place-items: center; }
+.voce input:first-child { grid-column: 1 / -1; }
+.voce input.campo { margin: 0; min-height: 44px; padding: 8px 12px; font-size: 15px; }
+.voce .togli { width: 40px; height: 44px; border: 0; background: none; color: var(--grigio); border-radius: var(--rb); display: grid; place-items: center; }
 .voce .togli:hover { background: var(--err-f); color: var(--err); }
-.voce.sola-lettura { grid-template-columns: 1fr auto auto; padding: 9px 0; font-size: 15px; }
+.voce.sola-lettura { grid-template-columns: 1fr auto auto; padding: 10px 0; font-size: 15px; color: var(--testo); }
 .voce.sola-lettura .q { color: var(--grigio); font-size: 14px; }
-.intest-voci { display: none; grid-template-columns: 1fr 76px 104px 36px; gap: 6px; color: var(--grigio); font-size: 13px; padding-bottom: 4px; }
-.totali { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--linea); font-size: 15px; align-items: center; }
-.totali b { font-size: 22px; letter-spacing: -0.3px; }
+.intest-voci { display: none; }
+.totali { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--linea); font-size: 15px; align-items: center; color: var(--testo); }
+.totali b { font-size: 24px; letter-spacing: -0.2px; }
 .righe { width: 100%; border-collapse: collapse; font-size: 14px; }
 .righe td { padding: 8px 0; border-top: 1px solid var(--linea); vertical-align: top; }
 .righe td:last-child { text-align: right; white-space: nowrap; }
 
-/* agenda */
+/* agenda: striscia dei giorni sul telefono, impegni con inizio, fine e durata */
 .agenda-testa { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.agenda-testa .tondo { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--linea); background: var(--bianco); display: grid; place-items: center; }
-.agenda-testa .titolo { flex: 1; font-weight: 600; font-size: 16px; text-align: center; }
-.giorni-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 14px; }
-.giorni-strip button { border: 0; background: none; padding: 6px 0 8px; border-radius: var(--rb); display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--grigio); font-size: 12px; }
-.giorni-strip button b { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; font-weight: 600; color: var(--nero); }
+.agenda-testa .tondo { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--bianco); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); display: grid; place-items: center; color: var(--nero); transition: transform 160ms var(--ease-out); }
+.agenda-testa .tondo:active { transform: scale(0.94); }
+.agenda-testa .titolo { flex: 1; font-weight: 600; font-size: 16px; text-align: center; color: var(--nero); }
+.giorni-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
+.giorni-strip button { border: 0; background: none; padding: 6px 0 8px; border-radius: var(--rb); display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--grigio); font-size: 12px; font-weight: 500; }
+.giorni-strip button b { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; font-weight: 600; color: var(--nero); transition: background-color 160ms ease, color 160ms ease; }
 .giorni-strip button.oggi-g b { box-shadow: inset 0 0 0 1.5px var(--nero); }
 .giorni-strip button.attivo b { background: var(--nero); color: #fff; box-shadow: none; }
-.giorni-strip button i { width: 5px; height: 5px; border-radius: 50%; background: var(--grigio-chiaro); }
+.giorni-strip button i { width: 5px; height: 5px; border-radius: 50%; background: var(--nero); }
 .giorni-strip button i.vuoto { background: transparent; }
-.giorni-strip button.festivo { color: var(--grigio-chiaro); }
-.impegno-r { width: 100%; text-align: left; background: none; border: 0; padding: 12px 0; display: grid; grid-template-columns: 62px 1fr auto; gap: 12px; align-items: stretch; }
+.giorni-strip button.festivo { color: var(--bordo); }
+.giorni-strip button.festivo b { color: var(--grigio); }
+.impegno-r { width: 100%; text-align: left; background: none; border: 0; padding: 14px 0; display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: stretch; color: var(--testo); }
 .impegno-r .quando { display: flex; flex-direction: column; justify-content: center; line-height: 1.2; }
-.impegno-r .quando b { font-size: 16px; font-weight: 600; }
-.impegno-r .quando span { font-size: 13px; color: var(--grigio); }
+.impegno-r .quando b { font-size: 17px; font-weight: 600; }
+.impegno-r .quando span { font-size: 14px; color: var(--grigio); margin-top: 2px; }
 .impegno-r .blocco { border-left: 3px solid var(--nero); padding-left: 12px; min-width: 0; }
 .impegno-r .blocco.proposto { border-left-color: var(--att); }
-.impegno-r .blocco.svolto { border-left-color: var(--grigio-chiaro); }
-.impegno-r .blocco.altro { border-left-color: var(--grigio-chiaro); }
+.impegno-r .blocco.svolto { border-left-color: var(--bordo); }
+.impegno-r .blocco.altro { border-left-color: var(--bordo); }
 .impegno-r .blocco b { display: block; font-size: 16px; font-weight: 600; }
-.impegno-r .blocco span { display: block; color: var(--grigio); font-size: 14px; }
-.impegno-r .blocco .durata { color: var(--grigio-chiaro); font-size: 13px; }
-.impegno-r .freccia { color: var(--grigio-chiaro); align-self: center; }
+.impegno-r .blocco span { display: block; color: var(--testo); font-size: 14px; }
+.impegno-r .blocco .durata { color: var(--grigio); font-size: 13px; }
+.impegno-r .freccia { color: var(--bordo); align-self: center; }
 .giorno-libero { color: var(--grigio); font-size: 15px; padding: 24px 0; text-align: center; }
 .settimana { display: none; }
 
-/* tendina */
-.velo { position: fixed; inset: 0; z-index: 60; background: rgba(27, 27, 30, 0.45); animation: sfuma var(--t-apri) var(--molla); }
-.velo.via { animation: sfuma-via var(--t-chiudi) var(--molla) forwards; }
-.tendina { position: fixed; left: 0; right: 0; bottom: 0; z-index: 61; max-width: 480px; margin: 0 auto; max-height: 90%; overflow: auto; background: var(--bianco); border-radius: var(--r) var(--r) 0 0; padding: 10px 18px calc(20px + env(safe-area-inset-bottom, 0px)); animation: sale var(--t-apri) var(--molla); }
-.tendina.via { animation: scende var(--t-chiudi) var(--molla) forwards; }
-.tendina .maniglia { width: 40px; height: 4px; border-radius: 2px; background: #ddd; margin: 0 auto 10px; }
-.tendina .testa-t { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 2px; }
-.tendina .chiudi-x { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--tinta); display: grid; place-items: center; flex: none; margin-right: -6px; }
+/* tendina: sale dal basso come nel sito (molla), chiude con --scende; titolo e X */
+.velo { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.42); animation: sfuma var(--t-tendina) var(--molla); }
+.velo.via { animation: sfuma-via var(--t-chiudi) var(--scende) forwards; }
+.tendina { position: fixed; left: 0; right: 0; bottom: 0; z-index: 61; max-width: 520px; margin: 0 auto; max-height: 90%; overflow: auto; background: var(--bianco); border-radius: 16px 16px 0 0; padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px)); animation: sale var(--t-tendina) var(--molla); box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.12); }
+.tendina.via { animation: scende var(--t-chiudi) var(--scende) forwards; }
+.tendina .maniglia { width: 36px; height: 4px; border-radius: 2px; background: #d9d9d9; margin: 0 auto 12px; }
+.tendina .testa-t { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; }
+.tendina .chiudi-x { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--bianco); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); display: grid; place-items: center; flex: none; margin-right: -4px; color: var(--nero); }
 .tendina .chiudi-x svg { width: 18px; height: 18px; }
 .tendina h3 { margin-bottom: 2px; }
+.tendina .azioni { margin-top: 18px; }
+.tendina .azioni .btn.pieno + .btn.pieno { margin-top: 2px; }
 @keyframes sale { from { transform: translateY(100%); } }
 @keyframes scende { to { transform: translateY(100%); } }
 @keyframes sfuma { from { opacity: 0; } }
 @keyframes sfuma-via { to { opacity: 0; } }
-.toast { position: fixed; left: 16px; right: 16px; bottom: calc(var(--barra-h) + 20px + env(safe-area-inset-bottom, 0px)); z-index: 70; max-width: 448px; margin: 0 auto; background: var(--nero); color: #fff; padding: 12px 16px; border-radius: var(--rb); font-size: 14px; animation: entra var(--t-passo) var(--molla); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
+.toast { position: fixed; left: 16px; right: 16px; bottom: calc(var(--barra-h) + 20px + env(safe-area-inset-bottom, 0px)); z-index: 70; max-width: 488px; margin: 0 auto; background: var(--nero); color: #fff; padding: 13px 16px; border-radius: 12px; font-size: 14px; animation: entra var(--t-passo) var(--ease-out); box-shadow: var(--ombra-card); }
 
 /* altro */
-.voci { list-style: none; margin: 0; padding: 0; background: var(--bianco); border-radius: var(--r); }
-.voci li + li { border-top: 1px solid var(--linea); }
-.voci button { width: 100%; text-align: left; background: none; border: 0; padding: 15px 18px; display: flex; align-items: center; gap: 12px; font-size: 16px; }
-.voci button .freccia { margin-left: auto; color: var(--grigio-chiaro); }
-.voci button span.nota { margin-left: auto; }
-.pdf { background: var(--bianco); border-radius: var(--r); padding: 22px; font-size: 14px; line-height: 1.45; }
+.voci { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--linea); }
+.voci li { border-bottom: 1px solid var(--linea); }
+.voci button { width: 100%; text-align: left; background: none; border: 0; padding: 16px 0; display: flex; align-items: center; gap: 14px; font-size: 16px; font-weight: 500; color: var(--nero); }
+.voci button .freccia { margin-left: auto; color: var(--bordo); }
+.voci button span.nota { margin-left: auto; font-weight: 400; }
+.pdf { border: 1px solid var(--linea); border-radius: 16px; padding: 22px; font-size: 14px; line-height: 1.5; color: var(--testo); }
 .pdf .marchio { font-size: 14px; letter-spacing: 4px; }
 .pdf hr { border: 0; border-top: 1px solid var(--linea); margin: 14px 0; }
-.pdf h3 { font-size: 20px; font-weight: 500; }
+.pdf h3 { font-size: 20px; font-weight: 400; }
 .filigrana { display: inline-block; font-size: 12px; color: var(--grigio); border: 1px dashed #ccc; padding: 2px 8px; border-radius: var(--rt); margin: 8px 0 12px; }
 .passi-pdf { list-style: none; padding: 0; margin: 10px 0 0; font-size: 15px; }
 .passi-pdf li { display: flex; gap: 8px; align-items: center; padding: 4px 0; color: var(--grigio); }
@@ -274,51 +317,58 @@ label.campo input, label.campo select, label.campo textarea { color: var(--nero)
 .passi-pdf li:not(.fatto)::before { content: '·'; }
 .due { display: block; }
 
-@media (prefers-reduced-motion: reduce) { .schermo, .velo, .tendina, .toast, .visore { animation: none !important; } .btn { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .schermo, .velo, .tendina, .toast, .visore { animation: none !important; } .btn, .chips button, .scelte label, .barra button::after, .giorni-strip button b { transition: none !important; } }
 
-/* schermo largo: barra a sinistra col marchio, contenuto su due colonne dove serve, settimana a colonne */
+/* schermo largo: intestazione compatta in alto come nel sito (logo, voci al centro con riga sotto, nome a destra) */
 @media (min-width: 900px) {
 	:root { --barra-h: 0px; }
-	.app { max-width: 1180px; margin: 0 0 0 220px; padding: calc(var(--proto-h) + 28px) 40px 48px; }
-	.app.con-rete { padding-top: calc(var(--proto-h) + 80px); }
-	.rete { left: 220px; }
-	.barra { top: var(--proto-h); bottom: 0; right: auto; width: 220px; border-top: 0; border-right: 1px solid var(--linea); padding: 28px 16px; background: var(--bianco); backdrop-filter: none; }
-	.barra nav { display: flex; flex-direction: column; gap: 4px; max-width: none; }
-	.barra .marchio-barra { display: block; padding: 0 12px 24px; color: var(--nero); font-size: 13px; }
-	.barra button { flex-direction: row; justify-content: flex-start; gap: 12px; padding: 11px 12px; font-size: 15px; }
-	.barra button.attiva { background: var(--tinta); }
-	.barra .pallino { position: static; margin-left: auto; }
-	h1 { font-size: 34px; }
+	.app { max-width: 1180px; margin: 0 auto; padding: calc(var(--proto-h) + var(--hh) + 28px) 40px 56px; }
+	.app.con-rete { padding-top: calc(var(--proto-h) + var(--hh) + 80px); }
+	.rete { top: calc(var(--proto-h) + var(--hh)); }
+	.barra { top: var(--proto-h); bottom: auto; height: var(--hh); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; padding: 0 max(24px, calc((100% - 1180px) / 2 + 40px)); border-top: 0; border-bottom: 1px solid var(--linea); }
+	.barra .marchio-barra { display: block; }
+	.barra nav { display: flex; justify-content: center; align-items: stretch; gap: 2px; max-width: none; margin: 0; height: var(--hh); }
+	.barra button { padding: 6px 12px; min-width: 72px; font-size: 12px; justify-items: center; gap: 4px; }
+	.barra button::after { left: 10px; right: 10px; }
+	.barra .pallino { right: 6px; top: 6px; }
+	.barra .barra-destra { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1.33px; text-transform: uppercase; color: var(--nero); }
+	.barra .barra-destra .link { font-size: 11px; letter-spacing: 1.33px; text-transform: uppercase; font-weight: 500; }
+	h1 { font-size: 40px; }
 	.testa .marchio { display: none; }
-	.due { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; align-items: start; }
+	.due { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 0 clamp(32px, 5vw, 72px); align-items: start; }
 	.due > * { min-width: 0; }
-	.tendina { max-width: 540px; width: 540px; bottom: auto; top: 50%; left: 50%; right: auto; transform: translate(-50%, -50%); border-radius: var(--r); max-height: 86vh; animation: entra-centro var(--t-apri) var(--molla); }
-	.tendina.via { animation: sfuma-via var(--t-chiudi) var(--molla) forwards; }
+	.tendina { max-width: 560px; width: 560px; bottom: auto; top: 50%; left: 50%; right: auto; transform: translate(-50%, -50%); border-radius: 16px; max-height: 86vh; animation: entra-centro var(--t-tendina) var(--molla); box-shadow: var(--ombra-card); }
+	.tendina.via { animation: sfuma-via var(--t-rapido) ease forwards; }
 	.tendina .maniglia { display: none; }
 	@keyframes entra-centro { from { opacity: 0; transform: translate(-50%, calc(-50% + 12px)); } }
-	.toast { bottom: 32px; left: 260px; right: auto; width: 520px; max-width: 520px; margin: 0; }
+	.toast { bottom: 32px; left: 50%; right: auto; width: 520px; max-width: 520px; margin: 0; transform: translateX(-50%); animation: entra-toast var(--t-passo) var(--ease-out); }
+	@keyframes entra-toast { from { opacity: 0; transform: translate(-50%, 6px); } }
 	.galleria { grid-template-columns: repeat(4, 1fr); }
-	.testata .copertina-p, .copertina { height: 260px; max-height: none; aspect-ratio: auto; }
-	.principale { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 16px 20px; }
+	.testata .copertina-p, .copertina { height: 240px; max-height: none; aspect-ratio: auto; }
+	.principale { display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; align-items: center; padding: 18px 24px; }
+	.principale .etichetta { grid-column: 1 / -1; }
 	.principale .motivo { margin: 0; }
 	.principale .btn { width: auto; }
-	.voce { grid-template-columns: 1fr 90px 120px 36px; }
+	.prossimo { padding: 22px 24px 24px; }
+	.prossimo .azioni .btn { flex: none; min-width: 140px; }
+	.voce { grid-template-columns: 1fr 100px 130px 40px; }
 	.voce input:first-child { grid-column: auto; }
-	.intest-voci { display: grid; grid-template-columns: 1fr 90px 120px 36px; }
+	.intest-voci { display: grid; grid-template-columns: 1fr 100px 130px 40px; gap: 8px; color: var(--grigio); font-size: 13px; padding-bottom: 4px; }
 	.giorni-strip, .agenda-testa .solo-tel { display: none; }
 	.settimana { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-	.settimana .colonna { background: var(--bianco); border-radius: var(--rb); padding: 10px; min-height: 360px; }
-	.settimana .colonna h3 { font-size: 13px; font-weight: 600; color: var(--grigio); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: baseline; }
-	.settimana .colonna h3 b { font-size: 18px; color: var(--nero); }
+	.settimana .colonna { border: 1px solid var(--linea); border-radius: 12px; padding: 10px; min-height: 380px; }
+	.settimana .colonna h3 { font-size: 13px; font-weight: 500; color: var(--grigio); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+	.settimana .colonna h3 b { font-size: 18px; }
 	.settimana .colonna.oggi-c h3 b { background: var(--nero); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; }
-	.settimana .colonna.festivo { background: transparent; border: 1px dashed var(--linea); }
-	.settimana .evento { display: block; width: 100%; text-align: left; border: 0; border-left: 3px solid var(--nero); background: var(--tinta); border-radius: 6px; padding: 7px 8px; margin-bottom: 6px; font-size: 13px; line-height: 1.3; }
+	.settimana .colonna.festivo { border-style: dashed; }
+	.settimana .evento { display: block; width: 100%; text-align: left; border: 0; border-left: 3px solid var(--nero); background: var(--chiaro); border-radius: 6px; padding: 8px 9px; margin-bottom: 6px; font-size: 13px; line-height: 1.3; color: var(--testo); transition: transform 160ms var(--ease-out); }
+	.settimana .evento:active { transform: scale(0.98); }
 	.settimana .evento.proposto { border-left-color: var(--att); background: var(--att-f); }
-	.settimana .evento.svolto { border-left-color: var(--grigio-chiaro); opacity: 0.7; }
-	.settimana .evento.altro { border-left-color: var(--grigio-chiaro); }
+	.settimana .evento.svolto { border-left-color: var(--bordo); opacity: 0.7; }
+	.settimana .evento.altro { border-left-color: var(--bordo); }
 	.settimana .evento b { display: block; font-weight: 600; }
 	.settimana .evento span { color: var(--grigio); display: block; }
-	.settimana .libero { color: var(--grigio-chiaro); font-size: 13px; padding: 8px 0; }
+	.settimana .libero { color: var(--bordo); font-size: 13px; padding: 8px 0; }
 	.lista-giorno-largo { display: none; }
 }
 </style>
@@ -326,7 +376,7 @@ label.campo input, label.campo select, label.campo textarea { color: var(--nero)
 <div class="proto"><b>PROTOTIPO</b> · dati fittizi · nessun invio · niente va sul server</div>
 <div id="rete" class="rete" hidden><svg class="ico" viewBox="0 0 24 24"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M12 19h.01M3 3l18 18"/></svg><span>Senza rete: niente viene salvato finché non torna la connessione. Quello che scrivi resta qui.</span></div>
 <main id="app" class="app"></main>
-<div class="barra"><div class="marchio marchio-barra">Artigiana<span>Mente</span></div><nav id="barra" aria-label="Sezioni"></nav></div>
+<header class="barra"><div class="marchio marchio-barra">Artigiana<span>Mente</span></div><nav id="barra" aria-label="Sezioni"></nav><div class="barra-destra">Fabri <button type="button" class="link" onclick="toast('Nel prototipo non c\'è il login.')">Esci</button></div></header>
 <div id="strato"></div>
 <div id="visore"></div>
 
@@ -549,23 +599,33 @@ function inAttesa() {
 }
 
 /* ===================== ICONE (linea sottile) ===================== */
+const ic = (d) => `<svg class="ico" viewBox="0 0 24 24"><path d="${d}"/></svg>`;
+// Icone del sito (src/lib/components/Icon.svelte): phone, mail, pin, clock, doc, calendar, camera, chevron, back, close, plus, eye, hammer, tools, truck, box, menu.
+// Disegnate qui nello stesso stile: sole (Oggi), persona (Clienti), cestino.
 const I = {
-	oggi: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
-	agenda: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
-	pratiche: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>',
-	clienti: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
-	altro: '<svg class="ico" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>',
-	freccia: '<svg class="ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
-	indietro: '<svg class="ico" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
-	tel: '<svg class="ico" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
-	mail: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
-	luogo: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
-	piu: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
-	chiudi: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-	cestino: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
-	foto: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M9 6l1.5-2h3L15 6"/></svg>',
-	orologio: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+	oggi: ic('M12 3v2 M12 19v2 M3 12h2 M19 12h2 M5.6 5.6l1.4 1.4 M17 17l1.4 1.4 M5.6 18.4l1.4-1.4 M17 7l1.4-1.4 M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0'),
+	agenda: ic('M3 5h18v16H3z M3 10h18 M8 3v4 M16 3v4'),
+	pratiche: ic('M6 3h8l4 4v14H6z M14 3v4h4 M9 12h6 M9 16h6'),
+	clienti: ic('M8.5 8a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0 M4.5 20a7.5 7.5 0 0 1 15 0'),
+	altro: ic('M4 7h16 M4 12h16 M4 17h16'),
+	freccia: ic('M9 6l6 6-6 6'),
+	indietro: ic('M15 5l-7 7 7 7'),
+	tel: ic('M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z'),
+	mail: ic('M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z M3 7l9 6 9-6'),
+	luogo: ic('M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z M9.5 9.5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0'),
+	piu: ic('M12 5v14 M5 12h14'),
+	chiudi: ic('M6 6l12 12 M18 6L6 18'),
+	cestino: ic('M4 7h16 M9 7V4h6v3 M6 7l1 13h10l1-13 M10 11v6 M14 11v6'),
+	foto: ic('M4 8h3l2-3h6l2 3h3v11H4z M8.5 13a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0'),
+	orologio: ic('M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0 M12 7v5l3 2'),
+	occhio: ic('M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0'),
+	martello: ic('M4 20l9-9 M10 8l4-4 6 6-4 4z'),
+	attrezzi: ic('M3 8h18v12H3z M9 8V5h6v3 M3 13h18 M10 13v2h4v-2'),
+	furgone: ic('M2 6h11v10H2z M13 9h4l3 3v4h-7 M4.2 17.5a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0 M14.7 17.5a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0'),
+	scatola: ic('M3 7.5l9-4.5 9 4.5v9l-9 4.5-9-4.5z M3 7.5l9 4.5 9-4.5 M12 12v9'),
+	spunta: ic('M5 12.5l4.5 4.5L19 7')
 };
+const ICONA_TIPO = { sopralluogo: 'occhio', inizio_lavori: 'martello', giornata_lavoro: 'attrezzi', consegna: 'furgone', altro: 'orologio' };
 // titolo concreto del lavoro: «Imbiancatura a Jesolo»
 const lavoroBreve = (p) => `${p.servizio.toLowerCase()} a ${p.comune.replace('Cavallino-Treporti', 'Cavallino')}`;
 const titoloLavoro = (p) => `${p.servizio} a ${p.comune.replace('Cavallino-Treporti', 'Cavallino')}`;
@@ -613,8 +673,8 @@ function oggi() {
 	const pp = prossimo?.praticaId ? pratica(prossimo.praticaId) : null;
 	const altri = apps.filter((a) => a !== prossimo);
 	const hero = prossimo
-		? `<section class="prossimo"><small>Prossimo appuntamento · oggi</small><div class="ora-grande num">${prossimo.inizio}<em>fino alle ${prossimo.fine} · ${durata(prossimo)}</em></div><b>${esc(pp ? pp.nome : prossimo.titolo)}</b><span class="dett">${NOMI_TIPO[prossimo.tipo]}${pp ? ', ' + lavoroBreve(pp) : ''}</span><span class="dett">${esc(prossimo.luogo)}</span>${prossimo.stato === 'proposto' ? '<span class="dett" style="margin-top:8px"><span class="tag">Da confermare</span></span>' : ''}<div class="azioni"><button type="button" class="btn" onclick="vai('imp','${prossimo.id}')">Apri</button>${pp ? `<a class="btn linea" href="tel:${pp.tel.replace(/\s/g, '')}">${I.tel} Chiama</a>` : ''}${prossimo.stato === 'proposto' ? `<button type="button" class="btn linea" onclick="azioneApp('${prossimo.id}','conferma')">Conferma</button>` : ''}</div></section>`
-		: `<section class="prossimo"><small>Oggi</small><b style="margin-top:0">Nessun appuntamento</b><span class="dett">Giornata libera in agenda.</span><div class="azioni"><button type="button" class="btn" onclick="vai('agenda')">Apri l'agenda</button></div></section>`;
+		? `<section class="prossimo"><div class="testo-p"><small>Prossimo appuntamento · oggi</small><div class="ora-grande num">${prossimo.inizio}<em>fino alle ${prossimo.fine} · ${durata(prossimo)}</em></div><b>${esc(pp ? pp.nome : prossimo.titolo)}</b><span class="dett">${NOMI_TIPO[prossimo.tipo]}${pp ? ', ' + lavoroBreve(pp) : ''}</span><span class="dett">${esc(prossimo.luogo)}</span>${prossimo.stato === 'proposto' ? '<span class="dett" style="margin-top:8px"><span class="tag">Da confermare</span></span>' : ''}</div><div class="azioni"><button type="button" class="btn" onclick="vai('imp','${prossimo.id}')">Apri</button>${pp ? `<a class="btn linea" href="tel:${pp.tel.replace(/\s/g, '')}">${I.tel} Chiama</a>` : ''}${prossimo.stato === 'proposto' ? `<button type="button" class="btn linea" onclick="azioneApp('${prossimo.id}','conferma')">Conferma</button>` : ''}</div></section>`
+		: `<section class="prossimo"><div class="testo-p"><small>Oggi</small><b style="margin-top:0">Nessun appuntamento</b><span class="dett">Giornata libera in agenda.</span></div><div class="azioni"><button type="button" class="btn" onclick="vai('agenda')">Apri l'agenda</button></div></section>`;
 	const rigaApp = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num">${a.inizio}<small>${durata(a)}</small></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}${a.stato === 'proposto' ? ' · <em>da confermare</em>' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; };
 	const rigaDf = (x) => `<li><button type="button" class="riga ${x.oggi ? 'urgente' : ''}" onclick="vai('p','${x.p.id}')"><span class="punto"></span><span class="cosa"><b>${x.cosa}</b><span>${esc(x.p.nome)}, ${lavoroBreve(x.p)}${x.attesa ? ' · ' + x.attesa : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`;
 	const rigaAtt = (x) => `<button type="button" class="attesa" onclick="vai('p','${x.p.id}')"><span><b>${esc(x.p.nome)}</b><span>${x.pv.numero} · ${euro(totali(x.pv).tot)} · inviato ${quando(x.pv.inviato)}</span></span><span class="giorni num"><b>${giorniDa(x.pv.inviato)}</b> g</span></button>`;
@@ -657,7 +717,7 @@ function schedaPratica(id) {
 	};
 	const storico = [...p.storico].reverse();
 	const testata = `<div class="testata">${f.length ? `<div class="copertina-p"><img src="${src(f[0])}" alt="${esc(FOTO[f[0]]?.[0] ?? '')}"><button type="button" aria-label="Apri le foto" onclick="apriVisore('${id}',0)"></button><span class="quante">${I.foto} ${f.length}</span></div>` : ''}<h1>${esc(titoloLavoro(p))}</h1><p class="codice">${esc(p.nome)} · <span class="num">${p.codice}</span> · ricevuta ${quando(p.ricevuta)}</p><div class="stati">${tagStato(p)}${prossimo ? `<span class="tag">${I.orologio} ${NOMI_TIPO[prossimo.tipo]} ${giornoBreve(prossimo.giorno)} ${prossimo.inizio}${prossimo.stato === 'proposto' ? ', da confermare' : ''}</span>` : ''}${p.archiviata ? '<span class="tag">Archiviata</span>' : ''}</div></div>`;
-	const principale = sug ? `<section class="principale"><p class="motivo">${sug.motivo}</p>${sug.azione ? `<button type="button" class="btn" onclick="${azioneSug}">${sug.testo}</button>` : `<p class="solo-testo">${sug.testo}</p>`}</section>` : '';
+	const principale = sug ? `<section class="principale"><span class="etichetta">Prossimo passo</span><p class="motivo">${sug.motivo}</p>${sug.azione ? `<button type="button" class="btn" onclick="${azioneSug}">${sug.testo}</button>` : `<p class="solo-testo">${sug.testo}</p>`}</section>` : '';
 	const colA = `<div class="foglio">
 		<section class="sez"><h2>Cliente ${cl ? `<button type="button" class="link" onclick="vai('cliente','${cl.id}')">Scheda</button>` : `<button type="button" class="link" onclick="collegaCliente('${id}')">Crea e collega</button>`}</h2><p><b>${esc(p.nome)}</b>${cl ? '' : ' <span class="nota">· richiesta dal sito, non ancora in rubrica</span>'}</p><div class="contatti" style="margin-top:6px"><span>${I.tel}<a class="num" href="tel:${p.tel.replace(/\s/g, '')}">${p.tel}</a></span>${p.email ? `<span>${I.mail}<a href="mailto:${esc(p.email)}">${esc(p.email)}</a></span>` : ''}</div><dl class="coppia" style="margin-top:10px"><dt>Dove si lavora</dt><dd>${esc(p.indirizzoLavoro)}</dd><dt>Dove abita</dt><dd>${esc(p.indirizzoCliente || cl?.indirizzo || '') || '<span class="nota">non indicato</span>'}</dd></dl></section>
 		<section class="sez"><h2>Lavoro richiesto</h2><dl class="coppia"><dt>Lavoro</dt><dd><b>${esc(p.servizio)}</b></dd><dt>Dettagli</dt><dd>${esc(p.dettagli)}</dd>${p.preferenze ? `<dt>Preferenze</dt><dd>${esc(p.preferenze)}</dd>` : ''}${p.messaggio ? `<dt>Messaggio</dt><dd>«${esc(p.messaggio)}»</dd>` : ''}<dt>Stima vista dal cliente</dt><dd><span class="stima">${esc(p.stima) || '—'}</span>${p.stimaNota ? `<br><span class="nota">${esc(p.stimaNota)}</span>` : ''}</dd></dl></section>
@@ -665,7 +725,7 @@ function schedaPratica(id) {
 		<section class="sez" id="prev"><h2>Preventivo</h2>${bloccoPrev()}</section>
 	</div>`;
 	const colB = `<div class="foglio">
-		<section class="sez"><h2>Appuntamenti ${!chiusa(p) ? `<button type="button" class="link" onclick="apriNuovoApp('${id}')">+ Nuovo</button>` : ''}</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : `<p class="nota">Nessun appuntamento.${!chiusa(p) ? ` <button type="button" class="link" onclick="apriNuovoApp('${id}')">Fissa il primo</button>` : ''}</p>`}</section>
+		<section class="sez"><h2>Appuntamenti ${!chiusa(p) ? `<button type="button" class="link" onclick="apriNuovoApp('${id}')">+ Nuovo</button>` : ''}</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')} · ${durata(a)}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : `<p class="nota">Nessun appuntamento.${!chiusa(p) ? ` <button type="button" class="link" onclick="apriNuovoApp('${id}')">Fissa il primo</button>` : ''}</p>`}</section>
 		<section class="sez"><h2>Note interne</h2><textarea class="campo" rows="3" placeholder="Solo per te: operatori e cliente non le vedono" onchange="salvaNote('${id}',this.value)">${esc(p.note)}</textarea><p class="nota" style="margin-top:6px">Si salvano quando esci dal campo.</p></section>
 		<section class="sez"><h2>Stato</h2><div class="contatti" style="align-items:center;justify-content:space-between"><span>${tagStato(p)}</span>${chiusa(p) ? `<button type="button" class="btn piccolo linea" onclick="riapri('${id}')">Riapri la pratica</button>` : `<button type="button" class="btn piccolo linea" onclick="apriStato('${id}')">Cambia stato</button>`}</div><p class="nota" style="margin-top:8px">${chiusa(p) ? 'Pratica chiusa: per lavorarci ancora, riaprila.' : 'Lo stato lo cambi tu: preventivo accettato, appuntamento svolto e lavoro concluso sono passi diversi.'}</p></section>
 		<section class="sez"><h2>Storico <span class="conta">${storico.length}</span></h2><ul class="storico">${(storicoAperto === id ? storico : storico.slice(0, 4)).map(([q, t]) => `<li><span class="q num">${quando(q)}</span><span>${esc(t)}</span></li>`).join('')}</ul>${storico.length > 4 && storicoAperto !== id ? `<button type="button" class="vedi" onclick="storicoAperto='${id}';render()">Tutto lo storico (${storico.length})</button>` : ''}</section>
@@ -685,7 +745,7 @@ function agenda() {
 	const strip = `<div class="giorni-strip">${giorni.map((g) => { const n = del(g).length, dom = d(g).getUTCDay() === 0; return `<button type="button" class="${g === agendaGiorno ? 'attivo' : ''} ${g === OGGI ? 'oggi-g' : ''} ${dom ? 'festivo' : ''}" onclick="agendaGiorno='${g}';render()" aria-label="${giornoLungo(g)}">${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b><i class="${n ? '' : 'vuoto'}"></i></button>`; }).join('')}</div>`;
 	const listaGiorno = () => { const l = del(agendaGiorno); return `<section class="riquadro lista-giorno-largo"><h2>${giornoLungo(agendaGiorno).charAt(0).toUpperCase() + giornoLungo(agendaGiorno).slice(1)}${agendaGiorno === OGGI ? ' <span class="tag pieno">oggi</span>' : ''} <span class="conta">${l.length ? l.length + (l.length === 1 ? ' impegno' : ' impegni') : ''}</span></h2>${l.length ? `<ul class="lista">${l.map((a) => { const [n, t] = nomeDi(a); return `<li><button type="button" class="impegno-r" onclick="vai('imp','${a.id}')"><span class="quando num"><b>${a.inizio}</b><span>${a.fine}</span></span><span class="blocco ${classe(a)}"><b>${n}</b><span>${t} · ${a.chi.map(nomeOp).join(', ')}</span><span class="durata">${durata(a)}${a.stato === 'proposto' ? ' · da confermare' : a.stato === 'svolto' ? ' · svolto' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : `<p class="giorno-libero">Giornata libera.</p>`}</section>`; };
 	const settimana = `<div class="settimana">${giorni.map((g) => { const l = del(g), dom = d(g).getUTCDay() === 0; return `<div class="colonna ${g === OGGI ? 'oggi-c' : ''} ${dom ? 'festivo' : ''}"><h3>${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b></h3>${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<button type="button" class="evento ${classe(a)}" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}–${a.fine}</b>${n}<span>${t}</span><span>${a.chi.map(nomeOp).join(', ')}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></button>`; }).join('') : '<p class="libero">Libero</p>'}</div>`; }).join('')}</div>`;
-	return testa('Agenda', '', `<button type="button" class="btn piccolo proposta" onclick="apriNuovoApp(null,null,'${agendaGiorno}')">${I.piu} Nuovo <span class="tag prop" style="background:#fff;color:#2f4a8a">da realizzare</span></button>`)
+	return testa('Agenda', '', `<button type="button" class="btn piccolo linea proposta" onclick="apriNuovoApp(null,null,'${agendaGiorno}')">${I.piu} Nuovo <span class="tag prop">da realizzare</span></button>`)
 		+ `<div class="agenda-testa"><button type="button" class="tondo" aria-label="Settimana prima" onclick="_sposta(-1)">${I.indietro}</button><span class="titolo">${titolo.charAt(0).toUpperCase() + titolo.slice(1)}</span><button type="button" class="tondo" aria-label="Settimana dopo" onclick="_sposta(1)">${I.freccia}</button>${lun !== lunediDi(OGGI) || agendaGiorno !== OGGI ? `<button type="button" class="btn piccolo tinta" onclick="agendaGiorno='${OGGI}';render()">Oggi</button>` : ''}</div>`
 		+ strip + listaGiorno() + settimana
 		+ `<p class="nota" style="margin-top:10px">Un appuntamento nuovo si crea dalla pratica. «Nuovo» da qui: da realizzare.</p>`;
@@ -894,9 +954,8 @@ function apriNuovoApp(praticaId, tipo = null, giorno = null) {
 	const opzPratiche = D.pratiche.filter((x) => !chiusa(x)).map((x) => `<option value="${x.id}" ${x.id === praticaId ? 'selected' : ''}>${x.nome} · ${x.servizio}</option>`).join('');
 	apriTendina(`<p class="nota">${p ? `${esc(p.nome)} · ${titoloLavoro(p)}` : 'Scegli la pratica, oppure lascia «senza pratica».'}</p>
 	${p ? '' : `<label class="campo">Pratica<select class="campo" name="na-pratica"><option value="">Senza pratica (altro)</option>${opzPratiche}</select></label>`}
-	<label class="campo">Tipo</label>${scelte('na-tipo', Object.entries(NOMI_TIPO), tipoDef)}
-	<label class="campo">Giorno<input class="campo num" type="date" name="na-giorno" value="${giorno ?? piuGiorni(OGGI, 1)}"></label>
-	<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="campo">Dalle<input class="campo num" type="time" name="na-inizio" value="09:00"></label><label class="campo">Alle<input class="campo num" type="time" name="na-fine" value="${tipoDef === 'sopralluogo' ? '09:45' : '17:00'}"></label></div>
+	<label class="campo">Tipo</label><div class="scelte">${Object.entries(NOMI_TIPO).map(([v, n]) => `<label><input type="radio" name="na-tipo" value="${v}" ${v === tipoDef ? 'checked' : ''}>${I[ICONA_TIPO[v]]}${n}</label>`).join('')}</div>
+	<div class="campi-box tre"><label>Giorno<input type="date" name="na-giorno" value="${giorno ?? piuGiorni(OGGI, 1)}"></label><label>Dalle<input type="time" name="na-inizio" value="09:00"></label><label>Alle<input type="time" name="na-fine" value="${tipoDef === 'sopralluogo' ? '09:45' : '17:00'}"></label></div>
 	<label class="campo">Chi va</label><div class="scelte">${OPERATORI.map((o) => `<label><input type="checkbox" name="na-chi" value="${o.id}" ${o.id === 'fabri' ? 'checked' : ''}>${o.nome}</label>`).join('')}</div>
 	<label class="campo">Dove<input class="campo" name="na-luogo" value="${p ? p.indirizzoLavoro : ''}" placeholder="Indirizzo"></label>
 	<div id="na-esito"></div>
@@ -932,8 +991,7 @@ function azioneApp(id, cosa) {
 function apriSposta(id) {
 	const a = D.appuntamenti.find((x) => x.id === id);
 	apriTendina(`<p class="nota">${NOMI_TIPO[a.tipo]}, adesso ${giornoBreve(a.giorno)} ${a.inizio}–${a.fine}</p>
-	<label class="campo">Nuovo giorno<input class="campo num" type="date" name="sp-giorno" value="${a.giorno}"></label>
-	<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="campo">Dalle<input class="campo num" type="time" name="sp-inizio" value="${a.inizio}"></label><label class="campo">Alle<input class="campo num" type="time" name="sp-fine" value="${a.fine}"></label></div>
+	<div class="campi-box tre"><label>Nuovo giorno<input type="date" name="sp-giorno" value="${a.giorno}"></label><label>Dalle<input type="time" name="sp-inizio" value="${a.inizio}"></label><label>Alle<input type="time" name="sp-fine" value="${a.fine}"></label></div>
 	<div id="sp-esito"></div><div class="azioni"><button type="button" class="btn pieno" onclick="salvaSposta('${id}')">Sposta</button></div>`, 'Sposta l\'appuntamento');
 }
 function salvaSposta(id) {
