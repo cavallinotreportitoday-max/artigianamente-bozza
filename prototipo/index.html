@@ -100,7 +100,7 @@ svg.ico path { vector-effect: non-scaling-stroke; }
 
 /* barra delle sezioni: sul telefono fissa in basso, bianca, icona + nome per tutte e cinque */
 .barra { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; background: var(--bianco); border-top: 1px solid var(--linea); padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px)); }
-.barra nav { max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+.barra nav { max-width: 520px; margin: 0 auto; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; }
 .barra nav button { background: none; border: 0; display: grid; justify-items: center; gap: 3px; padding: 7px 0 5px; border-radius: var(--rb); color: var(--grigio); position: relative; transition: color 160ms ease; font-size: var(--t-mini); line-height: var(--lh-mini); font-weight: var(--w-testo); }
 .barra nav button svg { width: 24px; height: 24px; }
 .barra nav button.attiva { color: var(--nero); font-weight: var(--w-nome); }
@@ -642,7 +642,7 @@ svg.nav-i .buco-l { stroke: #fff; }
 	.barra .marchio-barra { display: block; flex: none; height: 24px; margin: 11px 0 0 24px; font-size: 0; letter-spacing: 0; line-height: 24px; }
 	.barra .marchio-barra::before { content: 'A'; display: inline-grid; place-items: center; width: 22px; height: 22px; border: 2px solid var(--nero); border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0; margin-left: 1px; }
 	.barra nav { display: flex; flex-direction: column; gap: 8px; flex: 1; max-width: none; margin: 0; }
-	.barra nav > button:first-child { margin-top: max(16px, calc(50vh - 315px)); }
+	.barra nav > button:first-child { margin-top: max(16px, calc(50vh - 343px)); }
 	.barra nav button { display: flex; align-items: center; justify-content: flex-start; gap: 16px; height: 48px; min-height: 0; width: 214px; margin: 0 0 0 12px; padding: 0 12px; color: var(--nero); border-radius: 8px; transition: background-color 160ms ease; font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-testo); }
 	.barra nav button svg, .barra nav button svg.nav-i { width: 24px; height: 24px; }
 	.barra nav button .avatar { width: 22px; height: 22px; font-size: 11px; }
@@ -1034,6 +1034,7 @@ body.con-pop .erica-fab { visibility: hidden; }
 @media (min-width: 744px) { .finestra.con-filtri { height: min(703px, calc(100vh - 80px)); } }
 @media (max-width: 743px) { .fin-chips { top: -12px; } }
 @media (prefers-reduced-motion: reduce) { .tour, .tour.via { animation: none !important; } }
+.scelte label[hidden] { display: none !important; }
 </style>
 
 <div class="proto" title="Prototipo: dati fittizi, nessun invio, niente va sul server"><b>PROTOTIPO</b> · dati finti, nessun invio</div>
@@ -1328,11 +1329,13 @@ const tagStato = (p) => `<span class="tag ${p.stato === 'nuova' ? 'att' : p.stat
 const tagPrev = (v) => `<span class="tag ${v.stato === 'accettata' ? 'ok' : v.stato === 'pronta' ? 'att' : v.stato === 'rifiutata' ? 'err' : ''}">${NOMI_PREV[v.stato]}</span>`;
 
 /* ===================== ROUTER ===================== */
+let filtroPrev = 'aperti';
 let storicoAperto = null, vista = 'oggi', param = null, filtroPratiche = 'da_gestire', cercaTesto = '', agendaVista = 'giorno', agendaGiorno = OGGI, ritorno = [];
-const SEZIONI = [['oggi', 'Oggi'], ['agenda', 'Agenda'], ['pratiche', 'Pratiche'], ['clienti', 'Clienti'], ['altro', 'Altro']];
+// Preventivi nella barra a sinistra (Gian 14/10: «mettimi i preventivi subito visibili»)
+const SEZIONI = [['oggi', 'Oggi'], ['agenda', 'Agenda'], ['pratiche', 'Pratiche'], ['preventivi', 'Preventivi'], ['clienti', 'Clienti'], ['altro', 'Altro']];
 // Schermate solo per Fabri: prezzi, preventivi, clienti, impostazioni, Erica, avvisi.
 // Il controllo vale per ogni strada: menu, indirizzo scritto a mano, ricarica, indietro/avanti (guardia() in vai() e in render()).
-const SOLO_FABRI = ['p', 'prev', 'pdf', 'pratiche', 'clienti', 'cliente', 'impostazioni', 'sito', 'erica', 'tutteOggi', 'avvisi', 'sistema'];
+const SOLO_FABRI = ['p', 'prev', 'pdf', 'pratiche', 'preventivi', 'clienti', 'cliente', 'impostazioni', 'sito', 'erica', 'tutteOggi', 'avvisi', 'sistema'];
 function guardia(v, p) {
 	if (!D.utente) return ['login', null];
 	if (operatore()) {
@@ -1394,7 +1397,7 @@ function tornaStoria(via) {
 	avantiStoria();
 }
 function togliFumetti() { while (eFumetto(pop.at(-1))) delete FOGLI[pop.pop()[1]]; }
-const BASE_DI = { p: 'pratiche', prev: 'pratiche', pdf: 'pratiche', imp: 'agenda', cliente: 'clienti', lavoro: 'lavori', avvisi: 'altro', erica: 'oggi', impostazioni: 'altro', sito: 'altro', sistema: 'altro', crediti: 'altro', tutteOggi: 'oggi', login: 'oggi' };
+const BASE_DI = { p: 'pratiche', prev: 'preventivi', pdf: 'preventivi', imp: 'agenda', cliente: 'clienti', lavoro: 'lavori', avvisi: 'altro', erica: 'oggi', impostazioni: 'altro', sito: 'altro', sistema: 'altro', crediti: 'altro', tutteOggi: 'oggi', login: 'oggi' };
 function apri(v, p = null) {
 	// SOLO_PAGINE: usato solo dalle prove automatiche dei flussi (prova3), che controllano le pagine intere
 	if (window.SOLO_PAGINE || !POP.includes(v) || !D.utente || (operatore() && v === 'materiali')) return vai(v, p);
@@ -1556,11 +1559,11 @@ function render() {
 	return dopoRender();
 }
 function vistaDi(v) {
-	return { oggi: operatore() ? oggiOperatore : oggi, agenda, pratiche, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: operatore() ? impegnoOp : (id) => { const a = D.appuntamenti.find((x) => x.id === id); return a?.praticaId && pratica(a.praticaId) ? schedaPratica(a.praticaId, id) : impegno(id); }, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti, lavori, lavoro, materiali, erica, login: operatore() ? oggiOperatore : oggi }[v] ?? (operatore() ? oggiOperatore : oggi);
+	return { oggi: operatore() ? oggiOperatore : oggi, agenda, pratiche, preventivi, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: operatore() ? impegnoOp : (id) => { const a = D.appuntamenti.find((x) => x.id === id); return a?.praticaId && pratica(a.praticaId) ? schedaPratica(a.praticaId, id) : impegno(id); }, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti, lavori, lavoro, materiali, erica, login: operatore() ? oggiOperatore : oggi }[v] ?? (operatore() ? oggiOperatore : oggi);
 }
 function dopoRender() {
 	const app = document.getElementById('app');
-	const sezione = { p: 'pratiche', cliente: 'clienti', imp: 'agenda', prev: 'pratiche', pdf: 'pratiche', avvisi: 'altro', sistema: 'altro', impostazioni: 'altro', sito: 'altro', tutteOggi: 'oggi', crediti: 'altro', lavoro: 'lavori', erica: 'oggi', materiali: operatore() ? 'materiali' : 'altro', login: 'oggi' }[vista] ?? vista;
+	const sezione = { p: 'pratiche', cliente: 'clienti', imp: 'agenda', prev: 'preventivi', pdf: 'preventivi', avvisi: 'altro', sistema: 'altro', impostazioni: 'altro', sito: 'altro', tutteOggi: 'oggi', crediti: 'altro', lavoro: 'lavori', erica: 'oggi', materiali: operatore() ? 'materiali' : 'altro', login: 'oggi' }[vista] ?? vista;
 	const nuove = D.avvisi.filter((a) => !a.letto).length;
 	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca">${navIcona('cerca', false)}<span class="et">Cerca</span></button><button type="button" class="solo-largo ${vista === 'altro' ? 'attiva' : ''}" onclick="vai('altro')" aria-label="Profilo">${avatar(D.utente, operatore())}<span class="et">Profilo</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" aria-label="${n}">${navIcona(k, sezione === k)}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
 	// Erica in basso a destra (solo Fabri, non dentro Erica)
@@ -1655,12 +1658,59 @@ function pratiche() {
 			{ et: 'Da programmare', val: conta('da_programmare'), click: "cercaTesto='';filtroPratiche='da_programmare';render()", attiva: filtroPratiche === 'da_programmare' },
 			{ et: 'Programmate', val: conta('programmata'), click: "cercaTesto='';filtroPratiche='programmata';render()", attiva: filtroPratiche === 'programmata' },
 			{ et: 'In corso', val: conta('in_corso'), click: "cercaTesto='';filtroPratiche='in_corso';render()", attiva: filtroPratiche === 'in_corso' },
-			{ et: 'Preventivi in attesa di risposta', val: `${att}`, click: "vai('oggi')", intera: true }
+			{ et: 'Preventivi in attesa di risposta', val: `${att}`, click: "filtroPrev='inviata';cercaTesto='';vai('preventivi')", intera: true }
 		],
 		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriAMano()">${I.piu} Nuova pratica a mano</button>`,
 		nota: 'Per chi chiama o scrive su WhatsApp. Quelle dal sito arrivano da sole.'
 	});
 	return conLato(pagina.replace('<!--LISTA-->', `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((p) => `<li><button type="button" class="riga con-mini" onclick="apri('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${NOMI_STATO[p.stato]}</span>${p.stato === 'nuova' ? '<span class="tag att">Nuova richiesta</span>' : etichettaPrev(p)}${buoneNotizie(p).filter((x) => x !== 'Preventivo accettato').slice(0, 1).map(buona).join('')}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : vuotoGrande(t ? 'Nessun risultato' : 'Nessuna pratica qui', t ? `Niente per «${esc(cercaTesto)}». Prova con il cognome o il comune.` : 'Con questo filtro non c\'è niente da mostrare.')}</section>`), card, 'Riepilogo pratiche', 'lato-dopo');
+}
+/* PREVENTIVI: tutti in una pagina, subito visibili (l'ultima versione di ogni pratica). Tocco → bozza o PDF in pop-up. */
+const PREV_FILTRI = [['aperti', 'Aperti', (v) => ['bozza', 'pronta', 'inviata'].includes(v.stato)], ['bozza', 'Bozze', (v) => v.stato === 'bozza'], ['pronta', 'Da mandare', (v) => v.stato === 'pronta'], ['inviata', 'In attesa', (v) => v.stato === 'inviata'], ['accettata', 'Accettati', (v) => v.stato === 'accettata'], ['rifiutata', 'Rifiutati', (v) => v.stato === 'rifiutata'], ['tutti', 'Tutti', () => true]];
+function preventivi() {
+	const tutti = D.pratiche.map((p) => ({ p, pv: prevCorrente(p.id) })).filter((x) => x.pv);
+	const t = cercaTesto.trim().toLowerCase();
+	const f = PREV_FILTRI.find((x) => x[0] === filtroPrev) ?? PREV_FILTRI[0];
+	const corrisponde = ({ p, pv }) => [p.nome, p.codice, p.comune, p.servizio, pv.numero ?? ''].some((x) => x.toLowerCase().includes(t));
+	const data = ({ p, pv }) => pv.accettato ?? pv.rifiutato ?? pv.inviato ?? p.ricevuta;
+	const lista = tutti.filter(t ? corrisponde : (x) => f[2](x.pv)).sort((a, b) => data(b).localeCompare(data(a)));
+	const quanti = (k) => tutti.filter((x) => PREV_FILTRI.find((y) => y[0] === k)[2](x.pv)).length;
+	const att = tutti.filter((x) => x.pv.stato === 'inviata'), sommaAtt = att.reduce((s, x) => s + totali(x.pv).tot, 0);
+	const quandoPv = (pv) => pv.stato === 'inviata' ? `inviato ${quando(pv.inviato)} · ${giorniDa(pv.inviato)} giorni fa` : pv.stato === 'accettata' && pv.accettato ? `accettato ${quando(pv.accettato)}` : pv.stato === 'rifiutata' && pv.rifiutato ? `rifiutato ${quando(pv.rifiutato)}` : pv.stato === 'bozza' ? 'da finire' : '';
+	const riga = ({ p, pv }) => `<li><button type="button" class="riga con-mini" onclick="apri('${pv.stato === 'bozza' ? 'prev' : 'pdf'}','${pv.id}')">${miniatura(p)}<span class="cosa"><b class="num">${pv.numero ?? 'Bozza v' + pv.n} · ${euro(totali(pv).tot)}</b><span>${esc(p.nome)} · ${esc(titoloLavoro(p))}${quandoPv(pv) ? ' · ' + quandoPv(pv) : ''}</span>${tagPrev(pv)}</span><span class="freccia">${I.freccia}</span></button></li>`;
+	const pagina = testa('Preventivi', `${quanti('aperti')} aperti`, `<button type="button" class="btn piccolo linea proposta" onclick="apriNuovoPreventivo()">${I.piu} Nuovo</button>`)
+		+ `<input id="cerca" class="cerca" type="search" placeholder="Cerca nome, numero, comune" value="${esc(cercaTesto)}" oninput="cercaTesto=this.value;render();const c=document.getElementById('cerca');c.focus();c.setSelectionRange(c.value.length,c.value.length)">`
+		+ (t ? `<p class="nota" style="margin-bottom:10px">Risultati in tutti i preventivi: ${lista.length}. <button type="button" class="link" onclick="cercaTesto='';render()">Svuota</button></p>` : `<div class="chips">${PREV_FILTRI.map(([k, n]) => `<button type="button" class="${k === f[0] ? 'attivo' : ''}" onclick="filtroPrev='${k}';render()">${n} <span>${quanti(k)}</span></button>`).join('')}</div>`)
+		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map(riga).join('')}</ul>` : vuotoGrande(t ? 'Nessun risultato' : 'Nessun preventivo qui', t ? `Niente per «${esc(cercaTesto)}».` : 'Con questo filtro non c\'è niente da mostrare.')}</section>`;
+	const cella = (k, et) => ({ et, val: quanti(k), click: `cercaTesto='';filtroPrev='${k}';render()`, attiva: !t && f[0] === k });
+	const card = latoCard({
+		grande: `<strong class="num">${euro(sommaAtt)}</strong>`,
+		sotto: att.length ? `${att.length} ${att.length === 1 ? 'preventivo aspetta' : 'preventivi aspettano'} la risposta del cliente.` : 'Nessun preventivo in attesa di risposta.',
+		celle: [cella('bozza', 'Bozze'), cella('pronta', 'Da mandare'), cella('inviata', 'In attesa'), cella('accettata', 'Accettati')],
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriNuovoPreventivo()">${I.piu} Nuovo preventivo</button>`,
+		nota: 'Ogni preventivo è legato a una pratica: così resta col cliente e col lavoro.'
+	});
+	return conLato(pagina, card, 'Riepilogo preventivi', 'lato-dopo');
+}
+// Nuovo preventivo: si sceglie la pratica (o si crea quella del cliente nuovo), poi si apre la bozza
+function apriNuovoPreventivo() {
+	const aperte = D.pratiche.filter((p) => !p.archiviata && !chiusa(p)).sort((a, b) => (prevCorrente(a.id) ? 1 : 0) - (prevCorrente(b.id) ? 1 : 0) || b.ricevuta.localeCompare(a.ricevuta));
+	apriTendina(`<label class="campo">Per quale pratica?<select class="campo" name="np-pratica" onchange="nuovoPrevStima()">${aperte.map((p) => `<option value="${p.id}">${esc(p.nome)} · ${esc(titoloLavoro(p))}${prevCorrente(p.id) ? ' · ha già un preventivo' : ''}</option>`).join('')}</select></label>
+		<label class="campo" style="margin-top:14px">Parti da</label><div class="scelte"><label><input type="radio" name="np-da" value="vuoto" checked>Vuoto</label><label id="np-stima-l"><input type="radio" name="np-da" value="stima">Dalla stima del sito</label></div>
+		<p class="nota" style="margin-top:12px">Cliente nuovo, che non ha ancora una pratica? <button type="button" class="link" onclick="chiudiTendina(true);apriAMano()">Prima crea la pratica a mano</button></p>
+		<div class="azioni"><button type="button" class="btn pieno" onclick="salvaNuovoPreventivo()">Crea il preventivo</button></div>`, 'Nuovo preventivo');
+	nuovoPrevStima();
+}
+// «Dalla stima» solo se quella pratica ha una stima vera
+function nuovoPrevStima() {
+	const p = pratica(valore('np-pratica')), ok = !!(p?.stima && !/da fare/i.test(p.stima));
+	const l = document.getElementById('np-stima-l'); if (!l) return;
+	l.hidden = !ok; if (!ok) document.querySelector('[name="np-da"][value="vuoto"]').checked = true;
+}
+function salvaNuovoPreventivo() {
+	const id = valore('np-pratica'); if (!id) return toast('Scegli la pratica.');
+	const daStima = document.querySelector('[name="np-da"]:checked')?.value === 'stima';
+	chiudiTendina(true); creaPreventivo(id, daStima);
 }
 const vuotoGrande = (titolo, testo) => `<div class="vuoto-grande">${I.pratiche.replace('class="ico"', 'class="ico" style="width:36px;height:36px"')}<b>${titolo}</b>${testo}</div>`;
 
@@ -2750,6 +2800,7 @@ const NAV_I = {
 	oggi: [nv('<circle cx="12" cy="12" r="4.6"/><path d="M12 1.6v2.6M12 19.8v2.6M2.1 12h2.4M19.5 12h2.4M5 5l1.7 1.7M17.3 17.3l1.7 1.7M5 19l1.7-1.7M17.3 6.7l1.7-1.7"/>'), nv('<circle class="pieno" cx="12" cy="12" r="5.4"/><path d="M12 1.6v2.6M12 19.8v2.6M2.1 12h2.4M19.5 12h2.4M5 5l1.7 1.7M17.3 17.3l1.7 1.7M5 19l1.7-1.7M17.3 6.7l1.7-1.7"/>')],
 	agenda: [nv('<rect x="2" y="3.6" width="20" height="18.4" rx="4"/><path d="M2 9.6h20M7.4 1.6v4M16.6 1.6v4"/>'), nv('<rect class="pieno" x="2" y="3.6" width="20" height="18.4" rx="4"/><path d="M7.4 1.6v4M16.6 1.6v4"/><path class="buco-l" d="M2.6 9.6h18.8"/><circle class="buco" cx="7.4" cy="14.8" r="1.4"/><circle class="buco" cx="12" cy="14.8" r="1.4"/><circle class="buco" cx="16.6" cy="14.8" r="1.4"/>')],
 	pratiche: [nv('<path d="M5.6 1.8h9.8l6.2 6.2V19a3.2 3.2 0 0 1-3.2 3.2H5.6A3.2 3.2 0 0 1 2.4 19V5a3.2 3.2 0 0 1 3.2-3.2z"/><path d="M15.2 2v6.2h6.2M7.4 13h9.2M7.4 17.4h6.2"/>'), nv('<path class="pieno" d="M5.6 1.8h9.8l6.2 6.2V19a3.2 3.2 0 0 1-3.2 3.2H5.6A3.2 3.2 0 0 1 2.4 19V5a3.2 3.2 0 0 1 3.2-3.2z"/><path class="buco-l" d="M7.6 13h8.8M7.6 17.4h6"/>')],
+	preventivi: [nv('<path d="M7.4 1.8h9.2a2.8 2.8 0 0 1 2.8 2.8v17.6l-2.47-1.6-2.47 1.6-2.47-1.6-2.47 1.6-2.47-1.6-2.47 1.6V4.6a2.8 2.8 0 0 1 2.8-2.8z"/><path d="M15.2 8.4a3.8 3.8 0 1 0 0 6.2M7.6 10.6h5.6M7.6 12.8h5.6"/>'), nv('<path class="pieno" d="M7.4 1.8h9.2a2.8 2.8 0 0 1 2.8 2.8v17.6l-2.47-1.6-2.47 1.6-2.47-1.6-2.47 1.6-2.47-1.6-2.47 1.6V4.6a2.8 2.8 0 0 1 2.8-2.8z"/><path class="buco-l" d="M15.2 8.4a3.8 3.8 0 1 0 0 6.2M7.6 10.6h5.6M7.6 12.8h5.6"/>')],
 	clienti: [nv('<circle cx="12" cy="7.2" r="5.4"/><path d="M2.4 22.4a9.6 9.2 0 0 1 19.2 0"/>'), nv('<circle class="pieno" cx="12" cy="7.2" r="5.4"/><path class="pieno" d="M2.4 22.4a9.6 9.2 0 0 1 19.2 0z"/>')],
 	materiali: [nv('<path d="M2.4 6.8 12 1.8l9.6 5v10.4L12 22.2l-9.6-5z"/><path d="M2.4 6.8 12 12l9.6-5.2M12 12v10.2"/>'), nv('<path class="pieno" d="M2.4 6.8 12 1.8l9.6 5v10.4L12 22.2l-9.6-5z"/><path class="buco-l" d="M3.6 7.4 12 12l8.4-4.6M12 12v9"/>')],
 	altro: [nv('<path d="M2 4.6h20M2 12h20M2 19.4h20"/>'), nv('<path d="M2 4.6h20M2 12h20M2 19.4h20"/>', 'spessa')],
