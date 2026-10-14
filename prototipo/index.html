@@ -743,6 +743,107 @@ svg[data-i="avviso"] { --c: var(--c-rosso); --cf: var(--cf-rosso); }
 @media (max-width: 899px) { .imp-testa .pr-img img { height: 100%; object-fit: cover; } }
 /* Erica sul computer: se a destra c'è il riquadro che segue la pagina e lo spazio non basta, resta solo il tondo (non copre il riquadro) */
 @media (min-width: 900px) and (max-width: 1599px) { body:has(.pr-lato) .erica-fab > b, body:has(.pr-lato) .erica-fab .mini-p { display: none; } body:has(.pr-lato) .erica-fab { gap: 0; } }
+/* ===== AGENDA come il Calendario del Mac ===== */
+.cal-testa { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 14px 0 10px; }
+.cal-titolo { font-size: var(--t-titolo); line-height: var(--lh-titolo); font-weight: var(--w-testo); letter-spacing: var(--ls-titolo); color: var(--nero); }
+.cal-titolo b { font-weight: var(--w-etichetta); }
+.cal-titolo small { display: block; margin-top: 2px; font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-testo); color: var(--testo); letter-spacing: 0; }
+.cal-azioni { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.cal-barra { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.cal-modi { display: inline-flex; padding: 2px; border-radius: 9px; background: var(--chiaro); }
+.cal-modi button { border: 0; background: none; padding: 6px 16px; border-radius: 7px; font: inherit; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); color: var(--testo); cursor: pointer; }
+.cal-modi button.attivo { background: var(--bianco); color: var(--nero); font-weight: var(--w-nome); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14); }
+.cal-modi .solo-largo-cal { display: none; }
+.cal-nav { display: inline-flex; align-items: center; gap: 4px; }
+.cal-freccia, .cal-oggi { border: 1px solid var(--linea); background: var(--bianco); border-radius: 8px; height: 32px; display: inline-grid; place-items: center; font: inherit; font-size: var(--t-piccolo); color: var(--nero); cursor: pointer; }
+.cal-freccia { width: 32px; } .cal-freccia svg { width: 16px; height: 16px; }
+.cal-oggi { padding: 0 12px; font-weight: var(--w-nome); }
+/* griglia delle ore */
+.cal-griglia { --gut: 52px; }
+.cal-intesta { display: grid; grid-template-columns: var(--gut) repeat(var(--n), 1fr); border-bottom: 1px solid var(--linea); padding-bottom: 6px; }
+.cal-intesta button { border: 0; background: none; font: inherit; font-size: var(--t-piccolo); color: var(--testo); padding: 4px 0; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; gap: 6px; }
+.cal-intesta button b { font-weight: var(--w-testo); font-size: var(--t-nome); color: var(--nero); }
+.cal-intesta button.oggi b { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--rosso-notifica); color: #fff; font-weight: var(--w-nome); }
+.cal-intesta button.scelto:not(.oggi) b { font-weight: var(--w-etichetta); }
+.cal-corpo { position: relative; display: grid; grid-template-columns: var(--gut) 1fr; margin-top: 8px; }
+.cal-ore { position: relative; }
+.cal-ore span { position: absolute; right: 8px; transform: translateY(-50%); font-size: var(--t-mini); line-height: 1; color: var(--grigio); font-variant-numeric: tabular-nums; }
+.cal-ore span.adesso { right: 4px; padding: 3px 5px; border-radius: 6px; background: var(--rosso-notifica); color: #fff; font-weight: var(--w-nome); z-index: 3; }
+.cal-colonne { display: grid; grid-template-columns: repeat(var(--n), 1fr); background: repeating-linear-gradient(to bottom, var(--linea) 0 1px, transparent 1px var(--px-ora)); }
+.cal-col { position: relative; border-left: 1px solid var(--linea); min-height: 100%; cursor: default; }
+.cal-col.festa { background: rgba(0, 0, 0, 0.025); }
+.cal-ev { position: absolute; overflow: hidden; text-align: left; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; border: 0; border-left: 3px solid var(--nero); border-radius: 6px; background: var(--chiaro); padding: 4px 6px; font: inherit; font-size: var(--t-mini); line-height: var(--lh-mini); color: var(--testo); cursor: pointer; z-index: 1; transition: filter var(--t-rapido) ease; }
+.cal-ev:hover { filter: brightness(0.96); }
+.cal-ev b { font-weight: var(--w-nome); color: var(--nero); }
+.cal-ev .nm { font-weight: var(--w-nome); color: var(--nero); }
+.cal-ev .tp { display: block; color: var(--grigio); }
+.cal-ev .riga1 { display: block; }
+.cal-ev.corto .tp { display: none; }
+.cal-ev.proposto { border-left-color: var(--att); background: var(--att-f); }
+.cal-ev.svolto { border-left-color: var(--bordo); opacity: 0.7; }
+.cal-ev.altro { border-left-color: var(--bordo); }
+.cal-ora { position: absolute; left: 0; right: 0; height: 2px; background: var(--rosso-notifica); z-index: 2; pointer-events: none; }
+.cal-ora::before { content: ''; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--rosso-notifica); }
+.cal-vista-giorno .cal-griglia { margin-top: 6px; }
+/* mese */
+.cal-mese-testa { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-mese-testa span { text-align: right; padding: 0 8px 6px; font-size: var(--t-piccolo); color: var(--testo); }
+.cal-mese-griglia { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--linea); border-left: 1px solid var(--linea); }
+.cal-cella { position: relative; min-height: 104px; display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 6px; border: 0; border-right: 1px solid var(--linea); border-bottom: 1px solid var(--linea); background: var(--bianco); text-align: left; font: inherit; cursor: pointer; overflow: hidden; }
+.cal-cella.festa { background: #fafafa; }
+.cal-cella .n { align-self: flex-end; font-size: var(--t-nome); line-height: 28px; min-width: 28px; text-align: center; color: var(--nero); }
+.cal-cella.fuori .n { color: var(--bordo); }
+.cal-cella.oggi .n { border-radius: 14px; padding: 0 6px; background: var(--rosso-notifica); color: #fff; font-weight: var(--w-nome); }
+.cal-cella.scelto:not(.oggi) .n { font-weight: var(--w-etichetta); }
+.cal-cella.scelto { box-shadow: inset 0 0 0 2px var(--nero); }
+.cal-mini-ev { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 1px 6px; border-radius: 5px; border-left: 3px solid var(--nero); background: var(--chiaro); font-size: var(--t-mini); line-height: var(--lh-mini); color: var(--nero); }
+.cal-mini-ev b { font-weight: var(--w-nome); }
+.cal-mini-ev.proposto { border-left-color: var(--att); background: var(--att-f); }
+.cal-mini-ev.svolto, .cal-mini-ev.altro { border-left-color: var(--bordo); }
+.cal-cella .altri { font-size: var(--t-mini); color: var(--grigio); padding-left: 6px; }
+.cal-cella .punto { display: none; }
+/* anno */
+.cal-anno { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 32px; }
+.cal-anno-mese { min-width: 0; }
+.pr-due.lato-agenda .pr-testo { min-width: 0; }
+.cal-anno-nome { border: 0; background: none; padding: 0; font: inherit; font-size: var(--t-sotto); line-height: var(--lh-sotto); color: var(--rosso-notifica); cursor: pointer; margin-bottom: 10px; }
+.cal-anno-griglia { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-anno-griglia .ln { font-size: var(--t-mini); color: var(--grigio); padding-bottom: 4px; }
+.cal-anno-griglia button { border: 0; background: none; font: inherit; font-size: var(--t-mini); line-height: 26px; color: var(--nero); border-radius: 50%; cursor: pointer; position: relative; }
+.cal-anno-griglia button.pieno { font-weight: var(--w-etichetta); }
+.cal-anno-griglia button.oggi { background: var(--rosso-notifica); color: #fff; }
+/* mini calendario a destra */
+.mini-cal { margin-bottom: 16px; }
+.mini-cal-testa { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: var(--t-piccolo); color: var(--nero); }
+.mini-cal-testa b { font-weight: var(--w-nome); }
+.mini-cal-testa button { border: 1px solid var(--linea); background: var(--bianco); border-radius: 7px; width: 28px; height: 28px; display: inline-grid; place-items: center; margin-left: 4px; cursor: pointer; color: var(--nero); }
+.mini-cal-testa svg { width: 14px; height: 14px; }
+.mini-cal-griglia { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+.mini-cal-griglia .ln { font-size: var(--t-mini); color: var(--grigio); padding-bottom: 2px; }
+.mini-cal-griglia button { position: relative; border: 0; background: none; font: inherit; font-size: var(--t-mini); line-height: 30px; color: var(--nero); cursor: pointer; border-radius: 50%; width: 30px; height: 30px; margin: 1px auto; padding: 0; }
+.mini-cal-griglia button.fuori { color: var(--bordo); }
+.mini-cal-griglia button.oggi { background: var(--rosso-notifica); color: #fff; font-weight: var(--w-nome); }
+.mini-cal-griglia button.scelto:not(.oggi) { background: var(--nero); color: #fff; }
+.mini-cal-griglia button i { position: absolute; left: 50%; bottom: 3px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+@media (min-width: 900px) {
+	.cal-modi .solo-largo-cal { display: inline-block; }
+	.cal-vista-giorno .giorni-strip { display: none; }
+	.cal-titolo { font-size: 34px; line-height: 40px; }
+}
+@media (max-width: 899px) {
+	.mini-cal { display: none; }
+	.cal-anno { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.cal-griglia { --gut: 44px; }
+	.cal-cella { min-height: 52px; padding: 4px; align-items: center; }
+	.cal-cella .n { align-self: center; font-size: var(--t-piccolo); }
+	.cal-cella .cal-mini-ev, .cal-cella .altri { display: none; }
+	.cal-cella .punto { display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--nero); }
+	.cal-mese-testa span { text-align: center; padding: 0 0 6px; font-size: var(--t-mini); }
+	.cal-testa { padding-top: 8px; }
+}
+/* Ristrutturazioni: pulsante e icone marroni (colore scelto da Gian, 14/10) */
+body[data-servizio="ristrutturazioni"] { --primario: #463428; --primario-sfumato: linear-gradient(90deg, #5c4535 0%, #463428 55%, #36271d 100%); }
+body[data-servizio="ristrutturazioni"] svg[data-i] { --c: #463428; --cf: #efe7e0; }
 </style>
 
 <div class="proto"><b>PROTOTIPO</b> · dati fittizi · nessun invio · niente va sul server</div>
@@ -1073,6 +1174,9 @@ function render() {
 	const fab = document.getElementById('erica-fab'), dvF = ericaDaVedere();
 	const mostraFab = !operatore() && vista !== 'erica';
 	document.body.dataset.vista = vista;
+	// colore del servizio: le pagine di una ristrutturazione hanno pulsante e icone marroni
+	const pratDi = vista === 'p' || vista === 'lavoro' ? pratica(param) : vista === 'prev' || vista === 'pdf' ? pratica(D.preventivi.find((v) => v.id === param)?.praticaId) : vista === 'imp' ? pratica(D.appuntamenti.find((x) => x.id === param)?.praticaId) : null;
+	document.body.dataset.servizio = pratDi?.servizio === 'Ristrutturazioni' ? 'ristrutturazioni' : '';
 	app.classList.toggle('con-fab', mostraFab);
 	fab.innerHTML = mostraFab ? `<button type="button" class="erica-fab" onclick="vai('erica')" aria-label="Erica${dvF.length ? ', ' + dvF.length + ' da vedere' : ''}">${ericaAvatar()}${dvF.length ? `<span class="badge">${dvF.length}</span>` : ''}<b>Erica</b><span class="mini-p">${[...new Set(dvF.map((e) => e.praticaId).filter(Boolean))].slice(0, 3).map((pid) => { const f = fotoDi(pratica(pid))[0]; return f ? `<img src="${mini(f)}" alt="">` : `<span>${esc(pratica(pid).nome.charAt(0))}</span>`; }).join('')}</span></button>` : '';
 }
@@ -1255,21 +1359,62 @@ function fotoTestaA(i) {
 }
 function fotoTestaVai(d) { fotoTestaA(fotoTesta.i + d); }
 
+/* AGENDA come il Calendario del Mac: Giorno · Settimana · Mese · Anno, ore a sinistra, impegni lunghi quanto durano,
+   riga rossa dell'ora attuale; a destra il mini calendario e il riepilogo del giorno scelto. Telefono: Giorno e Mese. */
+const ORA_DA = 7, ORA_A = 20, PX_ORA = 56;
+let agendaModo = (() => { try { return localStorage.getItem('am-agenda-modo') || ''; } catch { return ''; } })();
+const modoAgenda = () => { const largo = matchMedia('(min-width: 900px)').matches; const m = agendaModo || (largo ? 'settimana' : 'giorno'); return !largo && (m === 'settimana' || m === 'anno') ? 'giorno' : m; };
+function cambiaModo(m) { agendaModo = m; try { localStorage.setItem('am-agenda-modo', m); } catch {} render(); }
+const meseDi = (g) => g.slice(0, 7);
+function piuMesi(g, n) { const x = d(g); const giorno = x.getUTCDate(); x.setUTCDate(1); x.setUTCMonth(x.getUTCMonth() + n); const ultimo = new Date(Date.UTC(x.getUTCFullYear(), x.getUTCMonth() + 1, 0)).getUTCDate(); x.setUTCDate(Math.min(giorno, ultimo)); return x.toISOString().slice(0, 10); }
+const giorniMese = (g) => { const primo = meseDi(g) + '-01', inizio = lunediDi(primo); return Array.from({ length: 42 }, (_, i) => piuGiorni(inizio, i)); };
+function agendaPasso(n) { const m = modoAgenda(); agendaGiorno = m === 'giorno' ? piuGiorni(agendaGiorno, n) : m === 'settimana' ? piuGiorni(agendaGiorno, 7 * n) : m === 'mese' ? piuMesi(agendaGiorno, n) : piuMesi(agendaGiorno, 12 * n); render(); }
+function apriGiorno(g) { agendaGiorno = g; if (!matchMedia('(min-width: 900px)').matches || ['mese', 'anno'].includes(modoAgenda())) agendaModo = 'giorno'; render(); }
+// impegni che si sovrappongono: affiancati in colonne, come il Calendario
+function corsie(l) {
+	const ord = [...l].sort((a, b) => a.inizio.localeCompare(b.inizio) || b.fine.localeCompare(a.fine)), out = new Map();
+	let gruppo = [], fineGruppo = '';
+	const chiudi = () => { const fini = []; gruppo.forEach((a) => { let k = fini.findIndex((f) => f <= a.inizio); if (k < 0) k = fini.length; fini[k] = a.fine; out.set(a.id, [k, 0]); }); gruppo.forEach((a) => (out.get(a.id)[1] = fini.length)); gruppo = []; fineGruppo = ''; };
+	for (const a of ord) { if (gruppo.length && a.inizio >= fineGruppo) chiudi(); gruppo.push(a); if (a.fine > fineGruppo) fineGruppo = a.fine; }
+	if (gruppo.length) chiudi();
+	return out;
+}
 function agenda() {
-	// Telefono: striscia dei 7 giorni della settimana + impegni del giorno scelto. Schermo largo: le 7 giornate affiancate.
-	const lun = lunediDi(agendaGiorno);
-	const giorni = Array.from({ length: 7 }, (_, i) => piuGiorni(lun, i));
 	const del = (g) => D.appuntamenti.filter((a) => a.giorno === g && a.stato !== 'annullato' && vedoApp(a)).sort((a, b) => a.inizio.localeCompare(b.inizio));
-	window._sposta = (n) => { agendaGiorno = piuGiorni(agendaGiorno, 7 * n); render(); };
-	const titolo = `${giornoBreve(giorni[0])} – ${giornoBreve(giorni[6])}`;
 	const nomeDi = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return [p ? esc(p.nome) : esc(a.titolo), p ? `${NOMI_TIPO[a.tipo]}, ${lavoroBreve(p)}` : NOMI_TIPO[a.tipo]]; };
 	const classe = (a) => a.stato === 'proposto' ? 'proposto' : a.stato === 'svolto' ? 'svolto' : a.praticaId ? '' : 'altro';
-	const strip = `<div class="giorni-strip">${giorni.map((g) => { const n = del(g).length, dom = d(g).getUTCDay() === 0; return `<button type="button" class="${g === agendaGiorno ? 'attivo' : ''} ${g === OGGI ? 'oggi-g' : ''} ${dom ? 'festivo' : ''}" onclick="agendaGiorno='${g}';render()" aria-label="${giornoLungo(g)}">${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b><i class="${n ? '' : 'vuoto'}"></i></button>`; }).join('')}</div>`;
-	const listaGiorno = () => { const l = del(agendaGiorno); return `<section class="riquadro lista-giorno-largo"><h2>${giornoLungo(agendaGiorno).charAt(0).toUpperCase() + giornoLungo(agendaGiorno).slice(1)}${agendaGiorno === OGGI ? ' <span class="tag pieno">oggi</span>' : ''} <span class="conta">${l.length ? l.length + (l.length === 1 ? ' impegno' : ' impegni') : ''}</span></h2>${l.length ? `<ul class="lista">${l.map((a) => { const [n, t] = nomeDi(a); return `<li><button type="button" class="impegno-r" onclick="vai('imp','${a.id}')"><span class="quando num"><b>${a.inizio}</b><span>${a.fine}</span></span><span class="blocco ${classe(a)}"><b>${n}</b><span>${t} · ${a.chi.map(nomeOp).join(', ')}</span><span class="durata">${durata(a)}${a.stato === 'proposto' ? ' · da confermare' : a.stato === 'svolto' ? ' · svolto' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : `<p class="giorno-libero">Giornata libera.</p>`}</section>`; };
-	const settimana = `<div class="settimana">${giorni.map((g) => { const l = del(g), dom = d(g).getUTCDay() === 0; return `<div class="colonna ${g === OGGI ? 'oggi-c' : ''} ${dom ? 'festivo' : ''} ${g === agendaGiorno ? 'scelta' : ''}"><h3 onclick="agendaGiorno='${g}';render()" title="Scegli ${giornoLungo(g)}">${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b></h3>${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<button type="button" class="evento ${classe(a)}" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}–${a.fine}</b>${n}<span>${t}</span><span>${a.chi.map(nomeOp).join(', ')}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></button>`; }).join('') : '<p class="libero">Libero</p>'}</div>`; }).join('')}</div>`;
-	return testa('Agenda', '', `<button type="button" class="btn piccolo linea proposta" onclick="apriNuovoApp(null,null,'${agendaGiorno}')">${I.piu} Nuovo</button>`)
-		+ `<div class="agenda-testa"><button type="button" class="tondo" aria-label="Settimana prima" onclick="_sposta(-1)">${I.indietro}</button><span class="titolo">${titolo.charAt(0).toUpperCase() + titolo.slice(1)}</span><button type="button" class="tondo" aria-label="Settimana dopo" onclick="_sposta(1)">${I.freccia}</button>${lun !== lunediDi(OGGI) || agendaGiorno !== OGGI ? `<button type="button" class="btn piccolo tinta" onclick="agendaGiorno='${OGGI}';render()">Oggi</button>` : ''}${agendaLato ? '' : `<button type="button" class="btn piccolo linea mostra-lato" onclick="giraAgendaLato()">Riepilogo del giorno</button>`}</div>`
-		+ (agendaLato ? conLato(strip + listaGiorno() + settimana, latoAgenda(del(agendaGiorno), nomeDi), 'Giorno scelto', 'lato-agenda lato-dopo') : strip + listaGiorno() + settimana);
+	window._sposta = (n) => agendaPasso(n);
+	const modo = modoAgenda(), x = d(agendaGiorno), lun = lunediDi(agendaGiorno);
+	const giorniSett = Array.from({ length: 7 }, (_, i) => piuGiorni(lun, i));
+	const meseAnno = `<b>${MESI[x.getUTCMonth()].charAt(0).toUpperCase() + MESI[x.getUTCMonth()].slice(1)}</b> ${x.getUTCFullYear()}`;
+	const titolo = modo === 'giorno' ? `<b>${x.getUTCDate()} ${MESI[x.getUTCMonth()]}</b> ${x.getUTCFullYear()}<small>${GIORNI[x.getUTCDay()]}${agendaGiorno === OGGI ? ' · oggi' : ''}</small>` : modo === 'anno' ? `${x.getUTCFullYear()}` : meseAnno;
+	const modi = [['giorno', 'Giorno'], ['settimana', 'Settimana'], ['mese', 'Mese'], ['anno', 'Anno']];
+	const barra = `<div class="cal-barra"><div class="cal-modi" role="tablist">${modi.map(([k, n]) => `<button type="button" role="tab" class="${modo === k ? 'attivo' : ''} ${k === 'settimana' || k === 'anno' ? 'solo-largo-cal' : ''}" aria-selected="${modo === k}" onclick="cambiaModo('${k}')">${n}</button>`).join('')}</div>
+		<div class="cal-nav"><button type="button" class="cal-freccia" aria-label="Prima" onclick="agendaPasso(-1)">${I.indietro}</button><button type="button" class="cal-oggi" onclick="agendaGiorno='${OGGI}';render()">Oggi</button><button type="button" class="cal-freccia" aria-label="Dopo" onclick="agendaPasso(1)">${I.freccia}</button></div></div>`;
+	const testaCal = `<div class="cal-testa"><h1 class="cal-titolo">${titolo}</h1><div class="cal-azioni">${agendaLato ? '' : `<button type="button" class="btn piccolo linea" onclick="giraAgendaLato()">Riepilogo del giorno</button>`}<button type="button" class="btn piccolo linea" onclick="apriNuovoApp(null,null,'${agendaGiorno}')">${I.piu} Nuovo</button></div></div>`;
+	// griglia delle ore (giorno e settimana)
+	const ore = Array.from({ length: ORA_A - ORA_DA + 1 }, (_, i) => ORA_DA + i);
+	const ora = new Date(), oraMin = ora.getHours() * 60 + ora.getMinutes();
+	const colonna = (g) => { const l = del(g), c = corsie(l); return `<div class="cal-col ${g === OGGI ? 'oggi' : ''} ${d(g).getUTCDay() === 0 || d(g).getUTCDay() === 6 ? 'festa' : ''}" onclick="if(event.target===this)apriGiorno('${g}')">${l.map((a) => { const [k, n] = c.get(a.id); const top = Math.max(0, (aMin(a.inizio) - ORA_DA * 60) / 60 * PX_ORA), h = Math.max(24, (Math.min(aMin(a.fine), ORA_A * 60) - Math.max(aMin(a.inizio), ORA_DA * 60)) / 60 * PX_ORA - 2); const [nm, t] = nomeDi(a); return `<button type="button" class="cal-ev ${classe(a)} ${h < 44 ? 'corto' : ''}" style="top:${top}px;height:${h}px;left:calc(${(k / n) * 100}% + 2px);width:calc(${100 / n}% - 4px)" onclick="vai('imp','${a.id}')" title="${a.inizio}–${a.fine} ${nm}"><span class="riga1"><b class="num">${a.inizio}</b> <span class="nm">${nm}</span></span><span class="tp">${t}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></button>`; }).join('')}${g === OGGI && oraMin >= ORA_DA * 60 && oraMin <= ORA_A * 60 ? `<div class="cal-ora" style="top:${(oraMin - ORA_DA * 60) / 60 * PX_ORA}px"></div>` : ''}</div>`; };
+	const griglia = (giorni) => `<div class="cal-griglia ${giorni.length === 1 ? 'uno' : ''}" style="--px-ora:${PX_ORA}px;--n:${giorni.length}">
+		${giorni.length > 1 ? `<div class="cal-intesta"><span></span>${giorni.map((g) => `<button type="button" class="${g === OGGI ? 'oggi' : ''} ${g === agendaGiorno ? 'scelto' : ''}" onclick="apriGiorno('${g}')">${GIORNI_B[d(g).getUTCDay()]} <b>${d(g).getUTCDate()}</b></button>`).join('')}</div>` : ''}
+		<div class="cal-corpo" style="height:${(ORA_A - ORA_DA) * PX_ORA + 12}px"><div class="cal-ore">${ore.map((h) => `<span style="top:${(h - ORA_DA) * PX_ORA}px">${String(h).padStart(2, '0')}:00</span>`).join('')}${giorni.includes(OGGI) && oraMin >= ORA_DA * 60 && oraMin <= ORA_A * 60 ? `<span class="adesso" style="top:${(oraMin - ORA_DA * 60) / 60 * PX_ORA}px">${String(ora.getHours()).padStart(2, '0')}:${String(ora.getMinutes()).padStart(2, '0')}</span>` : ''}</div>
+		<div class="cal-colonne">${giorni.map(colonna).join('')}</div></div></div>`;
+	// mese
+	const mese = () => `<div class="cal-mese"><div class="cal-mese-testa">${['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'].map((n) => `<span>${n}</span>`).join('')}</div><div class="cal-mese-griglia">${giorniMese(agendaGiorno).map((g) => { const l = del(g), fuori = meseDi(g) !== meseDi(agendaGiorno); return `<button type="button" class="cal-cella ${fuori ? 'fuori' : ''} ${g === OGGI ? 'oggi' : ''} ${g === agendaGiorno ? 'scelto' : ''} ${d(g).getUTCDay() % 6 === 0 ? 'festa' : ''}" onclick="apriGiorno('${g}')" aria-label="${giornoLungo(g)}, ${l.length} impegni"><span class="n">${d(g).getUTCDate() === 1 ? d(g).getUTCDate() + ' ' + MESI[d(g).getUTCMonth()].slice(0, 3) : d(g).getUTCDate()}</span>${l.slice(0, 3).map((a) => `<span class="cal-mini-ev ${classe(a)}"><b class="num">${a.inizio}</b> ${nomeDi(a)[0]}</span>`).join('')}${l.length > 3 ? `<span class="altri">altri ${l.length - 3}</span>` : ''}${l.length ? `<i class="punto"></i>` : ''}</button>`; }).join('')}</div></div>`;
+	// anno
+	const anno = () => `<div class="cal-anno">${Array.from({ length: 12 }, (_, m) => { const g0 = `${x.getUTCFullYear()}-${String(m + 1).padStart(2, '0')}-01`; return `<div class="cal-anno-mese"><button type="button" class="cal-anno-nome" onclick="agendaGiorno='${g0}';cambiaModo('mese')">${MESI[m].charAt(0).toUpperCase() + MESI[m].slice(1)}</button><div class="cal-anno-griglia">${['L', 'M', 'M', 'G', 'V', 'S', 'D'].map((n) => `<span class="ln">${n}</span>`).join('')}${giorniMese(g0).map((g) => meseDi(g) !== meseDi(g0) ? '<span></span>' : `<button type="button" class="${g === OGGI ? 'oggi' : ''} ${del(g).length ? 'pieno' : ''}" onclick="apriGiorno('${g}')">${d(g).getUTCDate()}</button>`).join('')}</div></div>`; }).join('')}</div>`;
+	// telefono: striscia della settimana sopra la vista Giorno
+	const strip = `<div class="giorni-strip">${giorniSett.map((g) => { const n = del(g).length, dom = d(g).getUTCDay() === 0; return `<button type="button" class="${g === agendaGiorno ? 'attivo' : ''} ${g === OGGI ? 'oggi-g' : ''} ${dom ? 'festivo' : ''}" onclick="agendaGiorno='${g}';render()" aria-label="${giornoLungo(g)}">${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b><i class="${n ? '' : 'vuoto'}"></i></button>`; }).join('')}</div>`;
+	const corpo = modo === 'giorno' ? strip + griglia([agendaGiorno]) : modo === 'settimana' ? griglia(giorniSett) : modo === 'mese' ? mese() : anno();
+	const pagina = testaCal + barra + `<div class="cal cal-vista-${modo}">${corpo}</div>`;
+	return agendaLato ? conLato(pagina, latoAgenda(del(agendaGiorno), nomeDi), 'Giorno scelto', 'lato-agenda lato-dopo') : pagina;
+}
+// Mini calendario del mese, in cima al riepilogo di destra (come il Calendario del Mac)
+function miniCalendario() {
+	const x = d(agendaGiorno), conImpegni = new Set(D.appuntamenti.filter((a) => a.stato !== 'annullato' && vedoApp(a)).map((a) => a.giorno));
+	return `<div class="mini-cal"><div class="mini-cal-testa"><b>${MESI[x.getUTCMonth()].charAt(0).toUpperCase() + MESI[x.getUTCMonth()].slice(1)} ${x.getUTCFullYear()}</b><span><button type="button" aria-label="Mese prima" onclick="agendaGiorno=piuMesi(agendaGiorno,-1);render()">${I.indietro}</button><button type="button" aria-label="Mese dopo" onclick="agendaGiorno=piuMesi(agendaGiorno,1);render()">${I.freccia}</button></span></div>
+		<div class="mini-cal-griglia">${['L', 'M', 'M', 'G', 'V', 'S', 'D'].map((n) => `<span class="ln">${n}</span>`).join('')}${giorniMese(agendaGiorno).map((g) => `<button type="button" class="${meseDi(g) !== meseDi(agendaGiorno) ? 'fuori' : ''} ${g === OGGI ? 'oggi' : ''} ${g === agendaGiorno ? 'scelto' : ''}" onclick="agendaGiorno='${g}';render()" aria-label="${giornoLungo(g)}">${d(g).getUTCDate()}${conImpegni.has(g) ? '<i></i>' : ''}</button>`).join('')}</div></div>`;
 }
 // Fasce libere nella giornata di lavoro (8–18), almeno mezz'ora. Le sovrapposizioni restano controllate da salvaSposta / nuovo appuntamento.
 const GIORNATA = ['08:00', '18:00'];
@@ -1290,7 +1435,7 @@ function latoAgenda(l, nomeDi) {
 	const minuti = l.reduce((t, a) => t + minutiApp(a), 0), oreSquadra = l.reduce((t, a) => t + minutiApp(a) * a.chi.length, 0);
 	const fasce = OPERATORI.filter((o) => occupati.has(o.id)).map((o) => [o.nome, fasceLibere(l, o.id)]);
 	const da = l.filter((a) => a.stato === 'proposto').length;
-	return latoCard({
+	return miniCalendario() + latoCard({
 		grande: `<strong>${giornoBreve(g).charAt(0).toUpperCase() + giornoBreve(g).slice(1)}</strong>`,
 		piccolo: g === OGGI ? 'oggi' : '',
 		sotto: l.length ? `${l.length} ${l.length === 1 ? 'impegno' : 'impegni'}${da ? ` · ${da} da confermare` : ''}` : 'Giornata libera.',
