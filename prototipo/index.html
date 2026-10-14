@@ -586,7 +586,7 @@ svg.nav-i .buco-l { stroke: #fff; }
 	.barra nav > button:first-child { margin-top: max(16px, calc(50vh - 315px)); }
 	.barra nav button { display: flex; align-items: center; justify-content: flex-start; gap: 16px; height: 48px; min-height: 0; margin: 0 8px; padding: 0 16px; font-size: 16px; line-height: 1; font-weight: 400; color: var(--nero); border-radius: 8px; transition: background-color 160ms ease; }
 	.barra nav button svg, .barra nav button svg.nav-i { width: 24px; height: 24px; }
-	.barra nav button .avatar { width: 24px; height: 24px; font-size: 11px; }
+	.barra nav button .avatar { width: 22px; height: 22px; font-size: 11px; }
 	.barra nav button.attiva .avatar { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--nero); }
 	.barra nav button .et { display: none; white-space: nowrap; }
 	.barra nav button::after { display: none; }
@@ -1758,13 +1758,14 @@ function chiediErica(q) {
 /* Icone della barra (stile Instagram, disegnate qui): [contorno, piena per la voce attiva] */
 const nv = (corpo, cls = '') => `<svg class="nav-i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${corpo}</svg>`;
 const NAV_I = {
-	oggi: [nv('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.2v2.3M12 19.5v2.3M2.2 12h2.3M19.5 12h2.3M5.1 5.1l1.6 1.6M17.3 17.3l1.6 1.6M5.1 18.9l1.6-1.6M17.3 6.7l1.6-1.6"/>'), nv('<circle class="pieno" cx="12" cy="12" r="5"/><path d="M12 1.8v2.4M12 19.8v2.4M1.8 12h2.4M19.8 12h2.4M4.8 4.8l1.7 1.7M17.5 17.5l1.7 1.7M4.8 19.2l1.7-1.7M17.5 6.5l1.7-1.7"/>')],
-	agenda: [nv('<rect x="3" y="4.5" width="18" height="16.5" rx="3.5"/><path d="M3 10h18M8 2.5v4M16 2.5v4"/>'), nv('<rect class="pieno" x="3" y="4.5" width="18" height="16.5" rx="3.5"/><path d="M8 2.5v4M16 2.5v4"/><path class="buco-l" d="M3.5 10h17"/><circle class="buco" cx="8" cy="14.5" r="1.3"/><circle class="buco" cx="12" cy="14.5" r="1.3"/><circle class="buco" cx="16" cy="14.5" r="1.3"/>')],
-	pratiche: [nv('<path d="M7 2.5h7.2l5.3 5.3V19a2.5 2.5 0 0 1-2.5 2.5H7A2.5 2.5 0 0 1 4.5 19V5A2.5 2.5 0 0 1 7 2.5z"/><path d="M14 2.7v5.3h5.3M8.5 13h7M8.5 17h5"/>'), nv('<path class="pieno" d="M7 2.5h7.2l5.3 5.3V19a2.5 2.5 0 0 1-2.5 2.5H7A2.5 2.5 0 0 1 4.5 19V5A2.5 2.5 0 0 1 7 2.5z"/><path class="buco-l" d="M8.5 13h7M8.5 17h5"/>')],
-	clienti: [nv('<circle cx="12" cy="7.8" r="4.3"/><path d="M3.8 21.2a8.2 8.2 0 0 1 16.4 0"/>'), nv('<circle class="pieno" cx="12" cy="7.8" r="4.3"/><path class="pieno" d="M3.8 21.2a8.2 8.2 0 0 1 16.4 0z"/>')],
-	materiali: [nv('<path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/>'), nv('<path class="pieno" d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path class="buco-l" d="M4.5 8 12 12l7.5-4M12 12v8"/>')],
-	altro: [nv('<path d="M3 6h18M3 12h18M3 18h18"/>'), nv('<path d="M3 6h18M3 12h18M3 18h18"/>', 'spessa')],
-	cerca: [nv('<circle cx="10.5" cy="10.5" r="7"/><path d="M15.8 15.8 21.5 21.5"/>'), nv('<circle cx="10.5" cy="10.5" r="7"/><path d="M15.8 15.8 21.5 21.5"/>', 'spessa')]
+	// ogni disegno riempie lo stesso quadrato (circa 1..23 nel riquadro 24, linea compresa), come le icone di Instagram
+	oggi: [nv('<circle cx="12" cy="12" r="4.6"/><path d="M12 1.6v2.6M12 19.8v2.6M2.1 12h2.4M19.5 12h2.4M5 5l1.7 1.7M17.3 17.3l1.7 1.7M5 19l1.7-1.7M17.3 6.7l1.7-1.7"/>'), nv('<circle class="pieno" cx="12" cy="12" r="5.4"/><path d="M12 1.6v2.6M12 19.8v2.6M2.1 12h2.4M19.5 12h2.4M5 5l1.7 1.7M17.3 17.3l1.7 1.7M5 19l1.7-1.7M17.3 6.7l1.7-1.7"/>')],
+	agenda: [nv('<rect x="2" y="3.6" width="20" height="18.4" rx="4"/><path d="M2 9.6h20M7.4 1.6v4M16.6 1.6v4"/>'), nv('<rect class="pieno" x="2" y="3.6" width="20" height="18.4" rx="4"/><path d="M7.4 1.6v4M16.6 1.6v4"/><path class="buco-l" d="M2.6 9.6h18.8"/><circle class="buco" cx="7.4" cy="14.8" r="1.4"/><circle class="buco" cx="12" cy="14.8" r="1.4"/><circle class="buco" cx="16.6" cy="14.8" r="1.4"/>')],
+	pratiche: [nv('<path d="M5.6 1.8h9.8l6.2 6.2V19a3.2 3.2 0 0 1-3.2 3.2H5.6A3.2 3.2 0 0 1 2.4 19V5a3.2 3.2 0 0 1 3.2-3.2z"/><path d="M15.2 2v6.2h6.2M7.4 13h9.2M7.4 17.4h6.2"/>'), nv('<path class="pieno" d="M5.6 1.8h9.8l6.2 6.2V19a3.2 3.2 0 0 1-3.2 3.2H5.6A3.2 3.2 0 0 1 2.4 19V5a3.2 3.2 0 0 1 3.2-3.2z"/><path class="buco-l" d="M7.6 13h8.8M7.6 17.4h6"/>')],
+	clienti: [nv('<circle cx="12" cy="7.2" r="5.4"/><path d="M2.4 22.4a9.6 9.2 0 0 1 19.2 0"/>'), nv('<circle class="pieno" cx="12" cy="7.2" r="5.4"/><path class="pieno" d="M2.4 22.4a9.6 9.2 0 0 1 19.2 0z"/>')],
+	materiali: [nv('<path d="M2.4 6.8 12 1.8l9.6 5v10.4L12 22.2l-9.6-5z"/><path d="M2.4 6.8 12 12l9.6-5.2M12 12v10.2"/>'), nv('<path class="pieno" d="M2.4 6.8 12 1.8l9.6 5v10.4L12 22.2l-9.6-5z"/><path class="buco-l" d="M3.6 7.4 12 12l8.4-4.6M12 12v9"/>')],
+	altro: [nv('<path d="M2 4.6h20M2 12h20M2 19.4h20"/>'), nv('<path d="M2 4.6h20M2 12h20M2 19.4h20"/>', 'spessa')],
+	cerca: [nv('<circle cx="10.2" cy="10.2" r="8.2"/><path d="M16.2 16.2 22.2 22.2"/>'), nv('<circle cx="10.2" cy="10.2" r="8.2"/><path d="M16.2 16.2 22.2 22.2"/>', 'spessa')]
 };
 NAV_I.lavori = NAV_I.pratiche;
 const navIcona = (k, attiva) => (NAV_I[k] ? NAV_I[k][attiva ? 1 : 0] : I[k]);
