@@ -579,30 +579,27 @@ svg.nav-i .buco-l { stroke: #fff; }
 	@media (min-width: 1440px) { .app { margin-left: calc(var(--rail) + (100vw - var(--rail) - 1180px) / 2); } }
 	.app.con-rete { padding-top: calc(var(--proto-h) + 80px); }
 	.rete { left: var(--rail); }
-	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; padding: 0 0 84px; border-top: 0; border-right: 1px solid var(--linea); }
+	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; padding: 0 0 84px; border-top: 0; border-right: 0; overflow: hidden; transition: width 200ms var(--ease-out), box-shadow 200ms ease; }
+	.barra:hover, .barra:focus-within { width: 244px; box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08); }
+	.barra:hover nav button .et, .barra:focus-within nav button .et { display: inline; }
 	.barra .marchio-barra { display: block; flex: none; height: 24px; margin: 11px 0 0 24px; font-size: 0; letter-spacing: 0; line-height: 24px; }
-	.barra .marchio-barra::before { content: 'A'; display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1.6px solid var(--nero); border-radius: 7px; font-size: 13px; font-weight: 600; letter-spacing: 0; }
+	.barra .marchio-barra::before { content: 'A'; display: inline-grid; place-items: center; width: 22px; height: 22px; border: 2px solid var(--nero); border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0; margin-left: 1px; }
 	.barra nav { display: flex; flex-direction: column; gap: 8px; flex: 1; max-width: none; margin: 0; }
 	.barra nav > button:first-child { margin-top: max(16px, calc(50vh - 315px)); }
-	.barra nav button { display: flex; align-items: center; justify-content: flex-start; gap: 16px; height: 48px; min-height: 0; margin: 0 8px; padding: 0 16px; font-size: 16px; line-height: 1; font-weight: 400; color: var(--nero); border-radius: 8px; transition: background-color 160ms ease; }
+	.barra nav button { display: flex; align-items: center; justify-content: flex-start; gap: 16px; height: 48px; min-height: 0; width: 214px; margin: 0 0 0 12px; padding: 0 12px; font-size: 16px; line-height: 1; font-weight: 400; color: var(--nero); border-radius: 8px; transition: background-color 160ms ease; }
 	.barra nav button svg, .barra nav button svg.nav-i { width: 24px; height: 24px; }
 	.barra nav button .avatar { width: 22px; height: 22px; font-size: 11px; }
 	.barra nav button.attiva .avatar { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--nero); }
 	.barra nav button .et { display: none; white-space: nowrap; }
 	.barra nav button::after { display: none; }
 	.barra nav button.attiva { font-weight: 700; }
-	@media (hover: hover) { .barra nav button:hover { background: var(--chiaro); } }
+	@media (hover: hover) { .barra nav button:hover { background: #f2f2f2; } }
 	.barra nav button.in-fondo { margin-top: auto; }
 	.barra nav button.in-fondo { position: relative; top: 0; }
 	.barra .pallino { position: absolute; top: 23px; left: 31px; right: auto; height: 19px; min-width: 19px; padding: 0 5px; border-radius: 10px; border: 2px solid #fff; font-size: 11px; }
 	.barra .barra-destra { display: none; }
 	.barra .solo-largo { display: flex; }
-	@media (min-width: 1280px) {
-		:root { --rail: 244px; }
-		.barra .marchio-barra { font-size: 14px; letter-spacing: 3px; margin-left: 24px; line-height: 24px; }
-		.barra .marchio-barra::before { display: none; }
-		.barra nav button .et { display: inline; }
-	}
+
 	h1 { font-size: 40px; }
 	.testa .marchio { display: none; }
 	.due { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 0 clamp(32px, 5vw, 72px); align-items: start; }
