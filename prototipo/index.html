@@ -39,6 +39,14 @@
 	--ombra: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.08);
 	--ombra-card: 0 6px 16px rgba(0, 0, 0, 0.12);
 	--nero-sfumato: linear-gradient(180deg, #2d2d30 0%, #1b1b1e 55%, #111112 100%);
+	/* COLORE (14/10, come Airbnb: pochi colori, ognuno dice qualcosa) */
+	--primario: #b4452c; /* pulsante principale: terracotta, come il rosa di «Scegli stanza» */
+	--primario-sfumato: linear-gradient(90deg, #c8553a 0%, #b4452c 55%, #a33a2a 100%);
+	--buona: #1f7a3a; --buona-f: #e4f2e8; /* verde = buona notizia, come «+ 38 € di credito» */
+	/* icone colorate: i colori dei servizi dei social (social/linee.html), un po' più scuri per leggersi */
+	--c-blu: #3d6ea8; --cf-blu: #eaf1fa; --c-verde: #3c7a55; --cf-verde: #e6f2ea; --c-viola: #5d4fae; --cf-viola: #efecf9;
+	--c-ocra: #9c6a10; --cf-ocra: #fbf1dc; --c-rosa: #b0465f; --cf-rosa: #f9e8ed; --c-arancio: #b55e2b; --cf-arancio: #fbece2;
+	--c-ardesia: #4e5d6f; --cf-ardesia: #eceff3; --c-rosso: #b3261e; --cf-rosso: #fbe4e2;
 	--rosso-notifica: #ff3040; --ok: #1f7a3a; --ok-f: #e4f2e8; --att: #a85d12; --att-f: #fbeedb; --err: #b3261e; --err-f: #fbe4e2; --prop: #2f4a8a; --prop-f: #e6ebf5;
 	--font: 'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -158,7 +166,7 @@ svg.ico path { vector-effect: non-scaling-stroke; }
 .cerca:focus { outline: 2px solid var(--nero); outline-offset: 0; }
 
 /* pulsanti come nel sito (.v3-btn): 52 px, angoli 10, sfumatura nera, testo 16 px peso 500 */
-.btn { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 24px; border: 1px solid transparent; border-radius: var(--rb); background-color: var(--nero); background-image: var(--nero-sfumato); background-origin: border-box; color: #fff; font: inherit; text-decoration: none; cursor: pointer; transition: transform 160ms var(--ease-out), filter var(--t-rapido) ease; font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-nome); }
+.btn { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 24px; border: 1px solid transparent; border-radius: var(--rb); background-color: var(--primario); background-image: var(--primario-sfumato); background-origin: border-box; color: #fff; font: inherit; text-decoration: none; cursor: pointer; transition: transform 160ms var(--ease-out), filter var(--t-rapido) ease; font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-nome); }
 .btn:active { transform: scale(0.97); filter: brightness(0.9); }
 @media (hover: hover) and (pointer: fine) { .btn:not(.linea):not(.grigio):not(.pericolo):hover { filter: brightness(1.18); } }
 .btn.linea { background: transparent; border-color: var(--nero); color: var(--nero); }
@@ -688,6 +696,27 @@ svg.nav-i .buco-l { stroke: #fff; }
 /* Scala tipografica: telefono (sotto i 744 px) */
 @media (max-width: 743px) { :root { --t-titolo: 26px; --lh-titolo: 30px; --t-sezione: 22px; --lh-sezione: 26px; --sp-sezione: 32px; --sp-sezione-piccola: 24px; } }
 @media (max-width: 389px) { :root { --t-titolo: 24px; --lh-titolo: 28px; } .pv-fondo-stima b { font-size: var(--t-scheda); } .pv-fondo-nota { font-size: var(--t-mini); line-height: var(--lh-mini); } }
+/* 2. Verde = buona notizia (come «+ 38 € di credito Airbnb») */
+.buone { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.buona { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--buona-f); color: var(--buona); font-size: var(--t-mini); line-height: var(--lh-mini); font-weight: var(--w-nome); white-space: nowrap; }
+.buona::before { content: '+'; font-weight: var(--w-etichetta); }
+.riga .cosa .buona { margin-top: 6px; margin-right: 6px; }
+.pr-condizione.bene { color: var(--buona); font-weight: var(--w-nome); }
+/* 3. Icone colorate: ogni icona ha il suo colore, uguale in tutta l'app */
+svg[data-i="orologio"], svg[data-i="agenda"], svg[data-i="oggi"], svg[data-i="occhio"], svg[data-i="cerca"] { --c: var(--c-blu); --cf: var(--cf-blu); }
+svg[data-i="tel"], svg[data-i="spunta"], svg[data-i="parquet"], svg[data-i="casa"] { --c: var(--c-verde); --cf: var(--cf-verde); }
+svg[data-i="luogo"], svg[data-i="mappa"] { --c: var(--c-rosa); --cf: var(--cf-rosa); }
+svg[data-i="clienti"], svg[data-i="erica"] { --c: var(--c-viola); --cf: var(--cf-viola); }
+svg[data-i="pratiche"], svg[data-i="lavori"], svg[data-i="materiali"], svg[data-i="scatola"], svg[data-i="rullo"] { --c: var(--c-ocra); --cf: var(--cf-ocra); }
+svg[data-i="foto"], svg[data-i="attrezzi"], svg[data-i="martello"], svg[data-i="furgone"], svg[data-i="mobile"] { --c: var(--c-arancio); --cf: var(--cf-arancio); }
+svg[data-i="mail"], svg[data-i="installa"], svg[data-i="altro"], svg[data-i="goccia"], svg[data-i="esci"] { --c: var(--c-ardesia); --cf: var(--cf-ardesia); }
+svg[data-i="avviso"] { --c: var(--c-rosso); --cf: var(--cf-rosso); }
+/* dove si colorano: punti in evidenza, contatti, voci di Altro, link sotto i riquadri, schede vuote, righe con icona */
+.pr-lista svg, .contatti svg, .voci button > svg, .pr-tel svg, .vuoto-grande svg, .chiedi-erica svg, .sez h2 svg, .riquadro h2 svg { color: var(--c, currentColor); }
+.pr-lista svg { box-sizing: border-box; width: 40px !important; height: 40px !important; padding: 9px; margin-top: -4px !important; border-radius: 12px; background: var(--cf, var(--chiaro)); stroke-width: 1.6 !important; }
+.pr-lista li { gap: 16px; }
+.voci button > svg { box-sizing: border-box; width: 36px; height: 36px; padding: 8px; border-radius: 10px; background: var(--cf, var(--chiaro)); flex: none; }
+.vuoto-grande svg { box-sizing: border-box; padding: 12px; width: 60px !important; height: 60px !important; border-radius: 16px; background: var(--cf, var(--chiaro)); }
 </style>
 
 <div class="proto"><b>PROTOTIPO</b> · dati fittizi · nessun invio · niente va sul server</div>
@@ -1048,7 +1077,7 @@ function latoOggi(apps, prossimo, pp, df, att, dv) {
 	const dfOggi = df.filter((x) => x.oggi).length, comprare = D.materiali.filter((m) => m.stato === 'da_comprare').length;
 	return latoCard({
 		grande: `Oggi <strong class="num">${apps.length}</strong> ${apps.length === 1 ? 'impegno' : 'impegni'}`,
-		sotto: dfOggi ? `${dfOggi} ${dfOggi === 1 ? 'cosa da fare' : 'cose da fare'} entro oggi.` : 'Niente di urgente per oggi.',
+		sotto: dfOggi ? `${dfOggi} ${dfOggi === 1 ? 'cosa da fare' : 'cose da fare'} entro oggi.` : buona('Niente di urgente oggi'),
 		celle: [
 			{ et: 'Prossimo', val: prossimo ? `${prossimo.inizio} · ${esc(pp ? pp.nome.split(' ').slice(-1)[0] : prossimo.titolo)}` : 'Nessuno', click: prossimo ? `vai('imp','${prossimo.id}')` : "vai('agenda')" },
 			{ et: 'Da fare', val: `${df.length}`, click: "vai('tutteOggi')" },
@@ -1094,7 +1123,7 @@ function pratiche() {
 		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriAMano()">${I.piu} Nuova pratica a mano</button>`,
 		nota: 'Per chi chiama o scrive su WhatsApp. Quelle dal sito arrivano da sole.'
 	});
-	return conLato(pagina.replace('<!--LISTA-->', `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${NOMI_STATO[p.stato]}</span>${p.stato === 'nuova' ? '<span class="tag att">Nuova richiesta</span>' : etichettaPrev(p)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : vuotoGrande(t ? 'Nessun risultato' : 'Nessuna pratica qui', t ? `Niente per «${esc(cercaTesto)}». Prova con il cognome o il comune.` : 'Con questo filtro non c\'è niente da mostrare.')}</section>`), card, 'Riepilogo pratiche', 'lato-dopo');
+	return conLato(pagina.replace('<!--LISTA-->', `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${NOMI_STATO[p.stato]}</span>${p.stato === 'nuova' ? '<span class="tag att">Nuova richiesta</span>' : etichettaPrev(p)}${buoneNotizie(p).filter((x) => x !== 'Preventivo accettato').slice(0, 1).map(buona).join('')}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : vuotoGrande(t ? 'Nessun risultato' : 'Nessuna pratica qui', t ? `Niente per «${esc(cercaTesto)}». Prova con il cognome o il comune.` : 'Con questo filtro non c\'è niente da mostrare.')}</section>`), card, 'Riepilogo pratiche', 'lato-dopo');
 }
 const vuotoGrande = (titolo, testo) => `<div class="vuoto-grande">${I.pratiche.replace('class="ico"', 'class="ico" style="width:36px;height:36px"')}<b>${titolo}</b>${testo}</div>`;
 
@@ -1114,9 +1143,23 @@ function testataImpegno(a, p, op) {
 	const quando = `${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)}, ${a.inizio}–${a.fine} · ${durata(a)}`;
 	const chi = op ? (a.chi.filter((c) => c !== D.utente).map(nomeOp).join(', ') || 'Da solo') : a.chi.map(nomeOp).join(', ');
 	const lista = [[I.orologio, 'Quando', quando], [I.luogo, 'Dove', a.luogo], [I.clienti, op ? 'Con te' : 'Chi va', chi], ...(p ? [[I.tel, 'Cliente', `${p.nome} · ${p.tel}`], [I.pratiche, op ? 'Da fare' : 'Lavoro', p.dettagli]] : []), ...(op && a.note ? [[I.avviso, 'Nota di Fabri', a.note]] : [])];
-	return `<div class="pr-testa"><div class="pr-capo"><h1 class="pr-titolo">${esc(p ? p.nome : a.titolo)}</h1><p class="pr-intro">${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}${a.deroga ? ' · sovrapposizione accettata' : ''}</p>
+	return `<div class="pr-testa"><div class="pr-capo"><h1 class="pr-titolo">${esc(p ? p.nome : a.titolo)}</h1><p class="pr-intro">${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}${a.deroga ? ' · sovrapposizione accettata' : ''}</p>${buoneHtml([...(a.stato === 'svolto' ? ['Svolto'] : a.stato === 'confermato' ? ['Confermato col cliente'] : []), ...(p ? buoneNotizie(p) : [])])}
 		<ul class="pr-lista">${lista.map(([ico, t, x]) => `<li>${ico}<span><strong>${t}</strong><small>${esc(x)}</small></span></li>`).join('')}</ul></div>${mediaTesta(p, `${I[ICONA_TIPO[a.tipo]] ?? ''}${NOMI_APP_T[a.stato] ?? a.stato}`)}</div>`;
 }
+// Verde = buona notizia (come «+ 38 € di credito» di Airbnb): solo fatti veri della pratica
+const buona = (t) => `<span class="buona">${t}</span>`;
+function buoneNotizie(p) {
+	const l = [], pv = prevCorrente(p.id), m = matDi(p.id);
+	// agli operatori niente preventivi né storia del cliente: restano a Fabri
+	if (pv?.stato === 'accettata' && !operatore()) l.push('Preventivo accettato');
+	if (p.stato === 'conclusa') l.push('Lavoro concluso');
+	const altre = p.clienteId ? D.pratiche.filter((x) => x.clienteId === p.clienteId && x.id !== p.id).length : 0;
+	if (altre && !operatore()) l.push(`Già cliente · ${altre + 1} lavori`);
+	if (m.length && m.every((x) => x.stato === 'in_cantiere')) l.push('Materiali tutti in cantiere');
+	if ((p.fotoCantiere ?? []).length) l.push(`${p.fotoCantiere.length} foto dal cantiere`);
+	return l;
+}
+const buoneHtml = (l) => l.length ? `<div class="buone">${l.map(buona).join('')}</div>` : '';
 function schedaPratica(id) {
 	const p = pratica(id);
 	if (!p) return bottoneIndietro('Pratiche') + testa('Pratica non trovata');
@@ -1139,13 +1182,13 @@ function schedaPratica(id) {
 		[I.mail, 'Richiesta', `${p.aMano ? 'Inserita a mano (' + CANALI[p.aMano] + ')' : 'Dal sito'} · ${quando(p.ricevuta)}`]
 	];
 	const media = mediaTesta(p, `${I[conta(p.stato)] ?? ''}${NOMI_STATO[p.stato]}`);
-	const testata = `<div class="pr-testa"><div class="pr-capo"><h1 class="pr-titolo">${esc(titoloLavoro(p))}</h1><p class="pr-intro">${esc(p.nome)} · <span class="num">${p.codice}</span>${p.archiviata ? ' · archiviata' : ''}</p>
+	const testata = `<div class="pr-testa"><div class="pr-capo"><h1 class="pr-titolo">${esc(titoloLavoro(p))}</h1><p class="pr-intro">${esc(p.nome)} · <span class="num">${p.codice}</span>${p.archiviata ? ' · archiviata' : ''}</p>${buoneHtml(buoneNotizie(p))}
 		<ul class="pr-lista">${lista.map(([ico, t, x]) => `<li>${ico}<span><strong>${t}</strong><small>${esc(x)}</small></span></li>`).join('')}</ul></div>${media}</div>`;
 	// --- Riquadro che resta visibile mentre scorri (come «Da 4.000 €» del sito): valore, stato, prossimo, telefono, passo principale
 	const tot = pv ? totali(pv).tot : null;
 	const card = `<div class="pr-card">
 		<p class="pr-prezzo">${pv ? `<span>Preventivo <strong class="num">${euro(tot)}</strong></span><small>IVA inclusa</small>` : `<span>Stima <strong class="num">${esc(p.stima) || '—'}</strong></span><small>${p.stima && !p.stima.startsWith('Da') ? 'IVA inclusa' : ''}</small>`}</p>
-		<p class="pr-condizione">${pv ? `${pv.numero ?? 'Bozza v' + pv.n} · ${NOMI_PREV[pv.stato].toLowerCase()}${pv.inviato && pv.stato === 'inviata' ? ' ' + quando(pv.inviato) + ', ' + giorniDa(pv.inviato) + ' giorni fa' : ''}${pv.accettato ? ' ' + quando(pv.accettato) : ''}` : 'Nessun preventivo: è la stima che ha visto il cliente.'}</p>
+		<p class="pr-condizione${pv?.stato === 'accettata' ? ' bene' : ''}">${pv ? `${pv.numero ?? 'Bozza v' + pv.n} · ${NOMI_PREV[pv.stato].toLowerCase()}${pv.inviato && pv.stato === 'inviata' ? ' ' + quando(pv.inviato) + ', ' + giorniDa(pv.inviato) + ' giorni fa' : ''}${pv.accettato ? ' ' + quando(pv.accettato) : ''}` : 'Nessun preventivo: è la stima che ha visto il cliente.'}</p>
 		<button type="button" class="pr-dettagli" onclick="document.getElementById('prev').scrollIntoView({behavior:'smooth',block:'start'})">${pv ? 'Dettagli del preventivo' : 'Prepara il preventivo'}${I.freccia}</button>
 		<div class="pr-box"><div class="pr-cella"><span class="pr-et">Stato</span><span class="pr-val">${NOMI_STATO[p.stato]}</span></div><div class="pr-cella"><span class="pr-et">Prossimo</span><span class="pr-val">${prossimo ? `${giornoBreve(prossimo.giorno)} ${prossimo.inizio}` : 'Nessuno'}</span></div><a class="pr-cella intera" href="tel:${p.tel.replace(/\s/g, '')}"><span class="pr-et">Telefono · ${esc(p.nome)}</span><span class="pr-val num">${p.tel}</span></a></div>
 		${sug?.azione ? `<button type="button" class="btn pieno pr-azione" onclick="${azioneSug}">${sug.testo}</button>` : `<p class="pr-solo">${sug ? sug.testo : 'Nessun passo da fare'}</p>`}
@@ -1243,7 +1286,7 @@ function clienti() {
 	const lista = D.clienti.filter((c) => !t || c.nome.toLowerCase().includes(t) || c.tel.replace(/\D/g, '').includes(t.replace(/\D/g, '') || '§')).sort((a, b) => a.nome.localeCompare(b.nome));
 	const pagina = testa('Clienti', `${D.clienti.length} in anagrafica`, `<button type="button" class="btn piccolo linea" onclick="apriCliente(null)">${I.piu} Nuovo</button>`)
 		+ `<input id="cerca" class="cerca" type="search" placeholder="Cerca per nome o telefono" value="${esc(cercaTesto)}" oninput="cercaTesto=this.value;render();const c=document.getElementById('cerca');c.focus();c.setSelectionRange(c.value.length,c.value.length)">`
-		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((c) => { const n = D.pratiche.filter((p) => p.clienteId === c.id).length; return `<li><button type="button" class="riga" onclick="vai('cliente','${c.id}')"><span class="punto"></span><span class="cosa"><b>${esc(c.nome)}</b><span class="num">${c.tel} · ${n} pratic${n === 1 ? 'a' : 'he'}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun cliente trovato', `Niente per «${esc(cercaTesto)}».`)}</section>`
+		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((c) => { const n = D.pratiche.filter((p) => p.clienteId === c.id).length; return `<li><button type="button" class="riga" onclick="vai('cliente','${c.id}')"><span class="punto"></span><span class="cosa"><b>${esc(c.nome)}</b><span class="num">${c.tel} · ${n} pratic${n === 1 ? 'a' : 'he'}</span>${n > 1 ? buona(`Già cliente · ${n} lavori`) : ''}</span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun cliente trovato', `Niente per «${esc(cercaTesto)}».`)}</section>`
 		+ `<p class="nota">Chi scrive dal sito entra in rubrica quando lo colleghi dalla sua pratica («Crea e collega»).</p>`;
 	const fuori = D.pratiche.filter((p) => !p.clienteId && !p.archiviata);
 	return conLato(pagina, latoCard({
@@ -1265,7 +1308,7 @@ function schedaCliente(id) {
 		azione: `<a class="btn pieno pr-azione" href="tel:${c.tel.replace(/\s/g, '')}">${I.tel} Chiama ${esc(c.nome.split(' ')[0])}</a>`,
 		blocco: notaLato('Note sul cliente', c.note, `salvaNotaCliente('${c.id}',this.value)`, 'es. preferisce essere chiamato dopo le 18')
 	});
-	return bottoneIndietro('Clienti') + testa(esc(c.nome)) + conLato(''
+	return bottoneIndietro('Clienti') + testa(esc(c.nome), '', '') + buoneHtml([...(prs.length > 1 ? [`Già cliente · ${prs.length} lavori`] : []), ...(prs.some((x) => prevCorrente(x.id)?.stato === 'accettata') ? ['Ha accettato un preventivo'] : [])]) + conLato(''
 		+ `<section class="riquadro"><div class="contatti"><span>${I.tel}<span class="num">${c.tel}</span></span>${c.email ? `<span>${I.mail}${esc(c.email)}</span>` : ''}</div><dl class="coppia" style="margin-top:12px"><dt>Indirizzo</dt><dd>${esc(c.indirizzo) || '<span class="nota">non indicato</span>'}</dd>${c.note ? `<dt>Note</dt><dd>${esc(c.note)}</dd>` : ''}</dl><div class="azioni"><button type="button" class="btn piccolo linea" onclick="apriCliente('${c.id}')">Modifica cliente</button></div></section>`
 		+ `<section class="riquadro"><h2>Pratiche collegate <span class="conta">${prs.length}</span></h2>${prs.length ? `<ul class="lista">${prs.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${p.codice} · ${NOMI_STATO[p.stato]}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuna pratica collegata.</p>'}</section>`, card, 'Da tenere a mente sul cliente');
 }
@@ -1634,6 +1677,8 @@ Object.assign(I, {
 	installa: ic('M12 16V4 M7 9l5-5 5 5 M4 20h16'),
 	esci: ic('M15 5l-7 7 7 7')
 });
+// ogni icona porta il suo nome, così il CSS le dà il suo colore (uguale in tutta l'app)
+for (const k of Object.keys(I)) I[k] = I[k].replace('class="ico"', `class="ico" data-i="${k}"`);
 const linkMappe = (indirizzo) => `https://maps.apple.com/?q=${encodeURIComponent(indirizzo)}`;
 
 /* ---------- entrata (finta: niente password) ---------- */
@@ -1784,7 +1829,7 @@ function lavoro(id) {
 	const f = fotoDi(p), apps = appDi(id).filter((a) => a.chi.includes(D.utente) && a.stato !== 'annullato'), mats = matDi(id);
 	const note = apps.filter((a) => a.note).map((a) => `<li><span class="q num">${giornoBreve(a.giorno)}</span><span>${esc(a.note)}</span></li>`).join('');
 	return bottoneIndietro()
-		+ `<div class="testata">${f.length ? `<div class="copertina-p"><img src="${src(f[0])}" alt=""><button type="button" aria-label="Apri le foto" onclick="apriVisore('${id}',0)"></button><span class="quante">${I.foto} ${f.length}</span></div>` : ''}<h1>${esc(titoloLavoro(p))}</h1><p class="codice">${esc(p.nome)}</p></div>
+		+ `<div class="testata">${f.length ? `<div class="copertina-p"><img src="${src(f[0])}" alt=""><button type="button" aria-label="Apri le foto" onclick="apriVisore('${id}',0)"></button><span class="quante">${I.foto} ${f.length}</span></div>` : ''}<h1>${esc(titoloLavoro(p))}</h1><p class="codice">${esc(p.nome)}</p>${buoneHtml(buoneNotizie(p).filter((x) => !x.startsWith('Già cliente')))}</div>
 		` + conLato(`<div class="foglio">
 			<section class="sez"><h2>Dove</h2><p style="color:var(--nero)">${esc(p.indirizzoLavoro)}</p></section>
 			<section class="sez"><h2>Cosa c'è da fare</h2><p>${esc(p.dettagli)}</p>${p.messaggio ? `<p class="nota" style="margin-top:6px">Il cliente ha scritto: «${esc(p.messaggio)}»</p>` : ''}</section>
