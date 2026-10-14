@@ -141,7 +141,7 @@ svg.ico path { vector-effect: non-scaling-stroke; }
 .riga .punto { width: 10px; height: 10px; border-radius: 50%; background: var(--nero); }
 .riga.urgente .punto { background: var(--att); }
 .riga.con-mini { grid-template-columns: 60px 1fr auto; }
-.vedi { display: block; width: 100%; margin-top: 8px; min-height: 44px; padding: 0 16px; border-radius: var(--rb); border: 1px solid var(--bordo-scelta); background: var(--bianco); color: var(--nero); text-align: center; font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-nome); }
+.vedi { display: inline-flex; align-items: center; justify-content: center; width: auto; margin-top: 16px; min-height: 48px; padding: 0 24px; border-radius: 8px; border: 0; background: #f2f2f2; color: var(--nero); text-align: center; cursor: pointer; font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-nome); }
 .vuoto { color: var(--grigio); padding: 6px 0; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); font-weight: var(--w-testo); }
 .nota { color: var(--grigio); font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); font-weight: var(--w-testo); }
 .tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: var(--rt); background: var(--chiaro); color: var(--testo); white-space: nowrap; font-size: var(--t-mini); line-height: var(--lh-mini); font-weight: var(--w-nome); }
@@ -846,6 +846,32 @@ body[data-servizio="ristrutturazioni"] { --primario: #463428; --primario-sfumato
 body[data-servizio="ristrutturazioni"] svg[data-i] { --c: #463428; --cf: #efe7e0; }
 .riga.questo { box-shadow: inset 3px 0 0 var(--primario); padding-left: 10px; }
 .riga.questo .cosa b::after { content: ' · questo'; color: var(--grigio); font-weight: var(--w-testo); }
+/* Finestra come «Mostra tutti i comfort» di Airbnb */
+.vedi:hover { background: #ebebeb; }
+.finestra { position: fixed; z-index: 61; left: 50%; top: 50%; width: min(904px, calc(100vw - 48px)); max-height: calc(100vh - 80px); overflow: auto; overscroll-behavior: contain; transform: translate(-50%, -50%); background: var(--bianco); border-radius: 24px; padding: 20px 28px 36px; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28); animation: finEntra var(--t-tendina) var(--molla); }
+.finestra.via { animation: finEsce var(--t-chiudi) ease forwards; }
+@keyframes finEntra { from { opacity: 0; transform: translate(-50%, -46%); } }
+@keyframes finEsce { to { opacity: 0; transform: translate(-50%, -46%); } }
+.fin-x { width: 32px; height: 32px; margin-left: -6px; border: 0; border-radius: 50%; background: none; display: grid; place-items: center; color: var(--nero); cursor: pointer; }
+.fin-x:hover { background: #f2f2f2; }
+.fin-x svg { width: 18px; height: 18px; stroke-width: 2.2; }
+.fin-titolo { margin: 36px 0 0; font-size: var(--t-titolo); line-height: var(--lh-titolo); font-weight: var(--w-titolo); letter-spacing: var(--ls-titolo); color: var(--nero); }
+.fin-gruppo h3 { margin: 40px 0 0; font-size: var(--t-sotto); line-height: var(--lh-sotto); font-weight: var(--w-titolo); color: var(--nero); }
+.fin-gruppo:first-of-type h3 { margin-top: 28px; }
+.fin-riga { display: flex; align-items: flex-start; gap: 16px; width: 100%; padding: 24px 0; border: 0; border-bottom: 1px solid var(--linea); background: none; font: inherit; text-align: left; color: var(--nero); cursor: pointer; }
+.fin-riga:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.fin-riga svg { width: 24px; height: 24px; flex: none; color: var(--c, var(--nero)); }
+.fin-riga b { display: block; font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-testo); }
+.fin-riga .d { display: block; margin-top: 4px; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); color: var(--grigio); }
+.finestra > .vedi { margin-top: 28px; }
+@media (max-width: 743px) {
+	.finestra { left: 0; right: 0; top: 24px; bottom: 0; width: auto; max-height: none; transform: none; border-radius: 16px 16px 0 0; padding: 16px 20px calc(28px + env(safe-area-inset-bottom, 0px)); animation-name: finSale; }
+	.finestra.via { animation-name: finScende; }
+	@keyframes finSale { from { transform: translateY(100%); } }
+	@keyframes finScende { to { transform: translateY(100%); } }
+	.fin-titolo { margin-top: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .finestra, .finestra.via { animation: none !important; } }
 </style>
 
 <div class="proto"><b>PROTOTIPO</b> · dati fittizi · nessun invio · niente va sul server</div>
@@ -1210,11 +1236,11 @@ function oggi() {
 	const rigaApp = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num">${a.inizio}<small>${durata(a)}</small></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}${a.stato === 'proposto' ? ' · <em>da confermare</em>' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; };
 	const rigaDf = (x) => `<li><button type="button" class="riga ${x.oggi ? 'urgente' : ''}" onclick="vai('p','${x.p.id}')"><span class="punto"></span><span class="cosa"><b>${x.cosa}</b><span>${esc(x.p.nome)}, ${lavoroBreve(x.p)}${x.attesa ? ' · ' + x.attesa : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`;
 	const rigaAtt = (x) => `<button type="button" class="attesa" onclick="vai('p','${x.p.id}')"><span><b>${esc(x.p.nome)}</b><span>${x.pv.numero} · ${euro(totali(x.pv).tot)} · inviato ${quando(x.pv.inviato)}</span></span><span class="giorni num"><b>${giorniDa(x.pv.inviato)}</b> g</span></button>`;
-	const bloccoApp = altri.length ? `<section class="riquadro"><h2>Poi oggi <span class="conta">${altri.length}</span></h2><ul class="lista">${altri.slice(0, 3).map(rigaApp).join('')}</ul>${altri.length > 3 ? `<button type="button" class="vedi" onclick="vai('agenda')">Tutta la giornata (${apps.length})</button>` : ''}</section>` : '';
-	const bloccoDf = `<section class="riquadro"><h2>Da fare <span class="conta">${df.length > 3 ? `3 di ${df.length}` : df.length || ''}</span></h2>${df.length ? `<ul class="lista">${df.slice(0, 3).map(rigaDf).join('')}</ul>` : '<p class="vuoto">Niente in sospeso. Bene così.</p>'}${df.length > 3 ? `<button type="button" class="vedi" onclick="vai('tutteOggi')">Vedi tutto (${df.length})</button>` : ''}</section>`;
-	const bloccoAtt = `<section class="riquadro"><h2>In attesa di risposta <span class="conta">${att.length || ''}</span></h2>${att.length ? att.slice(0, 3).map(rigaAtt).join('') : '<p class="vuoto">Nessun preventivo in attesa.</p>'}${att.length > 3 ? `<button type="button" class="vedi" onclick="filtroPratiche='tutte';vai('pratiche')">Tutti i preventivi inviati (${att.length})</button>` : ''}</section>`;
+	const bloccoApp = altri.length ? `<section class="riquadro"><h2>Poi oggi <span class="conta">${altri.length}</span></h2><ul class="lista">${altri.slice(0, 3).map(rigaApp).join('')}</ul>${altri.length > 3 ? `<button type="button" class="vedi" onclick="finestraGiornata()">Mostra tutta la giornata (${apps.length})</button>` : ''}</section>` : '';
+	const bloccoDf = `<section class="riquadro"><h2>Da fare <span class="conta">${df.length > 3 ? `3 di ${df.length}` : df.length || ''}</span></h2>${df.length ? `<ul class="lista">${df.slice(0, 3).map(rigaDf).join('')}</ul>` : '<p class="vuoto">Niente in sospeso. Bene così.</p>'}${df.length > 3 ? `<button type="button" class="vedi" onclick="finestraDaFare()">Mostra tutte e ${df.length} le cose da fare</button>` : ''}</section>`;
+	const bloccoAtt = `<section class="riquadro"><h2>In attesa di risposta <span class="conta">${att.length || ''}</span></h2>${att.length ? att.slice(0, 3).map(rigaAtt).join('') : '<p class="vuoto">Nessun preventivo in attesa.</p>'}${att.length > 3 ? `<button type="button" class="vedi" onclick="finestraAttesa()">Mostra tutti e ${att.length} i preventivi in attesa</button>` : ''}</section>`;
 	const dv = ericaDaVedere();
-	const bloccoErica = `<section class="riquadro"><h2><span style="display:inline-flex;gap:10px;align-items:center">${ericaAvatar()}Erica ha preparato</span> <span class="conta">${dv.length || ''}</span></h2>${dv.length ? `<ul class="lista">${dv.slice(0, 2).map(rigaErica).join('')}</ul>` : '<p class="vuoto">Niente da vedere. Puoi chiederle qualcosa.</p>'}<button type="button" class="vedi" onclick="vai('erica')">${dv.length > 2 ? `Vedi tutto (${dv.length})` : 'Apri Erica'}</button></section>`;
+	const bloccoErica = `<section class="riquadro"><h2><span style="display:inline-flex;gap:10px;align-items:center">${ericaAvatar()}Erica ha preparato</span> <span class="conta">${dv.length || ''}</span></h2>${dv.length ? `<ul class="lista">${dv.slice(0, 2).map(rigaErica).join('')}</ul>` : '<p class="vuoto">Niente da vedere. Puoi chiederle qualcosa.</p>'}<button type="button" class="vedi" onclick="${dv.length > 2 ? 'finestraErica()' : "vai('erica')"}">${dv.length > 2 ? `Mostra tutte e ${dv.length} le proposte` : 'Apri Erica'}</button></section>`;
 	return testa('Oggi', giornoLungo(OGGI).charAt(0).toUpperCase() + giornoLungo(OGGI).slice(1) + ' · Fabri', tastoCerca(), true)
 		+ conLato(hero + bloccoApp + bloccoDf + bloccoAtt + bloccoErica, latoOggi(apps, prossimo, pp, df, att, dv), 'Da tenere a mente oggi', 'lato-dopo');
 }
@@ -1225,8 +1251,8 @@ function latoOggi(apps, prossimo, pp, df, att, dv) {
 		sotto: dfOggi ? `${dfOggi} ${dfOggi === 1 ? 'cosa da fare' : 'cose da fare'} entro oggi.` : buona('Niente di urgente oggi'),
 		celle: [
 			{ et: 'Prossimo', val: prossimo ? `${prossimo.inizio} · ${esc(pp ? pp.nome.split(' ').slice(-1)[0] : prossimo.titolo)}` : 'Nessuno', click: prossimo ? `vai('imp','${prossimo.id}')` : "vai('agenda')" },
-			{ et: 'Da fare', val: `${df.length}`, click: "vai('tutteOggi')" },
-			{ et: 'In attesa', val: `${att.length} preventiv${att.length === 1 ? 'o' : 'i'}`, click: "filtroPratiche='tutte';vai('pratiche')" },
+			{ et: 'Da fare', val: `${df.length}`, click: 'finestraDaFare()' },
+			{ et: 'In attesa', val: `${att.length} preventiv${att.length === 1 ? 'o' : 'i'}`, click: 'finestraAttesa()' },
 			{ et: 'Da comprare', val: `${comprare} material${comprare === 1 ? 'e' : 'i'}`, click: "vai('materiali')" },
 			...(pp ? [{ et: `Telefono · ${esc(pp.nome)}`, val: `<span class="num">${pp.tel}</span>`, href: `tel:${pp.tel.replace(/\s/g, '')}`, intera: true }] : [])
 		],
@@ -1345,14 +1371,14 @@ function schedaPratica(id, impId = null) {
 	<a class="pr-tel" href="tel:${p.tel.replace(/\s/g, '')}">${I.tel}Oppure chiama ${esc(p.nome.split(' ')[0] === 'Famiglia' ? p.nome : p.nome.split(' ')[0])}</a>
 	<button type="button" class="pr-tel" onclick="chiediAEricaPratica('${id}')">${I.erica}Chiedi a Erica</button>`;
 	const sezioni = `
-		<section class="sez"><h2>Cliente ${cl ? `<button type="button" class="link" onclick="vai('cliente','${cl.id}')">Scheda</button>` : `<button type="button" class="link" onclick="collegaCliente('${id}')">Crea e collega</button>`}</h2><p><b>${esc(p.nome)}</b>${cl ? '' : ' <span class="nota">· richiesta dal sito, non ancora in rubrica</span>'}</p><div class="contatti" style="margin-top:6px"><span>${I.tel}<a class="num" href="tel:${p.tel.replace(/\s/g, '')}">${p.tel}</a></span>${p.email ? `<span>${I.mail}<a href="mailto:${esc(p.email)}">${esc(p.email)}</a></span>` : ''}</div><dl class="coppia" style="margin-top:10px"><dt>Dove si lavora</dt><dd>${esc(p.indirizzoLavoro)}</dd><dt>Dove abita</dt><dd>${esc(p.indirizzoCliente || cl?.indirizzo || '') || '<span class="nota">non indicato</span>'}</dd></dl></section>
+		<section class="sez"><h2>Cliente ${cl ? `<button type="button" class="link" onclick="finestraCliente('${cl.id}','${id}')">Scheda</button>` : `<button type="button" class="link" onclick="collegaCliente('${id}')">Crea e collega</button>`}</h2><p><b>${esc(p.nome)}</b>${cl ? '' : ' <span class="nota">· richiesta dal sito, non ancora in rubrica</span>'}</p><div class="contatti" style="margin-top:6px"><span>${I.tel}<a class="num" href="tel:${p.tel.replace(/\s/g, '')}">${p.tel}</a></span>${p.email ? `<span>${I.mail}<a href="mailto:${esc(p.email)}">${esc(p.email)}</a></span>` : ''}</div><dl class="coppia" style="margin-top:10px"><dt>Dove si lavora</dt><dd>${esc(p.indirizzoLavoro)}</dd><dt>Dove abita</dt><dd>${esc(p.indirizzoCliente || cl?.indirizzo || '') || '<span class="nota">non indicato</span>'}</dd></dl></section>
 		<section class="sez"><h2>Lavoro richiesto</h2><dl class="coppia"><dt>Lavoro</dt><dd><b>${esc(p.servizio)}</b></dd><dt>Dettagli</dt><dd>${esc(p.dettagli)}</dd>${p.preferenze ? `<dt>Preferenze</dt><dd>${esc(p.preferenze)}</dd>` : ''}${p.messaggio ? `<dt>Messaggio</dt><dd>«${esc(p.messaggio)}»</dd>` : ''}<dt>Stima vista dal cliente</dt><dd><span class="stima">${esc(p.stima) || '—'}</span>${p.stimaNota ? `<br><span class="nota">${esc(p.stimaNota)}</span>` : ''}</dd></dl></section>
 		<section class="sez" id="prev"><h2>Preventivo</h2>${bloccoPrev()}</section>
 		<section class="sez"><h2>Appuntamenti ${!chiusa(p) ? `<button type="button" class="link" onclick="apriNuovoApp('${id}')">+ Nuovo</button>` : ''}</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga ${a.id === impId ? 'questo' : ''}" onclick="vai('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')} · ${durata(a)}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : `<p class="nota">Nessun appuntamento.${!chiusa(p) ? ` <button type="button" class="link" onclick="apriNuovoApp('${id}')">Fissa il primo</button>` : ''}</p>`}</section>
 		<section class="sez"><h2>Materiali <span class="conta">${matDi(id).length || ''}</span>${!chiusa(p) ? ` <button type="button" class="link" onclick="apriMateriale(null,'${id}')">+ Aggiungi</button>` : ''}</h2>${matDi(id).length ? `<ul class="lista">${matDi(id).map((m) => rigaMat(m)).join('')}</ul>` : `<p class="nota">Nessun materiale. ${!chiusa(p) ? `<button type="button" class="link" onclick="preparaErica('${id}','materiali')">Fatti proporre la lista da Erica</button>` : ''}</p>`}</section>
 		<section class="sez"><h2>Note interne</h2><textarea class="campo" rows="3" placeholder="Solo per te: operatori e cliente non le vedono" onchange="salvaNote('${id}',this.value)">${esc(p.note)}</textarea><p class="nota" style="margin-top:6px">Si salvano quando esci dal campo.</p></section>
 		<section class="sez"><h2>Stato</h2><div class="contatti" style="align-items:center;justify-content:space-between"><span>${tagStato(p)}</span>${chiusa(p) ? `<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn piccolo linea" onclick="riapri('${id}')">Riapri</button><button type="button" class="btn piccolo linea" onclick="archivia('${id}',${!p.archiviata})">${p.archiviata ? 'Togli dall\'archivio' : 'Archivia'}</button></span>` : `<button type="button" class="btn piccolo linea" onclick="apriStato('${id}')">Cambia stato</button>`}</div><p class="nota" style="margin-top:8px">${chiusa(p) ? 'Pratica chiusa: per lavorarci ancora, riaprila.' : 'Lo stato lo cambi tu: preventivo accettato, appuntamento svolto e lavoro concluso sono passi diversi.'}</p></section>
-		<section class="sez"><h2>Storico <span class="conta">${storico.length}</span></h2><ul class="storico">${(storicoAperto === id ? storico : storico.slice(0, 4)).map(([q, t]) => `<li><span class="q num">${quando(q)}</span><span>${esc(t)}</span></li>`).join('')}</ul>${storico.length > 4 && storicoAperto !== id ? `<button type="button" class="vedi" onclick="storicoAperto='${id}';render()">Tutto lo storico (${storico.length})</button>` : ''}</section>`;
+		<section class="sez"><h2>Storico <span class="conta">${storico.length}</span></h2><ul class="storico">${storico.slice(0, 4).map(([q, t]) => `<li><span class="q num">${quando(q)}</span><span>${esc(t)}</span></li>`).join('')}</ul>${storico.length > 4 ? `<button type="button" class="vedi" onclick="finestraStorico('${id}')">Mostra tutto lo storico (${storico.length})</button>` : ''}</section>`;
 	if (imp) {
 		const cosa = `<section class="sez" id="impegno"><h2>${NOMI_TIPO[imp.tipo]} · ${giornoBreve(imp.giorno)} ${imp.inizio}–${imp.fine}</h2>${imp.stato === 'annullato' && imp.motivo ? `<dl class="coppia"><dt>Annullato</dt><dd>${esc(imp.motivo)}</dd></dl>` : `<p class="nota">Se il cliente chiede un altro giorno, o salta tutto.</p>`}
 			<div class="azioni">${aperte(imp) ? `<button type="button" class="btn linea" onclick="apriSposta('${imp.id}')">Sposta</button><button type="button" class="btn pericolo" onclick="apriAnnulla('${imp.id}')">Annulla</button>` : ''}</div></section>${sezioneChiusura(imp)}`;
@@ -1756,8 +1782,47 @@ function chiudiTendina(subito = false) {
 	tendinaAperta = false;
 	if (!s.firstChild) return;
 	if (subito) { s.innerHTML = ''; return; }
-	s.querySelector('.velo').classList.add('via'); s.querySelector('.tendina').classList.add('via');
+	s.querySelector('.velo')?.classList.add('via'); s.querySelector('.tendina, .finestra')?.classList.add('via');
 	setTimeout(() => (s.innerHTML = ''), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300);
+}
+/* FINESTRA come «Mostra tutti i comfort» di Airbnb: al posto di andare su un'altra pagina, l'elenco completo si apre qui sopra.
+   Computer: finestra al centro con la X; telefono: foglio a tutto schermo. Esc, X o tocco fuori per chiudere. */
+function apriFinestra(titolo, gruppi, piede = '') {
+	chiudiTendina(true);
+	const riga = (r) => `<button type="button" class="fin-riga" onclick="${r.click}">${r.ico ?? ''}<span><b>${r.t}</b>${r.d ? `<span class="d">${r.d}</span>` : ''}</span></button>`;
+	document.getElementById('strato').innerHTML = `<div class="velo" onclick="chiudiTendina()"></div><div class="finestra" role="dialog" aria-modal="true" aria-label="${esc(titolo)}"><button type="button" class="fin-x" aria-label="Chiudi" onclick="chiudiTendina()">${I.chiudi}</button><h2 class="fin-titolo">${titolo}</h2>${gruppi.filter((g) => g[1].length).map(([nome, righe]) => `<section class="fin-gruppo">${nome ? `<h3>${nome}</h3>` : ''}${righe.map(riga).join('')}</section>`).join('')}${piede}</div>`;
+	tendinaAperta = true;
+	if (matchMedia('(hover: hover)').matches) setTimeout(() => document.querySelector('.finestra .fin-x')?.focus({ focusVisible: false }), 50);
+}
+const vaiDa = (v, id) => `chiudiTendina(true);vai('${v}','${id}')`;
+function finestraDaFare() {
+	const df = daFare(), r = (x) => ({ ico: x.oggi ? I.avviso : I.pratiche, t: x.cosa, d: `${esc(x.p.nome)}, ${lavoroBreve(x.p)} · ${x.det}${x.attesa ? ' · ' + x.attesa : ''}`, click: vaiDa('p', x.p.id) });
+	apriFinestra('Cose da fare', [['Entro oggi', df.filter((x) => x.oggi).map(r)], ['Da fare', df.filter((x) => !x.oggi).map(r)]]);
+}
+function finestraGiornata(g = OGGI) {
+	const apps = D.appuntamenti.filter((a) => a.giorno === g && aperte(a) && vedoApp(a)).sort((a, b) => a.inizio.localeCompare(b.inizio));
+	const r = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return { ico: I[ICONA_TIPO[a.tipo]], t: `${a.inizio}–${a.fine} · ${esc(p ? p.nome : a.titolo)}`, d: `${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''} · ${esc(a.luogo)} · ${a.chi.map(nomeOp).join(', ')}${a.stato === 'proposto' ? ' · da confermare' : ''}`, click: vaiDa('imp', a.id) }; };
+	apriFinestra(`${giornoLungo(g).charAt(0).toUpperCase() + giornoLungo(g).slice(1)}`, [['Mattina', apps.filter((a) => a.inizio < '13:00').map(r)], ['Pomeriggio', apps.filter((a) => a.inizio >= '13:00').map(r)]], `<button type="button" class="vedi" onclick="chiudiTendina(true);agendaGiorno='${g}';vai('agenda')">Apri l'agenda</button>`);
+}
+function finestraAttesa() {
+	apriFinestra('In attesa di risposta', [['', inAttesa().map((x) => ({ ico: I.pratiche, t: `${esc(x.p.nome)} · ${x.pv.numero}`, d: `${euro(totali(x.pv).tot)} · inviato ${quando(x.pv.inviato)} · ${giorniDa(x.pv.inviato)} giorni fa`, click: vaiDa('p', x.p.id) }))]]);
+}
+function finestraErica() {
+	const dv = ericaDaVedere();
+	apriFinestra('Erica ha preparato', Object.entries(TIPI_ERICA).map(([k, n]) => [n, dv.filter((e) => e.tipo === k).map((e) => ({ ico: I.erica, t: esc(e.titolo), d: esc(e.perche ?? ''), click: `apriProposta('${e.id}')` }))]), `<button type="button" class="vedi" onclick="chiudiTendina(true);vai('erica')">Apri Erica</button>`);
+}
+function finestraStorico(id) {
+	const p = pratica(id), per = {};
+	[...p.storico].reverse().forEach(([q, t]) => { const k = MESI[d(q).getUTCMonth()] + ' ' + d(q).getUTCFullYear(); (per[k] ??= []).push({ ico: I.orologio, t: esc(t), d: quando(q), click: '' }); });
+	apriFinestra(`Storico · ${esc(p.nome)}`, Object.entries(per).map(([k, l]) => [k.charAt(0).toUpperCase() + k.slice(1), l]));
+}
+function finestraCliente(cid, daPratica = '') {
+	const c = cliente(cid), prs = D.pratiche.filter((x) => x.clienteId === cid);
+	apriFinestra(esc(c.nome), [
+		['Contatti', [{ ico: I.tel, t: `<span class="num">${c.tel}</span>`, d: 'Tocca per chiamare', click: `location.href='tel:${c.tel.replace(/\s/g, '')}'` }, ...(c.email ? [{ ico: I.mail, t: esc(c.email), d: 'Email', click: `location.href='mailto:${esc(c.email)}'` }] : [])]],
+		['Dove abita', [{ ico: I.luogo, t: esc(c.indirizzo) || 'Non indicato', d: c.note ? esc(c.note) : '', click: '' }]],
+		[`Lavori (${prs.length})`, prs.map((x) => ({ ico: I.pratiche, t: esc(titoloLavoro(x)), d: `${x.codice} · ${NOMI_STATO[x.stato]}${x.id === daPratica ? ' · questa' : ''}`, click: x.id === daPratica ? 'chiudiTendina()' : vaiDa('p', x.id) }))]
+	], `<button type="button" class="vedi" onclick="chiudiTendina(true);apriCliente('${cid}')">Modifica cliente</button>`);
 }
 // Conferma prima di un'azione che butta via qualcosa: titolo, spiegazione, tasto, cosa fare.
 let _conferma = null;
