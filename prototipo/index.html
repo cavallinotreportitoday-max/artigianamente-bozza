@@ -900,9 +900,15 @@ body.con-pop .erica-fab { visibility: hidden; }
 	.pop-barra { top: 12px; left: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .pop, .pop-velo, .pop.via, .pop-velo.via { animation: none !important; } }
+/* numeri nei pallini rossi: centrati (riga alta quanto il carattere) */
+.barra .pallino, .erica-fab .badge { line-height: 1; font-variant-numeric: tabular-nums; padding-top: 0; padding-bottom: 0; text-align: center; }
+@media (min-width: 900px) { .barra .pallino { padding-top: 1px; } }
+.tipo-cliente { margin-bottom: 6px; }
+.riga .cosa b .tag { margin-left: 6px; vertical-align: middle; }
+.solo-tipo[hidden] { display: none !important; }
 </style>
 
-<div class="proto"><b>PROTOTIPO</b> · dati fittizi · nessun invio · niente va sul server</div>
+<div class="proto" title="Prototipo: dati fittizi, nessun invio, niente va sul server"><b>PROTOTIPO</b> · dati finti, nessun invio</div>
 <div id="rete" class="rete" hidden><svg class="ico" viewBox="0 0 24 24"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M12 19h.01M3 3l18 18"/></svg><span>Senza rete: niente viene salvato finché non torna la connessione. Quello che scrivi resta qui.</span></div>
 <main id="app" class="app"></main>
 <header class="barra"><div class="marchio marchio-barra">Artigiana<span>Mente</span></div><nav id="barra" aria-label="Sezioni"></nav><div class="barra-destra">Fabri <button type="button" class="link" onclick="toast('Nel prototipo non c\'è il login.')">Esci</button></div></header>
@@ -1595,7 +1601,7 @@ function clienti() {
 	const lista = D.clienti.filter((c) => !t || c.nome.toLowerCase().includes(t) || c.tel.replace(/\D/g, '').includes(t.replace(/\D/g, '') || '§')).sort((a, b) => a.nome.localeCompare(b.nome));
 	const pagina = testa('Clienti', `${D.clienti.length} in anagrafica`, `<button type="button" class="btn piccolo linea" onclick="apriCliente(null)">${I.piu} Nuovo</button>`)
 		+ `<input id="cerca" class="cerca" type="search" placeholder="Cerca per nome o telefono" value="${esc(cercaTesto)}" oninput="cercaTesto=this.value;render();const c=document.getElementById('cerca');c.focus();c.setSelectionRange(c.value.length,c.value.length)">`
-		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((c) => { const n = D.pratiche.filter((p) => p.clienteId === c.id).length; return `<li><button type="button" class="riga" onclick="apri('cliente','${c.id}')"><span class="punto"></span><span class="cosa"><b>${esc(c.nome)}</b><span class="num">${c.tel} · ${n} pratic${n === 1 ? 'a' : 'he'}</span>${n > 1 ? buona(`Già cliente · ${n} lavori`) : ''}</span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun cliente trovato', `Niente per «${esc(cercaTesto)}».`)}</section>`
+		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((c) => { const n = D.pratiche.filter((p) => p.clienteId === c.id).length; return `<li><button type="button" class="riga" onclick="apri('cliente','${c.id}')"><span class="punto"></span><span class="cosa"><b>${esc(c.nome)} ${tagTipoCliente(c)}</b><span class="num">${c.tel} · ${n} pratic${n === 1 ? 'a' : 'he'}</span>${n > 1 ? buona(`Già cliente · ${n} lavori`) : ''}</span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun cliente trovato', `Niente per «${esc(cercaTesto)}».`)}</section>`
 		+ `<p class="nota">Chi scrive dal sito entra in rubrica quando lo colleghi dalla sua pratica («Crea e collega»).</p>`;
 	const fuori = D.pratiche.filter((p) => !p.clienteId && !p.archiviata);
 	return conLato(pagina, latoCard({
@@ -1617,26 +1623,40 @@ function schedaCliente(id) {
 		azione: `<a class="btn pieno pr-azione" href="tel:${c.tel.replace(/\s/g, '')}">${I.tel} Chiama ${esc(c.nome.split(' ')[0])}</a>`,
 		blocco: notaLato('Note sul cliente', c.note, `salvaNotaCliente('${c.id}',this.value)`, 'es. preferisce essere chiamato dopo le 18')
 	});
-	return bottoneIndietro('Clienti') + testa(esc(c.nome), '', '') + buoneHtml([...(prs.length > 1 ? [`Già cliente · ${prs.length} lavori`] : []), ...(prs.some((x) => prevCorrente(x.id)?.stato === 'accettata') ? ['Ha accettato un preventivo'] : [])]) + conLato(''
+	return bottoneIndietro('Clienti') + testa(`${esc(c.nome)}`, `${TIPI_CLIENTE[c.tipo ?? 'privato'][0]}${c.referente ? ' · ' + esc(c.referente) : ''}${c.piva ? ' · P. IVA ' + esc(c.piva) : ''}${c.cig ? ' · ' + esc(c.cig) : ''}`, '') + buoneHtml([...(prs.length > 1 ? [`Già cliente · ${prs.length} lavori`] : []), ...(prs.some((x) => prevCorrente(x.id)?.stato === 'accettata') ? ['Ha accettato un preventivo'] : [])]) + conLato(''
 		+ `<section class="riquadro"><div class="contatti"><span>${I.tel}<span class="num">${c.tel}</span></span>${c.email ? `<span>${I.mail}${esc(c.email)}</span>` : ''}</div><dl class="coppia" style="margin-top:12px"><dt>Indirizzo</dt><dd>${esc(c.indirizzo) || '<span class="nota">non indicato</span>'}</dd>${c.note ? `<dt>Note</dt><dd>${esc(c.note)}</dd>` : ''}</dl><div class="azioni"><button type="button" class="btn piccolo linea" onclick="apriCliente('${c.id}')">Modifica cliente</button></div></section>`
 		+ `<section class="riquadro"><h2>Pratiche collegate <span class="conta">${prs.length}</span></h2>${prs.length ? `<ul class="lista">${prs.map((p) => `<li><button type="button" class="riga con-mini" onclick="apri('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${p.codice} · ${NOMI_STATO[p.stato]}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuna pratica collegata.</p>'}</section>`, card, 'Da tenere a mente sul cliente');
 }
 function apriCliente(id) {
-	const c = id ? cliente(id) : { nome: '', tel: '', email: '', indirizzo: '', note: '' };
-	apriTendina(`<label class="campo">Nome e cognome<input class="campo" name="cl-nome" value="${esc(c.nome)}" autocomplete="off"></label>
+	const c = id ? cliente(id) : { nome: '', tel: '', email: '', indirizzo: '', note: '', tipo: 'privato' };
+	const tipo = c.tipo ?? 'privato';
+	apriTendina(`<label class="campo">Che cliente è?</label><div class="scelte tipo-cliente">${Object.entries(TIPI_CLIENTE).map(([k, [n]]) => `<label><input type="radio" name="cl-tipo" value="${k}" ${k === tipo ? 'checked' : ''} onchange="tipoCliente(this.value)">${n}</label>`).join('')}</div>
+	<label class="campo"><span id="cl-nome-et">${TIPI_CLIENTE[tipo][1]}</span><input class="campo" name="cl-nome" value="${esc(c.nome)}" autocomplete="off"></label>
+	<label class="campo solo-tipo" data-tipo="azienda pubblico">Partita IVA o codice fiscale (facoltativo)<input class="campo num" name="cl-piva" value="${esc(c.piva ?? '')}" inputmode="numeric"></label>
+	<label class="campo solo-tipo" data-tipo="pubblico">Codice univoco o CIG (facoltativo)<input class="campo" name="cl-cig" value="${esc(c.cig ?? '')}" autocomplete="off"></label>
+	<label class="campo solo-tipo" data-tipo="azienda pubblico">Referente (facoltativo)<input class="campo" name="cl-referente" value="${esc(c.referente ?? '')}" placeholder="es. geom. Rossi, ufficio tecnico"></label>
 	<label class="campo">Telefono<input class="campo num" name="cl-tel" value="${esc(c.tel)}" inputmode="tel"></label>
 	<label class="campo">Email (facoltativa)<input class="campo" name="cl-email" value="${esc(c.email)}" inputmode="email"></label>
 	<label class="campo">Indirizzo<input class="campo" name="cl-indirizzo" value="${esc(c.indirizzo)}"></label>
 	<label class="campo">Note (facoltative)<input class="campo" name="cl-note" value="${esc(c.note ?? '')}"></label>
 	<div id="cl-esito"></div>
 	<div class="azioni"><button type="button" class="btn pieno" onclick="salvaCliente('${id ?? ''}')">${id ? 'Salva le modifiche' : 'Crea il cliente'}</button><button type="button" class="btn linea pieno" onclick="chiudiTendina()">Annulla</button></div>`, id ? 'Modifica cliente' : 'Nuovo cliente');
+	tipoCliente(tipo);
 	setTimeout(() => document.querySelector('[name="cl-nome"]')?.focus(), 50);
 }
+// Tipo di cliente: privato, azienda, lavori pubblici (ente). Cambia i campi del modulo e l'IVA proposta nel preventivo.
+const TIPI_CLIENTE = { privato: ['Privato', 'Nome e cognome'], azienda: ['Azienda', 'Nome dell\'azienda'], pubblico: ['Lavori pubblici', 'Ente (es. Comune di Cavallino-Treporti)'] };
+function tipoCliente(t) {
+	document.querySelectorAll('.tendina .solo-tipo').forEach((el) => (el.hidden = !el.dataset.tipo.split(' ').includes(t)));
+	const et = document.getElementById('cl-nome-et'); if (et) et.textContent = TIPI_CLIENTE[t][1];
+}
+const tagTipoCliente = (c) => (c.tipo && c.tipo !== 'privato' ? `<span class="tag ${c.tipo === 'pubblico' ? 'prop' : ''}">${TIPI_CLIENTE[c.tipo][0]}</span>` : '');
 function salvaCliente(id) {
 	if (bloccoRete()) return;
 	const v = (n) => (valore(n) ?? '').trim();
-	const dati = { nome: v('cl-nome'), tel: v('cl-tel'), email: v('cl-email'), indirizzo: v('cl-indirizzo'), note: v('cl-note') };
-	if (dati.nome.length < 2) return esito('cl-esito', 'Serve il nome del cliente.');
+	const tipo = valore('cl-tipo') || 'privato';
+	const dati = { tipo, nome: v('cl-nome'), tel: v('cl-tel'), email: v('cl-email'), indirizzo: v('cl-indirizzo'), note: v('cl-note'), piva: tipo === 'privato' ? '' : v('cl-piva'), cig: tipo === 'pubblico' ? v('cl-cig') : '', referente: tipo === 'privato' ? '' : v('cl-referente') };
+	if (dati.nome.length < 2) return esito('cl-esito', tipo === 'privato' ? 'Serve il nome del cliente.' : tipo === 'azienda' ? 'Serve il nome dell\'azienda.' : 'Serve il nome dell\'ente.');
 	if (dati.tel.replace(/\D/g, '').length < 6) return esito('cl-esito', 'Controlla il telefono: troppo corto.');
 	if (dati.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dati.email)) return esito('cl-esito', 'L\'email non sembra giusta (manca la @ o il punto).');
 	const doppio = D.clienti.find((c) => c.id !== id && c.tel.replace(/\D/g, '') === dati.tel.replace(/\D/g, ''));
@@ -1726,12 +1746,14 @@ function creaPreventivo(praticaId, dallaStima) {
 	if (bloccoRete()) return;
 	const p = pratica(praticaId);
 	const ds = dallaStima ? righeDaStima(p) : null;
-	const pv = { id: nuovoId('p'), praticaId, n: prevDi(praticaId).length + 1, numero: null, stato: 'bozza', righe: ds ? ds.righe : [['', '1', 0, 0]], iva: ds ? ds.iva : (IVA_SERVIZIO[p.servizio] ?? 22), daStima: ds?.daStima ?? null };
+	const pv = { id: nuovoId('p'), praticaId, n: prevDi(praticaId).length + 1, numero: null, stato: 'bozza', righe: ds ? ds.righe : [['', '1', 0, 0]], iva: ds ? ds.iva : ivaPer(p), daStima: ds?.daStima ?? null };
 	D.preventivi.push(pv);
 	p.storico.push([adessoIso(), `Preventivo v${pv.n} in bozza${dallaStima ? ' (dalla stima)' : ''}`]);
 	salva(); vai('prev', pv.id);
 }
 // Aliquote del sito (src/lib/calcoli.js, «iva»), copiate in sola lettura: lavori sulla casa 10%, servizi 22%
+// aziende ed enti pubblici: IVA 22% (stessa nota di src/lib/calcoli.js); privati: quella del servizio
+const ivaPer = (p) => { const c = p.clienteId ? cliente(p.clienteId) : null; return c && c.tipo && c.tipo !== 'privato' ? 22 : (IVA_SERVIZIO[p.servizio] ?? 22); };
 const IVA_SERVIZIO = { Ristrutturazioni: 10, Imbiancatura: 10, 'Risanamento umidità': 10, Parquet: 10, Falegnameria: 22, 'Montaggio mobili': 22, Traslochi: 22 };
 // La stima del sito è IVA inclusa: «Da 75 €» = 75 € con IVA; «1.100 – 1.350 €» = forchetta con IVA
 function totaleDaStima(p) {
@@ -1755,7 +1777,7 @@ function vociRichiesta(p) {
 	return [[`${p.servizio}: ${d}`, '1', 1]];
 }
 function righeDaStima(p) {
-	const t = totaleDaStima(p), iva = IVA_SERVIZIO[p.servizio] ?? 22, voci = vociRichiesta(p);
+	const t = totaleDaStima(p), iva = ivaPer(p), voci = vociRichiesta(p);
 	if (!t) return { righe: voci.map(([n, q]) => [n, q, 0, 0]), iva, daStima: null };
 	// imponibile = totale con IVA ÷ (1 + IVA), diviso fra le voci in centesimi; l'ultima prende il resto
 	const imp = Math.round((t.tot / (1 + iva / 100)) * 100), peso = voci.reduce((s, v) => s + v[2], 0);
@@ -1890,7 +1912,7 @@ function finestraStorico(id) {
 }
 function finestraCliente(cid, daPratica = '') {
 	const c = cliente(cid), prs = D.pratiche.filter((x) => x.clienteId === cid);
-	apriFinestra(esc(c.nome), [
+	apriFinestra(`${esc(c.nome)} ${tagTipoCliente(c)}`, [
 		['Contatti', [{ ico: I.tel, t: `<span class="num">${c.tel}</span>`, d: 'Tocca per chiamare', click: `location.href='tel:${c.tel.replace(/\s/g, '')}'` }, ...(c.email ? [{ ico: I.mail, t: esc(c.email), d: 'Email', click: `location.href='mailto:${esc(c.email)}'` }] : [])]],
 		['Dove abita', [{ ico: I.luogo, t: esc(c.indirizzo) || 'Non indicato', d: c.note ? esc(c.note) : '', click: '' }]],
 		[`Lavori (${prs.length})`, prs.map((x) => ({ ico: I.pratiche, t: esc(titoloLavoro(x)), d: `${x.codice} · ${NOMI_STATO[x.stato]}${x.id === daPratica ? ' · questa' : ''}`, click: x.id === daPratica ? 'chiudiTendina()' : vaiDa('p', x.id) }))]
