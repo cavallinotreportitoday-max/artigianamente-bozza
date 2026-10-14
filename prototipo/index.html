@@ -443,6 +443,23 @@ a.pr-cella:hover { background: #f7f7f7; }
 .pr-nota { margin: 10px 0 0; text-align: center; font-size: 14px; line-height: 1.45; font-weight: 300; color: #6a6a6a; }
 .pr-tel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 14px; padding: 4px 0; border: 0; background: none; font-size: 14px; color: #222; text-decoration: underline; text-underline-offset: 3px; }
 .pr-tel svg { width: 16px; height: 16px; }
+.pr-box .pr-cella:nth-child(odd) { border-left: 0; }
+.pr-box .pr-cella:nth-child(n+3) { border-top: 1px solid #b0b0b0; }
+button.pr-cella { border-width: 0; border-style: solid; border-color: #b0b0b0; font: inherit; text-align: left; width: 100%; cursor: pointer; }
+button.pr-cella:hover { background: #f7f7f7; }
+.pr-box .pr-cella.attiva { background: #f7f7f7; }
+.lato-note { margin-top: 18px; }
+.lato-note .pr-et { display: block; margin-bottom: 6px; }
+.lato-note textarea { width: 100%; min-height: 84px; font-size: 15px; resize: vertical; }
+.lato-note .pr-nota { text-align: left; margin-top: 6px; font-size: 13px; }
+.lato-lista { list-style: none; margin: 14px 0 0; padding: 0; }
+.lato-lista li + li { border-top: 1px solid #ebebeb; }
+.lato-lista button { display: grid; grid-template-columns: 54px 1fr; gap: 10px; width: 100%; padding: 10px 0; border: 0; background: none; text-align: left; font: inherit; color: #222; cursor: pointer; }
+.lato-lista b { font-weight: 600; font-size: 15px; }
+.lato-lista span span { display: block; font-size: 13px; color: #6a6a6a; font-weight: 300; }
+.lato-lista .vuoto-l { padding: 10px 0; font-size: 14px; color: #6a6a6a; font-weight: 300; }
+.pr-due.lato-dopo .pr-lato { order: 1; margin: 24px 0 8px; }
+@media (max-width: 899px) { .lista-giorno-lato { display: none; } }
 .pr-testo .sez > h2 { font-size: 22px; line-height: 1.25; font-weight: 500; letter-spacing: -0.22px; margin-bottom: 14px; }
 .pr-testo .sez { padding: 28px 0; }
 .pr-testo .sez:first-child { border-top: 0; padding-top: 20px; }
@@ -461,6 +478,14 @@ a.pr-cella:hover { background: #f7f7f7; }
 	.pr-due { display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: clamp(40px, 6vw, 86px); align-items: stretch; }
 	.pr-lato { order: 0; margin: 0; padding-top: 20px; }
 	.pr-box-fisso { position: sticky; top: calc(var(--proto-h) + 24px); }
+	.pr-due.lato-sez .pr-lato { padding-top: 0; }
+	.pr-due.lato-dopo .pr-lato { order: 0; margin: 0; }
+	.pr-due.lato-agenda { grid-template-columns: minmax(0, 1fr) 300px; column-gap: 40px; }
+	.lato-agenda .settimana { gap: 6px; }
+	.lato-agenda .settimana .colonna { padding: 8px 6px; }
+	.lato-agenda .settimana .colonna h3 { cursor: pointer; }
+	.lato-agenda .settimana .colonna.scelta { border-color: #222; }
+	.lato-agenda .settimana .evento { padding: 7px 7px; font-size: 12px; }
 }
 
 @media (min-width: 900px) { body[data-vista="p"] .erica-fab, body[data-vista="prev"] .erica-fab { display: none; } }
@@ -957,6 +982,16 @@ function render() {
 	fab.innerHTML = mostraFab ? `<button type="button" class="erica-fab" onclick="vai('erica')" aria-label="Erica${dvF.length ? ', ' + dvF.length + ' da vedere' : ''}">${ericaAvatar()}${dvF.length ? `<span class="badge">${dvF.length}</span>` : ''}<b>Erica</b><span class="mini-p">${[...new Set(dvF.map((e) => e.praticaId).filter(Boolean))].slice(0, 3).map((pid) => { const f = fotoDi(pratica(pid))[0]; return f ? `<img src="${mini(f)}" alt="">` : `<span>${esc(pratica(pid).nome.charAt(0))}</span>`; }).join('')}</span></button>` : '';
 }
 const testa = (titolo, sotto = '', destra = '', marchio = false) => `<div class="testa"><div>${marchio ? '<span class="marchio">Artigiana<span>Mente</span></span>' : ''}<h1>${titolo}</h1>${sotto ? `<p class="sotto">${sotto}</p>` : ''}</div>${destra}</div>`;
+// Riquadro che segue la pagina (come pr-card della pratica): le cose da tenere a mente in ogni sezione
+const cellaLato = (c) => c.href ? `<a class="pr-cella ${c.intera ? 'intera' : ''}" href="${c.href}"><span class="pr-et">${c.et}</span><span class="pr-val">${c.val}</span></a>` : c.click ? `<button type="button" class="pr-cella ${c.intera ? 'intera' : ''} ${c.attiva ? 'attiva' : ''}" onclick="${c.click}"><span class="pr-et">${c.et}</span><span class="pr-val">${c.val}</span></button>` : `<div class="pr-cella ${c.intera ? 'intera' : ''}"><span class="pr-et">${c.et}</span><span class="pr-val">${c.val}</span></div>`;
+const latoCard = ({ grande = '', piccolo = '', sotto = '', celle = [], dopoCelle = '', azione = '', nota = '', blocco = '', link = [] }) => `<div class="pr-card">${grande ? `<p class="pr-prezzo"><span>${grande}</span>${piccolo ? `<small>${piccolo}</small>` : ''}</p>` : ''}${sotto ? `<p class="pr-condizione">${sotto}</p>` : ''}${celle.length ? `<div class="pr-box">${celle.map(cellaLato).join('')}</div>` : ''}${dopoCelle}${azione}${nota ? `<p class="pr-nota">${nota}</p>` : ''}${blocco}</div>${link.join('')}`;
+const notaLato = (titolo, valoreN, salvaJs, segnaposto, sotto = 'Si salva quando esci dal campo.') => `<div class="lato-note"><label class="pr-et">${titolo}<textarea class="campo" rows="3" placeholder="${segnaposto}" onchange="${salvaJs}">${esc(valoreN ?? '')}</textarea></label><p class="pr-nota">${sotto}</p></div>`;
+const linkLato = (ico, testo, js, href = '') => href ? `<a class="pr-tel" href="${href}"${href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${ico}${testo}</a>` : `<button type="button" class="pr-tel" onclick="${js}">${ico}${testo}</button>`;
+const conLato = (main, card, etichetta, classe = '') => `<div class="pr-due lato-sez ${classe}"><div class="pr-testo">${main}</div><aside class="pr-lato" aria-label="${etichetta}"><div class="pr-box-fisso">${card}</div></aside></div>`;
+function salvaPromemoria(v) { if (bloccoRete()) return; (D.promemoria ??= {})[D.utente] = v.trim(); salva(); toast('Promemoria salvato.'); }
+function salvaNotaGiorno(g, v) { if (bloccoRete()) return; (D.noteGiorno ??= {})[g] = v.trim(); salva(); toast('Nota del giorno salvata.'); }
+function salvaNotaCliente(id, v) { if (bloccoRete()) return; cliente(id).note = v.trim(); salva(); toast('Nota salvata.'); }
+const promemoriaLato = () => notaLato('Promemoria', D.promemoria?.[D.utente], 'salvaPromemoria(this.value)', 'es. richiamare il fornitore delle piastrelle', 'Lo vedi solo tu, in Oggi e in Altro.');
 const bottoneIndietro = (testo = 'Indietro') => `<button type="button" class="indietro" onclick="torna()">${I.indietro}${testo}</button>`;
 
 /* ===================== SCHERMATE ===================== */
@@ -980,7 +1015,24 @@ function oggi() {
 	const dv = ericaDaVedere();
 	const bloccoErica = `<section class="riquadro"><h2><span style="display:inline-flex;gap:10px;align-items:center">${ericaAvatar()}Erica ha preparato</span> <span class="conta">${dv.length || ''}</span></h2>${dv.length ? `<ul class="lista">${dv.slice(0, 2).map(rigaErica).join('')}</ul>` : '<p class="vuoto">Niente da vedere. Puoi chiederle qualcosa.</p>'}<button type="button" class="vedi" onclick="vai('erica')">${dv.length > 2 ? `Vedi tutto (${dv.length})` : 'Apri Erica'}</button></section>`;
 	return testa('Oggi', giornoLungo(OGGI).charAt(0).toUpperCase() + giornoLungo(OGGI).slice(1) + ' · Fabri', tastoCerca(), true)
-		+ `<div class="due"><div>${hero}${bloccoApp}</div><div>${bloccoDf}${bloccoErica}${bloccoAtt}</div></div>`;
+		+ conLato(hero + bloccoApp + bloccoDf + bloccoAtt + bloccoErica, latoOggi(apps, prossimo, pp, df, att, dv), 'Da tenere a mente oggi', 'lato-dopo');
+}
+function latoOggi(apps, prossimo, pp, df, att, dv) {
+	const dfOggi = df.filter((x) => x.oggi).length, comprare = D.materiali.filter((m) => m.stato === 'da_comprare').length;
+	return latoCard({
+		grande: `Oggi <strong class="num">${apps.length}</strong> ${apps.length === 1 ? 'impegno' : 'impegni'}`,
+		sotto: dfOggi ? `${dfOggi} ${dfOggi === 1 ? 'cosa da fare' : 'cose da fare'} entro oggi.` : 'Niente di urgente per oggi.',
+		celle: [
+			{ et: 'Prossimo', val: prossimo ? `${prossimo.inizio} · ${esc(pp ? pp.nome.split(' ').slice(-1)[0] : prossimo.titolo)}` : 'Nessuno', click: prossimo ? `vai('imp','${prossimo.id}')` : "vai('agenda')" },
+			{ et: 'Da fare', val: `${df.length}`, click: "vai('tutteOggi')" },
+			{ et: 'In attesa', val: `${att.length} preventiv${att.length === 1 ? 'o' : 'i'}`, click: "filtroPratiche='tutte';vai('pratiche')" },
+			{ et: 'Da comprare', val: `${comprare} material${comprare === 1 ? 'e' : 'i'}`, click: "vai('materiali')" },
+			...(pp ? [{ et: `Telefono · ${esc(pp.nome)}`, val: `<span class="num">${pp.tel}</span>`, href: `tel:${pp.tel.replace(/\s/g, '')}`, intera: true }] : [])
+		],
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="${prossimo ? `vai('imp','${prossimo.id}')` : "vai('agenda')"}">${prossimo ? 'Apri il prossimo impegno' : "Apri l'agenda"}</button>`,
+		blocco: promemoriaLato(),
+		link: [linkLato(I.erica, dv.length ? `Erica: ${dv.length} da vedere` : 'Chiedi a Erica', "vai('erica')"), linkLato(I.piu, 'Nuova pratica a mano', 'apriAMano()')]
+	});
 }
 function tutteOggi() {
 	const df = daFare();
@@ -995,10 +1047,27 @@ function pratiche() {
 	const corrisponde = (r) => [r.nome, r.codice, r.comune, r.servizio].some((x) => x.toLowerCase().includes(t)) || r.tel.replace(/\D/g, '').includes(t.replace(/\D/g, '') || '§');
 	const lista = D.pratiche.filter(t ? corrisponde : f[2]).sort((a, b) => b.ricevuta.localeCompare(a.ricevuta));
 	const etichettaPrev = (p) => { const pv = prevCorrente(p.id); return pv ? `<span class="tag ${pv.stato === 'accettata' ? 'ok' : pv.stato === 'pronta' ? 'att' : pv.stato === 'rifiutata' ? 'err' : ''}">${NOMI_PREV[pv.stato]}</span>` : ''; };
-	return testa('Pratiche', `${D.pratiche.filter((p) => !p.archiviata && !chiusa(p)).length} aperte`, `<button type="button" class="btn piccolo linea proposta" onclick="apriAMano()">${I.piu} A mano <span class="tag prop">da realizzare</span></button>`)
+	const pagina = testa('Pratiche', `${D.pratiche.filter((p) => !p.archiviata && !chiusa(p)).length} aperte`, `<button type="button" class="btn piccolo linea proposta" onclick="apriAMano()">${I.piu} A mano <span class="tag prop">da realizzare</span></button>`)
 		+ `<input id="cerca" class="cerca" type="search" placeholder="Cerca nome, codice, comune, telefono" value="${esc(cercaTesto)}" oninput="cercaTesto=this.value;render();const c=document.getElementById('cerca');c.focus();c.setSelectionRange(c.value.length,c.value.length)">`
 		+ (t ? `<p class="nota" style="margin-bottom:10px">Risultati in tutte le pratiche: ${lista.length}. <button type="button" class="link" onclick="cercaTesto='';render()">Svuota</button></p>` : `<div class="chips">${FILTRI.map(([k, n, fn]) => `<button type="button" class="${k === filtroPratiche ? 'attivo' : ''}" onclick="filtroPratiche='${k}';render()">${n} <span>${D.pratiche.filter(fn).length}</span></button>`).join('')}</div>`)
-		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${NOMI_STATO[p.stato]}</span>${p.stato === 'nuova' ? '<span class="tag att">Nuova richiesta</span>' : etichettaPrev(p)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : vuotoGrande(t ? 'Nessun risultato' : 'Nessuna pratica qui', t ? `Niente per «${esc(cercaTesto)}». Prova con il cognome o il comune.` : 'Con questo filtro non c\'è niente da mostrare.')}</section>`;
+		+ `<!--LISTA-->`;
+	const nf = (k) => FILTRI.find((x) => x[0] === k)[2];
+	const conta = (k) => D.pratiche.filter(nf(k)).length;
+	const nuove = D.pratiche.filter((r) => !r.archiviata && r.stato === 'nuova').length, att = inAttesa().length;
+	const card = latoCard({
+		grande: `<strong class="num">${conta('da_gestire')}</strong> da gestire`,
+		sotto: nuove ? `${nuove} ${nuove === 1 ? 'richiesta nuova' : 'richieste nuove'} dal sito da guardare.` : 'Nessuna richiesta nuova dal sito.',
+		celle: [
+			{ et: 'Da gestire', val: conta('da_gestire'), click: "cercaTesto='';filtroPratiche='da_gestire';render()", attiva: filtroPratiche === 'da_gestire' },
+			{ et: 'Da programmare', val: conta('da_programmare'), click: "cercaTesto='';filtroPratiche='da_programmare';render()", attiva: filtroPratiche === 'da_programmare' },
+			{ et: 'Programmate', val: conta('programmata'), click: "cercaTesto='';filtroPratiche='programmata';render()", attiva: filtroPratiche === 'programmata' },
+			{ et: 'In corso', val: conta('in_corso'), click: "cercaTesto='';filtroPratiche='in_corso';render()", attiva: filtroPratiche === 'in_corso' },
+			{ et: 'Preventivi in attesa di risposta', val: `${att}`, click: "vai('oggi')", intera: true }
+		],
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriAMano()">${I.piu} Nuova pratica a mano</button>`,
+		nota: 'Per chi chiama o scrive su WhatsApp. Quelle dal sito arrivano da sole.'
+	});
+	return conLato(pagina.replace('<!--LISTA-->', `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${NOMI_STATO[p.stato]}</span>${p.stato === 'nuova' ? '<span class="tag att">Nuova richiesta</span>' : etichettaPrev(p)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : vuotoGrande(t ? 'Nessun risultato' : 'Nessuna pratica qui', t ? `Niente per «${esc(cercaTesto)}». Prova con il cognome o il comune.` : 'Con questo filtro non c\'è niente da mostrare.')}</section>`), card, 'Riepilogo pratiche', 'lato-dopo');
 }
 const vuotoGrande = (titolo, testo) => `<div class="vuoto-grande">${I.pratiche.replace('class="ico"', 'class="ico" style="width:36px;height:36px"')}<b>${titolo}</b>${testo}</div>`;
 
@@ -1076,11 +1145,27 @@ function agenda() {
 	const classe = (a) => a.stato === 'proposto' ? 'proposto' : a.stato === 'svolto' ? 'svolto' : a.praticaId ? '' : 'altro';
 	const strip = `<div class="giorni-strip">${giorni.map((g) => { const n = del(g).length, dom = d(g).getUTCDay() === 0; return `<button type="button" class="${g === agendaGiorno ? 'attivo' : ''} ${g === OGGI ? 'oggi-g' : ''} ${dom ? 'festivo' : ''}" onclick="agendaGiorno='${g}';render()" aria-label="${giornoLungo(g)}">${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b><i class="${n ? '' : 'vuoto'}"></i></button>`; }).join('')}</div>`;
 	const listaGiorno = () => { const l = del(agendaGiorno); return `<section class="riquadro lista-giorno-largo"><h2>${giornoLungo(agendaGiorno).charAt(0).toUpperCase() + giornoLungo(agendaGiorno).slice(1)}${agendaGiorno === OGGI ? ' <span class="tag pieno">oggi</span>' : ''} <span class="conta">${l.length ? l.length + (l.length === 1 ? ' impegno' : ' impegni') : ''}</span></h2>${l.length ? `<ul class="lista">${l.map((a) => { const [n, t] = nomeDi(a); return `<li><button type="button" class="impegno-r" onclick="vai('imp','${a.id}')"><span class="quando num"><b>${a.inizio}</b><span>${a.fine}</span></span><span class="blocco ${classe(a)}"><b>${n}</b><span>${t} · ${a.chi.map(nomeOp).join(', ')}</span><span class="durata">${durata(a)}${a.stato === 'proposto' ? ' · da confermare' : a.stato === 'svolto' ? ' · svolto' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : `<p class="giorno-libero">Giornata libera.</p>`}</section>`; };
-	const settimana = `<div class="settimana">${giorni.map((g) => { const l = del(g), dom = d(g).getUTCDay() === 0; return `<div class="colonna ${g === OGGI ? 'oggi-c' : ''} ${dom ? 'festivo' : ''}"><h3>${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b></h3>${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<button type="button" class="evento ${classe(a)}" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}–${a.fine}</b>${n}<span>${t}</span><span>${a.chi.map(nomeOp).join(', ')}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></button>`; }).join('') : '<p class="libero">Libero</p>'}</div>`; }).join('')}</div>`;
+	const settimana = `<div class="settimana">${giorni.map((g) => { const l = del(g), dom = d(g).getUTCDay() === 0; return `<div class="colonna ${g === OGGI ? 'oggi-c' : ''} ${dom ? 'festivo' : ''} ${g === agendaGiorno ? 'scelta' : ''}"><h3 onclick="agendaGiorno='${g}';render()" title="Scegli ${giornoLungo(g)}">${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b></h3>${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<button type="button" class="evento ${classe(a)}" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}–${a.fine}</b>${n}<span>${t}</span><span>${a.chi.map(nomeOp).join(', ')}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></button>`; }).join('') : '<p class="libero">Libero</p>'}</div>`; }).join('')}</div>`;
 	return testa('Agenda', '', `<button type="button" class="btn piccolo linea proposta" onclick="apriNuovoApp(null,null,'${agendaGiorno}')">${I.piu} Nuovo <span class="tag prop">da realizzare</span></button>`)
 		+ `<div class="agenda-testa"><button type="button" class="tondo" aria-label="Settimana prima" onclick="_sposta(-1)">${I.indietro}</button><span class="titolo">${titolo.charAt(0).toUpperCase() + titolo.slice(1)}</span><button type="button" class="tondo" aria-label="Settimana dopo" onclick="_sposta(1)">${I.freccia}</button>${lun !== lunediDi(OGGI) || agendaGiorno !== OGGI ? `<button type="button" class="btn piccolo tinta" onclick="agendaGiorno='${OGGI}';render()">Oggi</button>` : ''}</div>`
-		+ strip + listaGiorno() + settimana
-		+ `<p class="nota" style="margin-top:10px">Un appuntamento nuovo si crea dalla pratica. «Nuovo» da qui: da realizzare.</p>`;
+		+ conLato(strip + listaGiorno() + settimana
+		+ `<p class="nota" style="margin-top:10px">Un appuntamento nuovo si crea dalla pratica. «Nuovo» da qui: da realizzare.</p>`, latoAgenda(del(agendaGiorno), nomeDi), 'Giorno scelto', 'lato-agenda lato-dopo');
+}
+function latoAgenda(l, nomeDi) {
+	const g = agendaGiorno, occupati = new Set(l.flatMap((a) => a.chi));
+	const liberi = OPERATORI.filter((o) => !occupati.has(o.id)).map((o) => o.nome);
+	const minuti = l.reduce((t, a) => { const [h1, m1] = a.inizio.split(':').map(Number), [h2, m2] = a.fine.split(':').map(Number); return t + (h2 * 60 + m2) - (h1 * 60 + m1); }, 0);
+	const da = l.filter((a) => a.stato === 'proposto').length;
+	return latoCard({
+		grande: `<strong>${giornoBreve(g).charAt(0).toUpperCase() + giornoBreve(g).slice(1)}</strong>`,
+		piccolo: g === OGGI ? 'oggi' : '',
+		sotto: l.length ? `${l.length} ${l.length === 1 ? 'impegno' : 'impegni'} · ${Math.floor(minuti / 60)} h${minuti % 60 ? ' ' + (minuti % 60) : ''} occupate${da ? ` · ${da} da confermare` : ''}` : 'Giornata libera.',
+		celle: [{ et: 'Primo', val: l[0] ? l[0].inizio : '—' }, { et: 'Liberi', val: liberi.length ? liberi.join(', ') : 'Nessuno' }],
+		dopoCelle: `<ul class="lato-lista lista-giorno-lato">${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<li><button type="button" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}</b><span><b>${n}</b><span>${t}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></span></button></li>`; }).join('') : '<li class="vuoto-l">Niente in agenda.</li>'}</ul>`,
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriNuovoApp(null,null,'${g}')">${I.piu} Nuovo appuntamento</button>`,
+		blocco: notaLato('Nota del giorno', D.noteGiorno?.[g], `salvaNotaGiorno('${g}',this.value)`, 'es. furgone dal meccanico fino alle 10'),
+		link: g !== OGGI ? [linkLato(I.agenda, 'Torna a oggi', `agendaGiorno='${OGGI}';render()`)] : []
+	});
 }
 
 function impegno(id) {
@@ -1090,26 +1175,56 @@ function impegno(id) {
 	const cop = p ? fotoDi(p)[0] : null;
 	return bottoneIndietro()
 		+ `<div class="testata">${cop ? `<div class="copertina-p"><img src="${src(cop)}" alt="${esc(FOTO[cop]?.[0] ?? '')}"><button type="button" aria-label="Apri le foto" onclick="apriVisore('${p.id}',0)"></button></div>` : ''}<h1>${esc(p ? p.nome : a.titolo)}</h1><p class="codice">${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}</p><div class="stati">${tagApp(a.stato)}${a.deroga ? '<span class="tag att">sovrapposizione accettata</span>' : ''}</div></div>`
-		+ `<div class="due"><div class="foglio"><section class="sez"><dl class="coppia"><dt>Quando</dt><dd><b>${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)}</b><br><span class="num">${a.inizio}–${a.fine}</span> · ${durata(a)}</dd><dt>Dove</dt><dd>${esc(a.luogo)}</dd><dt>Chi va</dt><dd>${a.chi.map(nomeOp).join(', ')}</dd>${p ? `<dt>Cliente</dt><dd>${esc(p.nome)} · <a class="num" href="tel:${p.tel.replace(/\s/g, '')}" style="text-decoration:none">${p.tel}</a></dd><dt>Lavoro</dt><dd>${esc(p.dettagli)}</dd>` : ''}${a.stato === 'annullato' && a.motivo ? `<dt>Annullato</dt><dd>${esc(a.motivo)}</dd>` : ''}</dl>
-		<div class="azioni">${a.stato === 'proposto' ? `<button type="button" class="btn" onclick="azioneApp('${a.id}','conferma')">Conferma</button>` : ''}${a.stato === 'confermato' ? `<button type="button" class="btn" onclick="azioneApp('${a.id}','svolto')">Segna svolto</button>` : ''}${aperte(a) ? `<button type="button" class="btn linea" onclick="apriSposta('${a.id}')">Sposta</button><button type="button" class="btn pericolo" onclick="apriAnnulla('${a.id}')">Annulla</button>` : ''}${p ? `<button type="button" class="btn linea" onclick="vai('p','${p.id}')">Apri la pratica</button>` : ''}</div></section></div>
-		<div class="foglio"><section class="sez"><h2>Note per chi va</h2><textarea class="campo" rows="2" placeholder="es. citofono rotto, chiamare arrivando" onchange="salvaNoteApp('${a.id}',this.value)">${esc(a.note ?? '')}</textarea><p class="nota" style="margin-top:6px">Le vede ${a.chi.map(nomeOp).join(', ')}. Si salvano quando esci dal campo.</p></section></div></div>`;
+		+ conLato(`<div class="foglio"><section class="sez"><dl class="coppia"><dt>Quando</dt><dd><b>${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)}</b><br><span class="num">${a.inizio}–${a.fine}</span> · ${durata(a)}</dd><dt>Dove</dt><dd>${esc(a.luogo)}</dd><dt>Chi va</dt><dd>${a.chi.map(nomeOp).join(', ')}</dd>${p ? `<dt>Cliente</dt><dd>${esc(p.nome)} · <a class="num" href="tel:${p.tel.replace(/\s/g, '')}" style="text-decoration:none">${p.tel}</a></dd><dt>Lavoro</dt><dd>${esc(p.dettagli)}</dd>` : ''}${a.stato === 'annullato' && a.motivo ? `<dt>Annullato</dt><dd>${esc(a.motivo)}</dd>` : ''}</dl>
+		<div class="azioni">${aperte(a) ? `<button type="button" class="btn linea" onclick="apriSposta('${a.id}')">Sposta</button><button type="button" class="btn pericolo" onclick="apriAnnulla('${a.id}')">Annulla</button>` : ''}${p ? `<button type="button" class="btn linea" onclick="vai('p','${p.id}')">Apri la pratica</button>` : ''}</div></section></div>`, latoImpegno(a, p, false), 'Da tenere a mente per questo impegno');
+}
+function latoImpegno(a, p, op) {
+	const principale = a.stato === 'proposto' && !op ? `<button type="button" class="btn pieno pr-azione" onclick="azioneApp('${a.id}','conferma')">Conferma</button>` : a.stato === 'confermato' ? `<button type="button" class="btn pieno pr-azione" onclick="azioneApp('${a.id}','svolto')">${op ? I.spunta + ' ' : ''}Segna svolto</button>` : `<p class="pr-solo">${a.stato === 'svolto' ? 'Già svolto' : a.stato === 'annullato' ? 'Annullato' : 'Da confermare con il cliente'}</p>`;
+	return latoCard({
+		grande: `<strong class="num">${a.inizio}–${a.fine}</strong>`,
+		piccolo: durata(a),
+		sotto: `${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)} · ${esc(a.luogo)}`,
+		celle: [
+			{ et: 'Stato', val: { proposto: 'Da confermare', confermato: 'Confermato', svolto: 'Svolto', annullato: 'Annullato' }[a.stato] ?? a.stato },
+			{ et: op ? 'Con te' : 'Chi va', val: (op ? a.chi.filter((c) => c !== D.utente) : a.chi).map(nomeOp).join(', ') || 'Da solo' },
+			...(p ? [{ et: `Telefono · ${esc(p.nome)}`, val: `<span class="num">${p.tel}</span>`, href: `tel:${p.tel.replace(/\s/g, '')}`, intera: true }] : [])
+		],
+		azione: principale,
+		blocco: op ? (a.note ? `<div class="lato-note"><span class="pr-et">Note di Fabri</span><p class="pr-condizione">${esc(a.note)}</p></div>` : '') : notaLato('Note per chi va', a.note, `salvaNoteApp('${a.id}',this.value)`, 'es. citofono rotto, chiamare arrivando', `Le vede ${a.chi.map(nomeOp).join(', ')}. Si salvano quando esci dal campo.`),
+		link: [linkLato(I.mappa ?? I.luogo, 'Apri in Mappe', '', linkMappe(a.luogo)), ...(p && !op ? [linkLato(I.erica, 'Chiedi a Erica', `chiediAEricaPratica('${p.id}')`)] : [])]
+	});
 }
 
 function clienti() {
 	const t = cercaTesto.trim().toLowerCase();
 	const lista = D.clienti.filter((c) => !t || c.nome.toLowerCase().includes(t) || c.tel.replace(/\D/g, '').includes(t.replace(/\D/g, '') || '§')).sort((a, b) => a.nome.localeCompare(b.nome));
-	return testa('Clienti', `${D.clienti.length} in anagrafica`, `<button type="button" class="btn piccolo linea" onclick="apriCliente(null)">${I.piu} Nuovo</button>`)
+	const pagina = testa('Clienti', `${D.clienti.length} in anagrafica`, `<button type="button" class="btn piccolo linea" onclick="apriCliente(null)">${I.piu} Nuovo</button>`)
 		+ `<input id="cerca" class="cerca" type="search" placeholder="Cerca per nome o telefono" value="${esc(cercaTesto)}" oninput="cercaTesto=this.value;render();const c=document.getElementById('cerca');c.focus();c.setSelectionRange(c.value.length,c.value.length)">`
 		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((c) => { const n = D.pratiche.filter((p) => p.clienteId === c.id).length; return `<li><button type="button" class="riga" onclick="vai('cliente','${c.id}')"><span class="punto"></span><span class="cosa"><b>${esc(c.nome)}</b><span class="num">${c.tel} · ${n} pratic${n === 1 ? 'a' : 'he'}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun cliente trovato', `Niente per «${esc(cercaTesto)}».`)}</section>`
 		+ `<p class="nota">Chi scrive dal sito entra in rubrica quando lo colleghi dalla sua pratica («Crea e collega»).</p>`;
+	const fuori = D.pratiche.filter((p) => !p.clienteId && !p.archiviata);
+	return conLato(pagina, latoCard({
+		grande: `<strong class="num">${D.clienti.length}</strong> clienti`,
+		sotto: fuori.length ? `${fuori.length} ${fuori.length === 1 ? 'richiesta dal sito non è' : 'richieste dal sito non sono'} ancora in rubrica.` : 'Tutte le richieste sono in rubrica.',
+		dopoCelle: fuori.length ? `<ul class="lato-lista">${fuori.slice(0, 4).map((p) => `<li><button type="button" onclick="vai('p','${p.id}')"><b class="num">${p.codice.slice(-4)}</b><span><b>${esc(p.nome)}</b><span>${esc(lavoroBreve(p))} · collega dalla pratica</span></span></button></li>`).join('')}</ul>` : '',
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriCliente(null)">${I.piu} Nuovo cliente</button>`
+	}), 'Riepilogo clienti', 'lato-dopo');
 }
 function schedaCliente(id) {
 	const c = cliente(id);
 	if (!c) return testa('Cliente non trovato');
 	const prs = D.pratiche.filter((p) => p.clienteId === id).sort((a, b) => b.ricevuta.localeCompare(a.ricevuta));
-	return bottoneIndietro('Clienti') + testa(esc(c.nome))
+	const ultima = prs[0], prossimo = D.appuntamenti.filter((a) => prs.some((p) => p.id === a.praticaId) && aperte(a) && a.giorno >= OGGI).sort((a, b) => (a.giorno + a.inizio).localeCompare(b.giorno + b.inizio))[0];
+	const card = latoCard({
+		grande: `<strong class="num">${c.tel}</strong>`,
+		sotto: esc(c.indirizzo) || 'Indirizzo non indicato',
+		celle: [{ et: 'Pratiche', val: prs.length }, { et: 'Prossimo', val: prossimo ? `${giornoBreve(prossimo.giorno)} ${prossimo.inizio}` : 'Nessuno' }, ...(ultima ? [{ et: 'Ultima pratica', val: `${esc(lavoroBreve(ultima))} · ${NOMI_STATO[ultima.stato]}`, click: `vai('p','${ultima.id}')`, intera: true }] : [])],
+		azione: `<a class="btn pieno pr-azione" href="tel:${c.tel.replace(/\s/g, '')}">${I.tel} Chiama ${esc(c.nome.split(' ')[0])}</a>`,
+		blocco: notaLato('Note sul cliente', c.note, `salvaNotaCliente('${c.id}',this.value)`, 'es. preferisce essere chiamato dopo le 18')
+	});
+	return bottoneIndietro('Clienti') + testa(esc(c.nome)) + conLato(''
 		+ `<section class="riquadro"><div class="contatti"><span>${I.tel}<span class="num">${c.tel}</span></span>${c.email ? `<span>${I.mail}${esc(c.email)}</span>` : ''}</div><dl class="coppia" style="margin-top:12px"><dt>Indirizzo</dt><dd>${esc(c.indirizzo) || '<span class="nota">non indicato</span>'}</dd>${c.note ? `<dt>Note</dt><dd>${esc(c.note)}</dd>` : ''}</dl><div class="azioni"><button type="button" class="btn piccolo linea" onclick="apriCliente('${c.id}')">Modifica cliente</button></div></section>`
-		+ `<section class="riquadro"><h2>Pratiche collegate <span class="conta">${prs.length}</span></h2>${prs.length ? `<ul class="lista">${prs.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${p.codice} · ${NOMI_STATO[p.stato]}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuna pratica collegata.</p>'}</section>`;
+		+ `<section class="riquadro"><h2>Pratiche collegate <span class="conta">${prs.length}</span></h2>${prs.length ? `<ul class="lista">${prs.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${p.codice} · ${NOMI_STATO[p.stato]}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuna pratica collegata.</p>'}</section>`, card, 'Da tenere a mente sul cliente');
 }
 function apriCliente(id) {
 	const c = id ? cliente(id) : { nome: '', tel: '', email: '', indirizzo: '', note: '' };
@@ -1140,10 +1255,18 @@ function altro() {
 	const voce = (ico, nome, azione, nota = '') => `<li><button type="button" onclick="${azione}">${ico}${nome}${nota ? `<span class="nota">${nota}</span>` : ''}<span class="freccia">${I.freccia}</span></button></li>`;
 	const prova = `<h2 style="margin:26px 0 8px">Solo per la prova</h2><ul class="voci"><li><button type="button" onclick="cambiaRete()">${I.avviso}Simula «senza rete»<span class="nota">${D.senzaRete ? 'attivo' : 'spento'}</span></button></li>${voce(I.foto, 'Foto dimostrative', "vai('crediti')", 'fonti')}<li><button type="button" onclick="apriConferma('Ripristinare i dati di prova?','Tutto quello che hai inserito nel prototipo sparisce e tornano i dati di partenza.','Ripristina',azzera)">${I.altro}Ripristina i dati di prova</button></li></ul>`;
 	const profilo = `<div class="profilo">${avatar(D.utente, operatore())}<span><b>${nomeOp(D.utente)}</b><span>${operatore() ? 'Operatore' : 'Titolare'}</span></span><button type="button" class="btn piccolo linea" onclick="esci()">Esci</button></div>`;
-	if (operatore()) return testa('Altro') + profilo + `<ul class="voci">${voce(I.materiali, 'Materiali', "vai('materiali')")}${voce(I.installa, 'Aggiungi alla schermata Home', 'apriInstalla()')}</ul><p class="nota" style="margin-top:12px">Vedi i tuoi impegni e i lavori dove sei in squadra. Prezzi, preventivi e note di Fabri restano a lui.</p>` + prova;
-	return testa('Altro') + profilo
+	if (operatore()) return testa('Altro') + conLato(profilo + `<ul class="voci">${voce(I.materiali, 'Materiali', "vai('materiali')")}${voce(I.installa, 'Aggiungi alla schermata Home', 'apriInstalla()')}</ul><p class="nota" style="margin-top:12px">Vedi i tuoi impegni e i lavori dove sei in squadra. Prezzi, preventivi e note di Fabri restano a lui.</p>` + prova, latoCard({ grande: `<strong>${io().nome}</strong>`, piccolo: 'operatore', sotto: 'I tuoi impegni e i lavori dove sei in squadra.', azione: `<button type="button" class="btn pieno pr-azione" onclick="vai('oggi')">I miei impegni di oggi</button>`, blocco: promemoriaLato() }), 'Da tenere a mente', 'lato-dopo');
+	const nuoveL = D.avvisi.filter((x) => !x.letto).slice(0, 3);
+	const cardA = latoCard({
+		grande: `<strong class="num">${nuove}</strong> ${nuove === 1 ? 'avviso' : 'avvisi'} da leggere`,
+		dopoCelle: nuoveL.length ? `<ul class="lato-lista">${nuoveL.map((x) => `<li><button type="button" onclick="leggiAvviso('${x.id}')"><b class="num">${quando(x.quando).split(' ')[0]}</b><span><b>${esc(x.titolo)}</b><span>${esc(x.testo)}</span></span></button></li>`).join('')}</ul>` : '',
+		celle: [{ et: 'Erica', val: `${ericaDaVedere().length} da vedere`, click: "vai('erica')" }, { et: 'Da comprare', val: `${D.materiali.filter((m) => m.stato === 'da_comprare').length} materiali`, click: "vai('materiali')" }],
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="vai('avvisi')">Apri gli avvisi</button>`,
+		blocco: promemoriaLato()
+	});
+	return testa('Altro') + conLato(profilo
 		+ `<ul class="voci">${voce(I.avviso, 'Avvisi', "vai('avvisi')", nuove ? `${nuove} da leggere` : '')}${voce(I.erica, 'Erica', "vai('erica')", ericaDaVedere().length ? `${ericaDaVedere().length} da vedere` : '')}${voce(I.materiali, 'Materiali', "vai('materiali')", D.materiali.filter((m) => m.stato === 'da_comprare').length + ' da comprare')}${voce(I.pratiche, 'Impostazioni dei preventivi', "vai('impostazioni')")}${voce(I.casa, 'Sito: prezzi e ferie', "vai('sito')")}${voce(I.installa, 'Aggiungi alla schermata Home', 'apriInstalla()')}${voce(I.orologio, 'Stato del sistema', "vai('sistema')")}</ul>`
-		+ prova;
+		+ prova, cardA, 'Da tenere a mente', 'lato-dopo');
 }
 function cambiaRete(valore = !D.senzaRete) {
 	D.senzaRete = valore; salva();
@@ -1591,14 +1714,26 @@ function oggiOperatore() {
 	const oggiPids = new Set(mie.concat(domani).map((a) => a.praticaId).filter(Boolean));
 	const portare = D.materiali.filter((m) => oggiPids.has(m.praticaId) && m.stato !== 'in_cantiere');
 	return testa('Oggi', `${giornoLungo(OGGI).charAt(0).toUpperCase() + giornoLungo(OGGI).slice(1)} · ${io().nome}`, tastoCerca(), true)
-		+ `<div class="due"><div>${hero}${mie.filter((a) => a !== prossimo).length ? `<section class="riquadro"><h2>Poi oggi <span class="conta">${mie.length - 1}</span></h2><ul class="lista">${mie.filter((a) => a !== prossimo).map(riga).join('')}</ul></section>` : ''}</div>
+		+ conLato(`<div>${hero}${mie.filter((a) => a !== prossimo).length ? `<section class="riquadro"><h2>Poi oggi <span class="conta">${mie.length - 1}</span></h2><ul class="lista">${mie.filter((a) => a !== prossimo).map(riga).join('')}</ul></section>` : ''}</div>
 		<div><section class="riquadro"><h2>Da portare <span class="conta">${portare.length || ''}</span></h2>${portare.length ? `<ul class="lista">${portare.map((m) => rigaMat(m, true)).join('')}</ul>` : '<p class="vuoto">Niente da ritirare per oggi e domani.</p>'}</section>
-		<section class="riquadro"><h2>Domani <span class="conta">${domani.length || ''}</span></h2>${domani.length ? `<ul class="lista">${domani.map(riga).join('')}</ul>` : '<p class="vuoto">Niente in agenda per te.</p>'}</section></div></div>`;
+		<section class="riquadro"><h2>Domani <span class="conta">${domani.length || ''}</span></h2>${domani.length ? `<ul class="lista">${domani.map(riga).join('')}</ul>` : '<p class="vuoto">Niente in agenda per te.</p>'}</section></div>`, latoCard({
+		grande: `Oggi <strong class="num">${mie.length}</strong> ${mie.length === 1 ? 'impegno' : 'impegni'}`,
+		sotto: prossimo ? `Prossimo alle ${prossimo.inizio}: ${esc(prossimo.luogo)}` : 'Niente in agenda per te oggi.',
+		celle: [{ et: 'Da portare', val: `${portare.length}` }, { et: 'Domani', val: `${domani.length} ${domani.length === 1 ? 'impegno' : 'impegni'}` }, ...(pp ? [{ et: `Telefono · ${esc(pp.nome)}`, val: `<span class="num">${pp.tel}</span>`, href: `tel:${pp.tel.replace(/\s/g, '')}`, intera: true }] : [])],
+		azione: prossimo ? `<a class="btn pieno pr-azione" href="${linkMappe(prossimo.luogo)}" target="_blank" rel="noopener">${I.mappa} Portami al prossimo</a>` : '',
+		blocco: prossimo?.note ? `<div class="lato-note"><span class="pr-et">Nota di Fabri</span><p class="pr-condizione">${esc(prossimo.note)}</p></div>` : '',
+		link: pp ? [linkLato(I.avviso, 'Avvisa Fabri di un problema', `apriSegnala('${pp.id}','${prossimo.id}')`)] : []
+	}), 'Da tenere a mente oggi', 'lato-dopo');
 }
 function lavori() {
 	const l = mieiLavori().sort((a, b) => { const pa = appDi(a.id).find((x) => aperte(x) && x.giorno >= OGGI), pb = appDi(b.id).find((x) => aperte(x) && x.giorno >= OGGI); return ((pa ? pa.giorno + pa.inizio : '9') > (pb ? pb.giorno + pb.inizio : '9') ? 1 : -1); });
+	const prossimi = D.appuntamenti.filter((a) => aperte(a) && a.giorno >= OGGI && a.chi.includes(D.utente)).sort((a, b) => (a.giorno + a.inizio).localeCompare(b.giorno + b.inizio)).slice(0, 4);
 	return testa('Lavori', `${l.length} dove sei in squadra`, tastoCerca())
-		+ `<section class="riquadro">${l.length ? `<ul class="lista">${l.map((p) => { const a = appDi(p.id).find((x) => aperte(x) && x.giorno >= OGGI && x.chi.includes(D.utente)); return `<li><button type="button" class="riga con-mini" onclick="vai('lavoro','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${esc(p.indirizzoLavoro)}</span>${a ? `<span class="tag">${I.orologio} ${giornoBreve(a.giorno)} ${a.inizio}</span>` : '<span class="tag">Nessun impegno in arrivo</span>'}</span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun lavoro', 'Quando Fabri ti mette in squadra, il lavoro compare qui.')}</section>`;
+		+ conLato(`<section class="riquadro">${l.length ? `<ul class="lista">${l.map((p) => { const a = appDi(p.id).find((x) => aperte(x) && x.giorno >= OGGI && x.chi.includes(D.utente)); return `<li><button type="button" class="riga con-mini" onclick="vai('lavoro','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${esc(p.indirizzoLavoro)}</span>${a ? `<span class="tag">${I.orologio} ${giornoBreve(a.giorno)} ${a.inizio}</span>` : '<span class="tag">Nessun impegno in arrivo</span>'}</span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun lavoro', 'Quando Fabri ti mette in squadra, il lavoro compare qui.')}</section>`, latoCard({
+		grande: `<strong class="num">${l.length}</strong> lavori`,
+		sotto: 'I tuoi prossimi impegni:',
+		dopoCelle: `<ul class="lato-lista">${prossimi.length ? prossimi.map((a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}</b><span><b>${giornoBreve(a.giorno)}</b><span>${esc(p ? p.nome : a.titolo)}</span></span></button></li>`; }).join('') : '<li class="vuoto-l">Nessun impegno in arrivo.</li>'}</ul>`
+	}), 'I tuoi prossimi impegni', 'lato-dopo');
 }
 function lavoro(id) {
 	const p = pratica(id);
@@ -1607,8 +1742,7 @@ function lavoro(id) {
 	const note = apps.filter((a) => a.note).map((a) => `<li><span class="q num">${giornoBreve(a.giorno)}</span><span>${esc(a.note)}</span></li>`).join('');
 	return bottoneIndietro()
 		+ `<div class="testata">${f.length ? `<div class="copertina-p"><img src="${src(f[0])}" alt=""><button type="button" aria-label="Apri le foto" onclick="apriVisore('${id}',0)"></button><span class="quante">${I.foto} ${f.length}</span></div>` : ''}<h1>${esc(titoloLavoro(p))}</h1><p class="codice">${esc(p.nome)}</p></div>
-		<div class="azioni" style="margin:0 0 18px"><a class="btn" href="${linkMappe(p.indirizzoLavoro)}" target="_blank" rel="noopener">${I.mappa} Portami lì</a><a class="btn linea" href="tel:${p.tel.replace(/\s/g, '')}">${I.tel} Chiama</a></div>
-		<div class="due"><div class="foglio">
+		` + conLato(`<div class="foglio">
 			<section class="sez"><h2>Dove</h2><p style="font-size:16px;color:var(--nero)">${esc(p.indirizzoLavoro)}</p></section>
 			<section class="sez"><h2>Cosa c'è da fare</h2><p>${esc(p.dettagli)}</p>${p.messaggio ? `<p class="nota" style="margin-top:6px">Il cliente ha scritto: «${esc(p.messaggio)}»</p>` : ''}</section>
 			${note ? `<section class="sez"><h2>Note di Fabri</h2><ul class="storico">${note}</ul></section>` : ''}
@@ -1617,7 +1751,13 @@ function lavoro(id) {
 			<section class="sez"><h2>I tuoi impegni qui</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuno.</p>'}</section>
 			<section class="sez"><h2>Materiali <span class="conta">${mats.length || ''}</span></h2>${mats.length ? `<ul class="lista">${mats.map((m) => rigaMat(m)).join('')}</ul>` : '<p class="nota">Nessun materiale segnato.</p>'}</section>
 			<section class="sez"><h2>Qualcosa non va?</h2><p class="nota">Manca un materiale, il cliente non c'è, serve più tempo: avvisa Fabri da qui.</p><div class="azioni"><button type="button" class="btn piccolo linea" onclick="apriSegnala('${id}')">${I.avviso} Segnala a Fabri</button></div></section>
-		</div></div>`;
+		</div>`, latoCard({
+		grande: `<strong>${esc(p.nome)}</strong>`,
+		sotto: esc(p.indirizzoLavoro),
+		celle: [{ et: 'Prossimo', val: (() => { const a = apps.find((x) => aperte(x) && x.giorno >= OGGI); return a ? `${giornoBreve(a.giorno)} ${a.inizio}` : 'Nessuno'; })() }, { et: 'Materiali', val: `${mats.length}` }, { et: `Telefono · ${esc(p.nome)}`, val: `<span class="num">${p.tel}</span>`, href: `tel:${p.tel.replace(/\s/g, '')}`, intera: true }],
+		azione: `<a class="btn pieno pr-azione" href="${linkMappe(p.indirizzoLavoro)}" target="_blank" rel="noopener">${I.mappa} Portami lì</a>`,
+		link: [linkLato(I.tel, 'Chiama', '', `tel:${p.tel.replace(/\s/g, '')}`), linkLato(I.avviso, 'Avvisa Fabri di un problema', `apriSegnala('${id}')`)]
+	}), 'Da tenere a mente sul lavoro');
 }
 function impegnoOp(id) {
 	const a = D.appuntamenti.find((x) => x.id === id);
@@ -1625,11 +1765,12 @@ function impegnoOp(id) {
 	const p = a.praticaId ? pratica(a.praticaId) : null, cop = p ? fotoDi(p)[0] : null;
 	return bottoneIndietro()
 		+ `<div class="testata">${cop ? `<div class="copertina-p"><img src="${src(cop)}" alt=""><button type="button" aria-label="Apri le foto" onclick="apriVisore('${p.id}',0)"></button></div>` : ''}<h1>${esc(p ? p.nome : a.titolo)}</h1><p class="codice">${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}</p><div class="stati">${tagApp(a.stato)}</div></div>
-		<div class="due"><div class="foglio"><section class="sez"><dl class="coppia"><dt>Quando</dt><dd><b>${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)}</b><br><span class="num">${a.inizio}–${a.fine}</span> · ${durata(a)}</dd><dt>Dove</dt><dd>${esc(a.luogo)}</dd><dt>Con te</dt><dd>${a.chi.filter((c) => c !== D.utente).map(nomeOp).join(', ') || 'Da solo'}</dd>${p ? `<dt>Cliente</dt><dd>${esc(p.nome)} · <a class="num" href="tel:${p.tel.replace(/\s/g, '')}" style="text-decoration:none">${p.tel}</a></dd><dt>Da fare</dt><dd>${esc(p.dettagli)}</dd>` : ''}${a.note ? `<dt>Nota di Fabri</dt><dd><b>${esc(a.note)}</b></dd>` : ''}</dl>
-		<div class="azioni">${a.stato === 'confermato' ? `<button type="button" class="btn" onclick="azioneApp('${a.id}','svolto')">${I.spunta} Segna svolto</button>` : ''}<a class="btn linea" href="${linkMappe(a.luogo)}" target="_blank" rel="noopener">${I.mappa} Mappe</a>${p ? `<button type="button" class="btn linea" onclick="vai('lavoro','${p.id}')">Apri il lavoro</button>` : ''}</div>
+		` + conLato(`<div class="foglio"><section class="sez"><dl class="coppia"><dt>Quando</dt><dd><b>${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)}</b><br><span class="num">${a.inizio}–${a.fine}</span> · ${durata(a)}</dd><dt>Dove</dt><dd>${esc(a.luogo)}</dd><dt>Con te</dt><dd>${a.chi.filter((c) => c !== D.utente).map(nomeOp).join(', ') || 'Da solo'}</dd>${p ? `<dt>Cliente</dt><dd>${esc(p.nome)} · <a class="num" href="tel:${p.tel.replace(/\s/g, '')}" style="text-decoration:none">${p.tel}</a></dd><dt>Da fare</dt><dd>${esc(p.dettagli)}</dd>` : ''}${a.note ? `<dt>Nota di Fabri</dt><dd><b>${esc(a.note)}</b></dd>` : ''}</dl>
+		<div class="azioni">${p ? `<button type="button" class="btn linea" onclick="vai('lavoro','${p.id}')">Apri il lavoro</button>` : ''}</div>
 		${a.stato === 'proposto' ? '<p class="nota" style="margin-top:10px">Ancora da confermare: lo conferma Fabri col cliente.</p>' : ''}</section></div>
-		${p ? `<div class="foglio"><section class="sez"><h2>Dal cantiere</h2><div class="azioni" style="margin-top:4px"><button type="button" class="btn piccolo linea" onclick="apriFotoCantiere('${p.id}')">${I.foto} Aggiungi una foto</button><button type="button" class="btn piccolo linea" onclick="apriSegnala('${p.id}','${a.id}')">${I.avviso} Segnala a Fabri</button></div><p class="nota" style="margin-top:10px">Quello che mandi da qui lo vede solo Fabri, nell'app.</p></section></div>` : ''}</div>`;
+		${p ? `<div class="foglio"><section class="sez"><h2>Dal cantiere</h2><div class="azioni" style="margin-top:4px"><button type="button" class="btn piccolo linea" onclick="apriFotoCantiere('${p.id}')">${I.foto} Aggiungi una foto</button><button type="button" class="btn piccolo linea" onclick="apriSegnala('${p.id}','${a.id}')">${I.avviso} Segnala a Fabri</button></div><p class="nota" style="margin-top:10px">Quello che mandi da qui lo vede solo Fabri, nell'app.</p></section></div>` : ''}`, latoImpegno(a, p, true), 'Da tenere a mente per questo impegno');
 }
+
 function apriSegnala(praticaId, appId = '') {
 	apriTendina(`<p class="nota">${esc(titoloLavoro(pratica(praticaId)))}</p><label class="campo">Cosa succede</label><div class="scelte">${['Manca un materiale', 'Il cliente non c\'è', 'Serve più tempo', 'Lavoro diverso dal previsto', 'Altro'].map((t, i) => `<label><input type="radio" name="sg-tipo" value="${t}" ${i === 0 ? 'checked' : ''}>${t}</label>`).join('')}</div>
 	<label class="campo">Due parole (facoltative)<textarea class="campo" name="sg-testo" rows="3" placeholder="es. mancano 2 sacchi di colla"></textarea></label>
