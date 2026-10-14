@@ -1,8 +1,8 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r49';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r50';
 import { percorso } from './percorsi.js?v=2026101220';
-import { cerca } from './ricerca.js?v=2026100914-r49';
-import { attivaModuli } from './invio.js?v=2026101220-r49';
+import { cerca } from './ricerca.js?v=2026100914-r50';
+import { attivaModuli } from './invio.js?v=2026101220-r50';
 import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -1709,7 +1709,7 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r49').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r50').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
 if ($('[data-passi]')) import('./passi.js?v=2026101220').catch(senzaTendine);
 
@@ -2171,5 +2171,63 @@ if (datiPv) {
 		via = setTimeout(() => {
 			if (!campo(document.activeElement)) document.documentElement.classList.remove('tastiera');
 		}, 120);
+	});
+}
+
+/* ---------- «Più informazioni» (14/10, Gian: come la finestra dei comfort di Airbnb) ----------
+   I riquadri «Cosa ti serve?» si toccano e aprono una finestra con gruppi e righe (icona, nome, riga grigia).
+   Telefono: sale dal basso come il calendario. Computer: al centro. Si chiude con ×, Esc, tocco fuori
+   o il tasto indietro del telefono; il fuoco torna al riquadro. */
+{
+	const radiceInfo = document.documentElement;
+	let aperta = null;
+	let daChiInfo = null;
+	const chiudiInfo = (dalStorico = false) => {
+		const d = aperta;
+		if (!d || !d.open || d.classList.contains('is-chiude')) return;
+		aperta = null;
+		if (!dalStorico && history.state?.info) history.back(); // toglie il passo aggiunto all'apertura
+		const ms = durata(matchMedia('(max-width: 860px)').matches ? '--t-chiudi' : '--t-rapido', 200);
+		const fine = () => {
+			d.classList.remove('is-chiude');
+			d.close();
+		};
+		if (!ms) return fine();
+		d.classList.add('is-chiude');
+		d._t = setTimeout(fine, ms);
+	};
+	const apriInfo = (d, chi) => {
+		if (!d || typeof d.showModal !== 'function') return;
+		clearTimeout(d._t);
+		d.classList.remove('is-chiude');
+		daChiInfo = chi;
+		aperta = d;
+		d.querySelector('.info__corpo')?.scrollTo(0, 0);
+		if (!d.open) d.showModal();
+		radiceInfo.classList.add('info-aperta');
+		// tasto indietro del telefono: chiude la finestra invece di lasciare la pagina
+		history.pushState({ ...(history.state || {}), info: d.id }, '');
+	};
+	for (const d of document.querySelectorAll('dialog[data-info]')) {
+		d.addEventListener('cancel', (e) => {
+			e.preventDefault();
+			chiudiInfo();
+		});
+		d.addEventListener('click', (e) => {
+			if (e.target === d || e.target.closest('[data-info-chiudi]')) chiudiInfo();
+		});
+		d.addEventListener('close', () => {
+			radiceInfo.classList.remove('info-aperta');
+			if (daTastiera() || !matchMedia('(hover: none)').matches) daChiInfo?.focus({ preventScroll: true });
+		});
+	}
+	document.addEventListener('click', (e) => {
+		const b = e.target.closest('[data-info-apri]');
+		if (!b) return;
+		e.preventDefault();
+		apriInfo(document.getElementById(b.dataset.infoApri), b);
+	});
+	addEventListener('popstate', () => {
+		if (aperta) chiudiInfo(true);
 	});
 }
