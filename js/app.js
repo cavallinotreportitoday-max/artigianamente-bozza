@@ -1,8 +1,8 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r50';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r51';
 import { percorso } from './percorsi.js?v=2026101220';
-import { cerca } from './ricerca.js?v=2026100914-r50';
-import { attivaModuli } from './invio.js?v=2026101220-r50';
+import { cerca } from './ricerca.js?v=2026100914-r51';
+import { attivaModuli } from './invio.js?v=2026101220-r51';
 import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -16,6 +16,66 @@ const tornato = (() => {
 		return false;
 	}
 })();
+/* Pila dei popup (14/10, Gian: come Airbnb). Ogni finestra aperta (Più informazioni, prezzo, calendario, foto…)
+   entra qui: quella sotto si rimpicciolisce e si scurisce (classe is-sotto), il tasto indietro del telefono e Esc
+   chiudono solo quella sopra, poi si torna a quella sotto. Ogni finestra aggiunge un passo nella cronologia. */
+const pila = [];
+let saltaPop = 0;
+const vive = () => pila.filter((x) => !x.d.classList.contains('is-chiude') && x.d.open !== false);
+const ridisegnaPila = () => {
+	const v = vive();
+	for (const x of pila) x.d.classList.toggle('is-sotto', v.includes(x) && x !== v[v.length - 1]);
+	document.documentElement.classList.toggle('popup-aperto', v.length > 0);
+};
+const popup = {
+	// d: la finestra; chiudi: la sua chiusura (con il suo movimento)
+	apri(d, chiudi) {
+		const i = pila.findIndex((x) => x.d === d);
+		if (i >= 0) {
+			if (!pila[i].uscita) return ridisegnaPila();
+			pila.splice(i, 1); // riaperta mentre si chiudeva: rientra in cima con un passo nuovo
+		}
+		pila.push({ d, chiudi });
+		ridisegnaPila();
+		try {
+			history.pushState({ ...(history.state || {}), popup: pila.length }, '');
+		} catch {
+			// alcune anteprime non lasciano cambiare la cronologia
+		}
+	},
+	// inizio della chiusura: quella sotto torna subito grande; il passo nella cronologia si toglie
+	esce(d) {
+		const x = pila.find((y) => y.d === d);
+		if (!x || x.uscita) return;
+		x.uscita = true;
+		ridisegnaPila();
+		if (x.dalStorico) return;
+		saltaPop++;
+		history.back();
+	},
+	// fine della chiusura
+	chiusa(d) {
+		const i = pila.findIndex((y) => y.d === d);
+		if (i < 0) return;
+		popup.esce(d);
+		pila.splice(i, 1);
+		ridisegnaPila();
+	},
+	// la finestra più in alto ancora aperta
+	sopra: () => vive().at(-1)?.d || null
+};
+addEventListener('popstate', () => {
+	if (saltaPop) {
+		saltaPop--;
+		return;
+	}
+	const x = vive().at(-1);
+	if (!x) return;
+	x.dalStorico = true;
+	x.chiudi();
+});
+window.amPopup = popup;
+
 const CHECK =
 	'<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" vector-effect="non-scaling-stroke"/></svg>';
 
@@ -815,6 +875,7 @@ if (visore && typeof visore.showModal === 'function') {
 		clearTimeout(visore._t);
 		visore.classList.remove('is-chiude');
 		if (!visore.open) visore.showModal();
+		popup.apri(visore, chiudi);
 		// il fuoco va sulla finestra, non sul primo pulsante: niente cerchio intorno alla × all'apertura
 		visore.focus({ preventScroll: true });
 		document.documentElement.classList.add('visore-aperto');
@@ -846,6 +907,7 @@ if (visore && typeof visore.showModal === 'function') {
 		const ms = durata('--t-esce', 250);
 		if (lento || !ms) return visore.close();
 		visore.classList.add('is-chiude');
+		popup.esce(visore);
 		clearTimeout(visore._t);
 		visore._t = setTimeout(() => {
 			visore.close();
@@ -858,6 +920,7 @@ if (visore && typeof visore.showModal === 'function') {
 		chiudi();
 	});
 	visore.addEventListener('close', () => {
+		popup.chiusa(visore);
 		document.documentElement.classList.remove('visore-aperto');
 		riga.replaceChildren();
 		griglia.replaceChildren();
@@ -1620,13 +1683,14 @@ for (const box of $$('[data-scorri]')) {
 }
 
 
-/* Tipi di ristrutturazione: pulsanti che cambiano la scheda sotto */
+/* Tipi di ristrutturazione (14/10, come «Scegli la tua camera» di Airbnb): ogni scheda apre la sua finestra grande
+   (il pulsante ha data-info-apri: la apre il blocco «Finestre e fumetti»). Qui: il riquadro di lato, la barra in fondo
+   e i Dettagli del prezzo seguono lo spazio aperto; ristrutturazioni.html#tipo-cucina apre subito la Cucina. */
 // solo i pulsanti dei tipi (hanno data-tipo-sub): anche le stanze dei Traslochi hanno data-tipo (revisione 12/10, M4)
 const tipi = $$('[data-tipo][data-tipo-sub]');
 if (tipi.length) {
-	const pannelli = $$('[data-tipo-pannello]');
-	// riquadro di lato e barra in fondo seguono il tipo scelto: prezzo (o "Prezzo dopo il sopralluogo"),
-	// condizione e pulsante che porta al preventivo di quel tipo (10/10, brief: il caso Tetti con "Da 4.000 €")
+	// prezzo (o "Prezzo dopo il sopralluogo"), condizione e pulsante che porta al preventivo di quel tipo
+	// (10/10, brief: il caso Tetti con "Da 4.000 €")
 	const base = $('[data-vivo-href]')?.getAttribute('href')?.split('#')[0] || '';
 	const vivo = (b) => {
 		const prezzo = b.dataset.tipoPrezzo;
@@ -1635,34 +1699,23 @@ if (tipi.length) {
 		for (const el of $$('[data-vivo-nota]')) el.textContent = prezzo ? b.dataset.tipoNota : 'Lo definiamo dopo aver visto il lavoro.';
 		if (base) for (const el of $$('[data-vivo-href]')) el.setAttribute('href', `${base}#ristrutturazioni:${b.dataset.tipoSub}`);
 	};
-	const mostra = (id, segnaIndirizzo = false) => {
+	const mostra = (id) => {
 		for (const b of tipi) {
 			const si = b.dataset.tipo === id;
 			b.classList.toggle('is-active', si);
-			b.setAttribute('aria-selected', String(si));
 			if (si) vivo(b);
 		}
-		for (const pn of pannelli) pn.hidden = pn.dataset.tipoPannello !== id;
-		// il tipo resta anche ricaricando o tornando indietro
-		if (segnaIndirizzo)
-			try {
-				history.replaceState(history.state, '', `${location.pathname}${location.search}#tipo-${id}`);
-			} catch {
-				// alcune anteprime non lasciano cambiare l'indirizzo
-			}
 	};
-	for (const b of tipi) b.addEventListener('click', () => mostra(b.dataset.tipo, true));
-	// all'apertura il riquadro porta già al preventivo del tipo mostrato (es. bagno)
-	const attivo = tipi.find((b) => b.classList.contains('is-active'));
-	if (attivo) vivo(attivo);
-	// ristrutturazioni.html#tipo-cucina apre subito la cucina
+	for (const b of tipi) b.addEventListener('click', () => mostra(b.dataset.tipo));
+	// all'apertura il riquadro porta già al preventivo del primo tipo (il bagno)
+	vivo(tipi[0]);
 	const daIndirizzo = () => {
 		const h = decodeURIComponent(location.hash.slice(1));
-		if (h.startsWith('tipo-') && tipi.some((b) => b.dataset.tipo === h.slice(5))) {
-			mostra(h.slice(5));
-			// ricaricando o tornando indietro il browser rimette la pagina dov'era: niente salti
-			if (!tornato) requestAnimationFrame(() => $('#tipi')?.scrollIntoView({ block: 'start' }));
-		}
+		const b = h.startsWith('tipo-') && tipi.find((x) => x.dataset.tipo === h.slice(5));
+		if (!b) return;
+		mostra(b.dataset.tipo);
+		// la finestra si apre quando lo script delle finestre è pronto (è più in basso in questo file)
+		setTimeout(() => window.amApriInfo?.(document.getElementById(b.dataset.infoApri), b), 0);
 	};
 	addEventListener('hashchange', daIndirizzo);
 	daIndirizzo();
@@ -1709,7 +1762,7 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r50').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r51').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
 if ($('[data-passi]')) import('./passi.js?v=2026101220').catch(senzaTendine);
 
@@ -2022,6 +2075,7 @@ if (cal) {
 		clearTimeout(cal._t);
 		cal.classList.remove('is-chiude');
 		if (!cal.open) cal.showModal(); // la pagina sotto resta inerte finché la finestra è aperta
+		popup.apri(cal, chiudi);
 		document.documentElement.classList.add('cal-aperto');
 		modo = null; // all'apertura niente scivolata di lato
 		mostra(k === 'inizio' ? 'inizio' : 'sopralluogo');
@@ -2032,6 +2086,7 @@ if (cal) {
 		const ms = durata(matchMedia('(max-width: 860px)').matches ? '--t-chiudi' : '--t-rapido', 200);
 		if (!ms) return cal.close();
 		cal.classList.add('is-chiude');
+		popup.esce(cal);
 		cal._t = setTimeout(() => {
 			cal.classList.remove('is-chiude');
 			cal.close();
@@ -2043,6 +2098,7 @@ if (cal) {
 		chiudi();
 	});
 	cal.addEventListener('close', () => {
+		popup.chiusa(cal);
 		allinea(); // «Ho una data» senza date salvate (chiuso senza salvare) si toglie
 		document.documentElement.classList.remove('cal-aperto');
 		cal.classList.remove('is-chiude', 'cal-scorre');
@@ -2137,18 +2193,7 @@ for (const box of $$('[data-esempi]')) {
 	addEventListener('resize', segui, { passive: true });
 }
 
-/* Recensioni: "Mostra tutte e N le recensioni" apre le altre (sul computer se ne vedono 4) */
-for (const sez of $$('[data-recensioni]')) {
-	const b = $('[data-recensioni-tutte]', sez);
-	if (!b) continue;
-	const testo = b.textContent;
-	b.addEventListener('click', () => {
-		const aperte = sez.classList.toggle('is-tutte');
-		b.setAttribute('aria-expanded', String(aperte));
-		b.textContent = aperte ? 'Mostra meno' : testo;
-		if (!aperte) sez.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-	});
-}
+/* Recensioni: «Mostra tutte e N le recensioni» apre la finestra con l'elenco completo (14/10, «Finestre e fumetti») */
 
 /* Barre in fondo assenti quando non servono (10/10, brief): con il modulo della richiesta aperto
    (nei Traslochi sparisce "Inserisci partenza e arrivo / Continua") e mentre si scrive (tastiera). */
@@ -2174,60 +2219,82 @@ if (datiPv) {
 	});
 }
 
-/* ---------- «Più informazioni» (14/10, Gian: come la finestra dei comfort di Airbnb) ----------
-   I riquadri «Cosa ti serve?» si toccano e aprono una finestra con gruppi e righe (icona, nome, riga grigia).
-   Telefono: sale dal basso come il calendario. Computer: al centro. Si chiude con ×, Esc, tocco fuori
-   o il tasto indietro del telefono; il fuoco torna al riquadro. */
+/* ---------- Finestre e fumetti come Airbnb (14/10, Gian) ----------
+   dialog[data-info]: finestre (Più informazioni, recensioni, schede di Ristrutturazioni, dettagli del prezzo).
+   Si aprono con [data-info-apri="id"]; si chiudono con ×, Esc, tocco fuori o il tasto indietro del telefono.
+   Si possono aprire una sopra l'altra (pila in cima al file). Telefono: salgono dal basso. Computer: al centro;
+   le finestre con data-fumetto invece stanno attaccate al pulsante che le apre, senza sfondo scuro, come il
+   «Dettagli del prezzo» di Airbnb (sul telefono diventano un foglio basso). Il fuoco torna al pulsante. */
 {
 	const radiceInfo = document.documentElement;
-	let aperta = null;
-	let daChiInfo = null;
-	const chiudiInfo = (dalStorico = false) => {
-		const d = aperta;
+	const telefono = () => matchMedia('(max-width: 860px)').matches;
+	const chiudiInfo = (d) => {
 		if (!d || !d.open || d.classList.contains('is-chiude')) return;
-		aperta = null;
-		if (!dalStorico && history.state?.info) history.back(); // toglie il passo aggiunto all'apertura
-		const ms = durata(matchMedia('(max-width: 860px)').matches ? '--t-chiudi' : '--t-rapido', 200);
+		const ms = durata(telefono() ? '--t-chiudi' : '--t-rapido', 200);
 		const fine = () => {
 			d.classList.remove('is-chiude');
 			d.close();
 		};
 		if (!ms) return fine();
 		d.classList.add('is-chiude');
+		popup.esce(d);
 		d._t = setTimeout(fine, ms);
+	};
+	// fumetto sul computer: sotto il pulsante, allineato al suo bordo sinistro; se sotto non c'è posto, sopra
+	const metti = (d, chi) => {
+		if (!d.hasAttribute('data-fumetto') || telefono() || !chi) {
+			d.style.removeProperty('left');
+			d.style.removeProperty('top');
+			return;
+		}
+		const r = chi.getBoundingClientRect();
+		const w = d.offsetWidth;
+		const h = d.offsetHeight;
+		const left = Math.min(Math.max(16, r.left), innerWidth - w - 16);
+		let top = r.bottom + 8;
+		if (top + h > innerHeight - 16) top = Math.max(16, r.top - h - 8);
+		d.style.left = `${Math.round(left)}px`;
+		d.style.top = `${Math.round(top)}px`;
 	};
 	const apriInfo = (d, chi) => {
 		if (!d || typeof d.showModal !== 'function') return;
 		clearTimeout(d._t);
 		d.classList.remove('is-chiude');
-		daChiInfo = chi;
-		aperta = d;
+		d._chi = chi;
 		d.querySelector('.info__corpo')?.scrollTo(0, 0);
 		if (!d.open) d.showModal();
-		radiceInfo.classList.add('info-aperta');
-		// tasto indietro del telefono: chiude la finestra invece di lasciare la pagina
-		history.pushState({ ...(history.state || {}), info: d.id }, '');
+		metti(d, chi);
+		// il fumetto sul computer non blocca la pagina (niente salto della barra di scorrimento)
+		if (!d.hasAttribute('data-fumetto') || telefono()) radiceInfo.classList.add('info-aperta');
+		popup.apri(d, () => chiudiInfo(d));
 	};
 	for (const d of document.querySelectorAll('dialog[data-info]')) {
 		d.addEventListener('cancel', (e) => {
 			e.preventDefault();
-			chiudiInfo();
+			chiudiInfo(d);
 		});
 		d.addEventListener('click', (e) => {
-			if (e.target === d || e.target.closest('[data-info-chiudi]')) chiudiInfo();
+			if (e.target === d || e.target.closest('[data-info-chiudi]')) chiudiInfo(d);
 		});
 		d.addEventListener('close', () => {
-			radiceInfo.classList.remove('info-aperta');
-			if (daTastiera() || !matchMedia('(hover: none)').matches) daChiInfo?.focus({ preventScroll: true });
+			popup.chiusa(d);
+			if (!document.querySelector('dialog[data-info][open]')) radiceInfo.classList.remove('info-aperta');
+			if (daTastiera() || !matchMedia('(hover: none)').matches) d._chi?.focus({ preventScroll: true });
 		});
 	}
+	// il fumetto resta attaccato al pulsante: scorrendo o cambiando misura si chiude, come su Airbnb
+	const viaFumetti = (e) => {
+		if (telefono() || e?.target?.closest?.('dialog[data-fumetto]')) return;
+		for (const d of document.querySelectorAll('dialog[data-fumetto][open]')) chiudiInfo(d);
+	};
+	addEventListener('resize', viaFumetti, { passive: true });
+	addEventListener('wheel', viaFumetti, { passive: true });
 	document.addEventListener('click', (e) => {
 		const b = e.target.closest('[data-info-apri]');
 		if (!b) return;
 		e.preventDefault();
 		apriInfo(document.getElementById(b.dataset.infoApri), b);
 	});
-	addEventListener('popstate', () => {
-		if (aperta) chiudiInfo(true);
-	});
+	window.amApriInfo = apriInfo;
+	window.amChiudiInfo = chiudiInfo;
 }
