@@ -579,8 +579,8 @@ svg.nav-i .buco-l { stroke: #fff; }
 	@media (min-width: 1440px) { .app { margin-left: calc(var(--rail) + (100vw - var(--rail) - 1180px) / 2); } }
 	.app.con-rete { padding-top: calc(var(--proto-h) + 80px); }
 	.rete { left: var(--rail); }
-	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; padding: 0 0 84px; border-top: 0; border-right: 0; overflow: hidden; transition: width 200ms var(--ease-out), box-shadow 200ms ease; }
-	.barra:hover, .barra:focus-within { width: 244px; box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08); }
+	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; padding: 0 0 84px; border-top: 0; border-right: 0; overflow: hidden; transition: width 200ms var(--ease-out); }
+	.barra:hover, .barra:focus-within { width: 244px; box-shadow: none; border-right: 0; }
 	.barra:hover nav button .et, .barra:focus-within nav button .et { display: inline; }
 	.barra .marchio-barra { display: block; flex: none; height: 24px; margin: 11px 0 0 24px; font-size: 0; letter-spacing: 0; line-height: 24px; }
 	.barra .marchio-barra::before { content: 'A'; display: inline-grid; place-items: center; width: 22px; height: 22px; border: 2px solid var(--nero); border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0; margin-left: 1px; }
@@ -948,7 +948,7 @@ function render() {
 	app.innerHTML = `<div class="schermo" key="${vista}-${param}">${r(param)}</div>`;
 	const sezione = { p: 'pratiche', cliente: 'clienti', imp: 'agenda', prev: 'pratiche', pdf: 'pratiche', avvisi: 'altro', sistema: 'altro', impostazioni: 'altro', sito: 'altro', tutteOggi: 'oggi', crediti: 'altro', lavoro: 'lavori', erica: 'oggi', materiali: operatore() ? 'materiali' : 'altro', login: 'oggi' }[vista] ?? vista;
 	const nuove = D.avvisi.filter((a) => !a.letto).length;
-	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca" title="Cerca">${navIcona('cerca', false)}<span class="et">Cerca</span></button><button type="button" class="solo-largo ${vista === 'altro' ? 'attiva' : ''}" onclick="vai('altro')" title="Profilo">${avatar(D.utente, operatore())}<span class="et">Profilo</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" title="${n}">${navIcona(k, sezione === k)}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
+	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca">${navIcona('cerca', false)}<span class="et">Cerca</span></button><button type="button" class="solo-largo ${vista === 'altro' ? 'attiva' : ''}" onclick="vai('altro')" aria-label="Profilo">${avatar(D.utente, operatore())}<span class="et">Profilo</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" aria-label="${n}">${navIcona(k, sezione === k)}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
 	// Erica in basso a destra (solo Fabri, non dentro Erica)
 	const fab = document.getElementById('erica-fab'), dvF = ericaDaVedere();
 	const mostraFab = !operatore() && vista !== 'erica';
