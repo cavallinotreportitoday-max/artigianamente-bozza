@@ -20,7 +20,7 @@
 	--ombra: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.08);
 	--ombra-card: 0 6px 16px rgba(0, 0, 0, 0.12);
 	--nero-sfumato: linear-gradient(180deg, #2d2d30 0%, #1b1b1e 55%, #111112 100%);
-	--ok: #1f7a3a; --ok-f: #e4f2e8; --att: #a85d12; --att-f: #fbeedb; --err: #b3261e; --err-f: #fbe4e2; --prop: #2f4a8a; --prop-f: #e6ebf5;
+	--rosso-notifica: #ff3040; --ok: #1f7a3a; --ok-f: #e4f2e8; --att: #a85d12; --att-f: #fbeedb; --err: #b3261e; --err-f: #fbe4e2; --prop: #2f4a8a; --prop-f: #e6ebf5;
 	--font: 'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 	--molla: cubic-bezier(0.32, 0.72, 0, 1); --molla-morbida: cubic-bezier(0.22, 1, 0.36, 1); --scende: cubic-bezier(0.4, 0, 0.7, 0.8);
@@ -76,10 +76,10 @@ svg.ico path { vector-effect: non-scaling-stroke; }
 .barra nav button { background: none; border: 0; display: grid; justify-items: center; gap: 3px; padding: 7px 0 5px; border-radius: var(--rb); color: var(--grigio); font-size: 11px; line-height: 1.2; font-weight: 500; position: relative; transition: color 160ms ease; }
 .barra nav button svg { width: 24px; height: 24px; }
 .barra nav button.attiva { color: var(--nero); font-weight: 600; }
-.barra nav button.attiva svg { stroke-width: 1.8; }
+.barra nav button svg.nav-i { width: 24px; height: 24px; overflow: visible; }
 .barra nav button::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 0; height: 2px; background: currentColor; transform: scaleX(0); transition: transform 220ms var(--ease-out); }
 .barra nav button.attiva::after { transform: scaleX(1); }
-.barra .pallino { position: absolute; top: 3px; right: calc(50% - 22px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--nero); color: #fff; font-size: 11px; font-weight: 600; display: grid; place-items: center; }
+.barra .pallino { position: absolute; top: 3px; right: calc(50% - 24px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--rosso-notifica); border: 2px solid #fff; color: #fff; font-size: 11px; font-weight: 600; display: grid; place-items: center; }
 .barra .marchio-barra, .barra .barra-destra, .barra .solo-largo { display: none; }
 .barra .barra-destra .et-nome { display: none; }
 
@@ -380,7 +380,7 @@ textarea.testo-proposta { font-size: 15px; line-height: 1.5; background: #fbfbfa
 .erica-fab .avatar.erica { width: 46px; height: 46px; }
 .erica-fab .avatar.erica svg { width: 24px; height: 24px; }
 .erica-fab > b, .erica-fab .mini-p { display: none; }
-.erica-fab .badge { position: absolute; top: -2px; left: 34px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; border: 2px solid #fff; background: var(--nero); color: #fff; font-size: 11px; font-weight: 600; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.erica-fab .badge { position: absolute; top: -2px; left: 34px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; border: 2px solid #fff; background: var(--rosso-notifica); color: #fff; font-size: 11px; font-weight: 600; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
 .app.con-fab { padding-bottom: calc(var(--barra-h) + 96px + env(safe-area-inset-bottom, 0px)); }
 @media (min-width: 900px) {
 	.erica-fab { right: 28px; bottom: 28px; padding: 9px 12px 9px 12px; gap: 14px; min-height: 64px; }
@@ -558,6 +558,14 @@ a.pr-cella:hover { background: #f7f7f7; }
 	.pv-ris { position: sticky; top: calc(var(--proto-h) + 24px); }
 }
 
+
+/* icone della barra disegnate nello stile di Instagram: linea 2 px, angoli tondi, la voce attiva piena */
+svg.nav-i { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+svg.nav-i .pieno { fill: currentColor; }
+svg.nav-i .buco { fill: #fff; stroke: none; }
+svg.nav-i .buco-l { stroke: #fff; }
+.barra nav button.attiva svg.nav-i.spessa { stroke-width: 3; }
+
 @media (prefers-reduced-motion: reduce) { .schermo, .velo, .tendina, .toast, .visore { animation: none !important; } .btn, .chips button, .scelte label, .barra nav button::after, .giorni-strip button b, .persona, .tondo-cerca, .erica-fab, .pr-indietro, .pr-freccia, .pr-punto::before { transition: none !important; } .erica-fab { animation: none !important; } }
 
 /* schermo largo: intestazione compatta in alto come nel sito (logo, voci al centro con riga sotto, nome a destra) */
@@ -571,27 +579,28 @@ a.pr-cella:hover { background: #f7f7f7; }
 	@media (min-width: 1440px) { .app { margin-left: calc(var(--rail) + (100vw - var(--rail) - 1180px) / 2); } }
 	.app.con-rete { padding-top: calc(var(--proto-h) + 80px); }
 	.rete { left: var(--rail); }
-	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; padding: 0 0 66px; border-top: 0; border-right: 1px solid var(--linea); }
-	.barra .marchio-barra { display: block; flex: none; height: 24px; margin: 30px 0 0 18px; font-size: 0; letter-spacing: 0; line-height: 24px; }
+	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; padding: 0 0 56px; border-top: 0; border-right: 1px solid var(--linea); }
+	.barra .marchio-barra { display: block; flex: none; height: 24px; margin: 39px 0 0 24px; font-size: 0; letter-spacing: 0; line-height: 24px; }
 	.barra .marchio-barra::before { content: 'A'; display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1.6px solid var(--nero); border-radius: 7px; font-size: 13px; font-weight: 600; letter-spacing: 0; }
-	.barra nav { display: flex; flex-direction: column; gap: 0; flex: 1; max-width: none; margin: 0; }
+	.barra nav { display: flex; flex-direction: column; gap: 8px; flex: 1; max-width: none; margin: 0; }
 	.barra nav > button:first-child { margin-top: auto; }
-	.barra nav button { display: flex; align-items: center; justify-content: flex-start; gap: 16px; height: 47px; min-height: 0; margin: 0 6px; padding: 0 12px; font-size: 16px; line-height: 1; font-weight: 400; color: var(--nero); border-radius: 8px; transition: background-color 160ms ease; }
-	.barra nav button svg { width: 24px; height: 24px; stroke-width: 1.6; }
+	.barra nav button { display: flex; align-items: center; justify-content: flex-start; gap: 16px; height: 48px; min-height: 0; margin: 0 8px; padding: 0 16px; font-size: 16px; line-height: 1; font-weight: 400; color: var(--nero); border-radius: 8px; transition: background-color 160ms ease; }
+	.barra nav button svg, .barra nav button svg.nav-i { width: 24px; height: 24px; }
 	.barra nav button .avatar { width: 24px; height: 24px; font-size: 11px; }
 	.barra nav button.attiva .avatar { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--nero); }
 	.barra nav button .et { display: none; white-space: nowrap; }
 	.barra nav button::after { display: none; }
 	.barra nav button.attiva { font-weight: 700; }
-	.barra nav button.attiva svg { stroke-width: 2.4; }
 	@media (hover: hover) { .barra nav button:hover { background: var(--chiaro); } }
 	.barra nav button.in-fondo { margin-top: auto; }
-	.barra .pallino { position: absolute; top: 6px; left: 30px; right: auto; height: 20px; min-width: 20px; border: 2px solid #fff; }
+	.barra nav button.in-fondo { position: relative; top: 0; }
+	.barra nav > button:nth-last-child(2) { margin-bottom: 14px; }
+	.barra .pallino { position: absolute; top: 23px; left: 31px; right: auto; height: 19px; min-width: 19px; padding: 0 5px; border-radius: 10px; border: 2px solid #fff; font-size: 11px; }
 	.barra .barra-destra { display: none; }
 	.barra .solo-largo { display: flex; }
 	@media (min-width: 1280px) {
 		:root { --rail: 244px; }
-		.barra .marchio-barra { font-size: 14px; letter-spacing: 3px; margin-left: 18px; }
+		.barra .marchio-barra { font-size: 14px; letter-spacing: 3px; margin-left: 24px; line-height: 24px; }
 		.barra .marchio-barra::before { display: none; }
 		.barra nav button .et { display: inline; }
 	}
@@ -943,7 +952,7 @@ function render() {
 	app.innerHTML = `<div class="schermo" key="${vista}-${param}">${r(param)}</div>`;
 	const sezione = { p: 'pratiche', cliente: 'clienti', imp: 'agenda', prev: 'pratiche', pdf: 'pratiche', avvisi: 'altro', sistema: 'altro', impostazioni: 'altro', sito: 'altro', tutteOggi: 'oggi', crediti: 'altro', lavoro: 'lavori', erica: 'oggi', materiali: operatore() ? 'materiali' : 'altro', login: 'oggi' }[vista] ?? vista;
 	const nuove = D.avvisi.filter((a) => !a.letto).length;
-	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca" title="Cerca">${I.cerca}<span class="et">Cerca</span></button><button type="button" class="solo-largo ${vista === 'altro' ? 'attiva' : ''}" onclick="vai('altro')" title="Profilo">${avatar(D.utente, operatore())}<span class="et">Profilo</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" title="${n}">${I[k]}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
+	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca" title="Cerca">${navIcona('cerca', false)}<span class="et">Cerca</span></button><button type="button" class="solo-largo ${vista === 'altro' ? 'attiva' : ''}" onclick="vai('altro')" title="Profilo">${avatar(D.utente, operatore())}<span class="et">Profilo</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" title="${n}">${navIcona(k, sezione === k)}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
 	// Erica in basso a destra (solo Fabri, non dentro Erica)
 	const fab = document.getElementById('erica-fab'), dvF = ericaDaVedere();
 	const mostraFab = !operatore() && vista !== 'erica';
@@ -1745,6 +1754,21 @@ function chiediErica(q) {
 	render();
 	const c = document.getElementById('chat'); if (c) c.scrollTop = c.scrollHeight;
 }
+
+
+/* Icone della barra (stile Instagram, disegnate qui): [contorno, piena per la voce attiva] */
+const nv = (corpo, cls = '') => `<svg class="nav-i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${corpo}</svg>`;
+const NAV_I = {
+	oggi: [nv('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.2v2.3M12 19.5v2.3M2.2 12h2.3M19.5 12h2.3M5.1 5.1l1.6 1.6M17.3 17.3l1.6 1.6M5.1 18.9l1.6-1.6M17.3 6.7l1.6-1.6"/>'), nv('<circle class="pieno" cx="12" cy="12" r="5"/><path d="M12 1.8v2.4M12 19.8v2.4M1.8 12h2.4M19.8 12h2.4M4.8 4.8l1.7 1.7M17.5 17.5l1.7 1.7M4.8 19.2l1.7-1.7M17.5 6.5l1.7-1.7"/>')],
+	agenda: [nv('<rect x="3" y="4.5" width="18" height="16.5" rx="3.5"/><path d="M3 10h18M8 2.5v4M16 2.5v4"/>'), nv('<rect class="pieno" x="3" y="4.5" width="18" height="16.5" rx="3.5"/><path d="M8 2.5v4M16 2.5v4"/><path class="buco-l" d="M3.5 10h17"/><circle class="buco" cx="8" cy="14.5" r="1.3"/><circle class="buco" cx="12" cy="14.5" r="1.3"/><circle class="buco" cx="16" cy="14.5" r="1.3"/>')],
+	pratiche: [nv('<path d="M7 2.5h7.2l5.3 5.3V19a2.5 2.5 0 0 1-2.5 2.5H7A2.5 2.5 0 0 1 4.5 19V5A2.5 2.5 0 0 1 7 2.5z"/><path d="M14 2.7v5.3h5.3M8.5 13h7M8.5 17h5"/>'), nv('<path class="pieno" d="M7 2.5h7.2l5.3 5.3V19a2.5 2.5 0 0 1-2.5 2.5H7A2.5 2.5 0 0 1 4.5 19V5A2.5 2.5 0 0 1 7 2.5z"/><path class="buco-l" d="M8.5 13h7M8.5 17h5"/>')],
+	clienti: [nv('<circle cx="12" cy="7.8" r="4.3"/><path d="M3.8 21.2a8.2 8.2 0 0 1 16.4 0"/>'), nv('<circle class="pieno" cx="12" cy="7.8" r="4.3"/><path class="pieno" d="M3.8 21.2a8.2 8.2 0 0 1 16.4 0z"/>')],
+	materiali: [nv('<path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/>'), nv('<path class="pieno" d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path class="buco-l" d="M4.5 8 12 12l7.5-4M12 12v8"/>')],
+	altro: [nv('<path d="M3 6h18M3 12h18M3 18h18"/>'), nv('<path d="M3 6h18M3 12h18M3 18h18"/>', 'spessa')],
+	cerca: [nv('<circle cx="10.5" cy="10.5" r="7"/><path d="M15.8 15.8 21.5 21.5"/>'), nv('<circle cx="10.5" cy="10.5" r="7"/><path d="M15.8 15.8 21.5 21.5"/>', 'spessa')]
+};
+NAV_I.lavori = NAV_I.pratiche;
+const navIcona = (k, attiva) => (NAV_I[k] ? NAV_I[k][attiva ? 1 : 0] : I[k]);
 
 /* ===================== AVVIO ===================== */
 carica();
