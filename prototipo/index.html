@@ -579,11 +579,11 @@ svg.nav-i .buco-l { stroke: #fff; }
 	@media (min-width: 1440px) { .app { margin-left: calc(var(--rail) + (100vw - var(--rail) - 1180px) / 2); } }
 	.app.con-rete { padding-top: calc(var(--proto-h) + 80px); }
 	.rete { left: var(--rail); }
-	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; padding: 0 0 56px; border-top: 0; border-right: 1px solid var(--linea); }
-	.barra .marchio-barra { display: block; flex: none; height: 24px; margin: 39px 0 0 24px; font-size: 0; letter-spacing: 0; line-height: 24px; }
+	.barra { top: var(--proto-h); bottom: 0; right: auto; width: var(--rail); display: flex; flex-direction: column; padding: 0 0 84px; border-top: 0; border-right: 1px solid var(--linea); }
+	.barra .marchio-barra { display: block; flex: none; height: 24px; margin: 11px 0 0 24px; font-size: 0; letter-spacing: 0; line-height: 24px; }
 	.barra .marchio-barra::before { content: 'A'; display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1.6px solid var(--nero); border-radius: 7px; font-size: 13px; font-weight: 600; letter-spacing: 0; }
 	.barra nav { display: flex; flex-direction: column; gap: 8px; flex: 1; max-width: none; margin: 0; }
-	.barra nav > button:first-child { margin-top: auto; }
+	.barra nav > button:first-child { margin-top: max(16px, calc(50vh - 315px)); }
 	.barra nav button { display: flex; align-items: center; justify-content: flex-start; gap: 16px; height: 48px; min-height: 0; margin: 0 8px; padding: 0 16px; font-size: 16px; line-height: 1; font-weight: 400; color: var(--nero); border-radius: 8px; transition: background-color 160ms ease; }
 	.barra nav button svg, .barra nav button svg.nav-i { width: 24px; height: 24px; }
 	.barra nav button .avatar { width: 24px; height: 24px; font-size: 11px; }
@@ -594,7 +594,6 @@ svg.nav-i .buco-l { stroke: #fff; }
 	@media (hover: hover) { .barra nav button:hover { background: var(--chiaro); } }
 	.barra nav button.in-fondo { margin-top: auto; }
 	.barra nav button.in-fondo { position: relative; top: 0; }
-	.barra nav > button:nth-last-child(2) { margin-bottom: 14px; }
 	.barra .pallino { position: absolute; top: 23px; left: 31px; right: auto; height: 19px; min-width: 19px; padding: 0 5px; border-radius: 10px; border: 2px solid #fff; font-size: 11px; }
 	.barra .barra-destra { display: none; }
 	.barra .solo-largo { display: flex; }
