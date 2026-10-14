@@ -875,8 +875,9 @@ body[data-servizio="ristrutturazioni"] svg[data-i] { --c: #463428; --cf: #efe7e0
 /* POP-UP delle schede (come Airbnb): uno sopra l'altro. Quello sotto resta visibile, un po' più piccolo e scuro */
 .pop-livello { position: fixed; inset: 0; z-index: calc(54 + var(--liv, 0) * 2); pointer-events: none; }
 .pop-livello > * { pointer-events: auto; }
-.pop-velo { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); }
-.pop-velo.sopra-altro { background: rgba(0, 0, 0, 0.28); }
+/* velo come Airbnb (misurato 14/10): grigio scuro #222 al 40%, senza sfocatura */
+.pop-velo { position: fixed; inset: 0; background: rgba(34, 34, 34, 0.4); }
+.pop-livello:not(.primo) > .pop-velo { background: rgba(34, 34, 34, 0.28); }
 .pop-velo.entra { animation: sfuma var(--t-tendina) var(--molla); }
 .pop { position: fixed; left: 50%; top: 50%; display: flex; flex-direction: column; background: var(--bianco); border-radius: 24px; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28); overflow: hidden; transform: translate(-50%, -50%); transition: transform 300ms var(--molla), filter 300ms ease; }
 .pop.grande { width: min(1200px, calc(100vw - 96px)); height: calc(100vh - 64px); }
@@ -887,8 +888,8 @@ body[data-servizio="ristrutturazioni"] svg[data-i] { --c: #463428; --cf: #efe7e0
 .pop-livello:not(:first-child) .pop.grande { width: min(1060px, calc(100vw - 200px)); height: calc(100vh - 128px); }
 .pop-livello:not(:first-child) .pop.medio { width: min(860px, calc(100vw - 200px)); max-height: calc(100vh - 140px); }
 }
-.dietro .pop-velo { background: transparent; }
-.pop-livello:first-child.dietro .pop-velo { background: rgba(0, 0, 0, 0.45); }
+.pop-livello.dietro:not(.primo) > .pop-velo { background: transparent; }
+.pop-livello.nascosto { visibility: hidden; }
 .pop.entra { animation: finEntra var(--t-tendina) var(--molla); }
 .pop.via, .pop-velo.via { animation: finEsce var(--t-chiudi) ease forwards; }
 .pop-velo.via { animation-name: sfumaVia; }
@@ -917,7 +918,7 @@ body.con-pop .erica-fab { visibility: hidden; }
 .rq-box svg { width: 22px; height: 22px; flex: none; color: var(--c, var(--nero)); }
 .rq .vedi { margin-top: 16px; }
 @media (max-width: 899px) {
-	.pop.grande, .pop.medio { left: 0; right: 0; top: calc(12px + var(--liv, 0) * 10px); bottom: 0; width: auto; height: auto; max-height: none; transform: none; border-radius: 16px 16px 0 0; }
+	.pop.grande, .pop.medio { left: 0; right: 0; top: calc(12px + var(--vis, 0) * 10px); bottom: 0; width: auto; height: auto; max-height: none; transform: none; border-radius: 16px 16px 0 0; }
 	.dietro .pop { transform: scale(calc(1 - var(--dietro) * 0.05)); transform-origin: top center; }
 	.pop.entra { animation-name: finSaleP; }
 	.pop.via { animation-name: finScendeP; }
@@ -925,8 +926,6 @@ body.con-pop .erica-fab { visibility: hidden; }
 	@keyframes finScendeP { to { transform: translateY(100%); } }
 	.pop-corpo { padding: 56px 20px calc(32px + env(safe-area-inset-bottom, 0px)); }
 	.pop-x { top: 12px; right: 12px; }
-	.rq { top: auto; bottom: 0; left: 0; right: 0; width: auto; transform: none; border-radius: 16px 16px 0 0; animation-name: finSaleP; }
-	.rq.via { animation-name: finScendeP; }
 }
 @media (prefers-reduced-motion: reduce) { .pop, .pop-velo, .pop.via, .pop-velo.via, .rq, .rq.via { animation: none !important; transition: none !important; } }
 
@@ -936,6 +935,105 @@ body.con-pop .erica-fab { visibility: hidden; }
 .tipo-cliente { margin-bottom: 6px; }
 .riga .cosa b .tag { margin-left: 6px; vertical-align: middle; }
 .solo-tipo[hidden] { display: none !important; }
+
+/* ===== POP-UP COME AIRBNB, UNA SOLA PILA (Gian 14/10) =====
+   misure di airbnb.it: piccola 480 · media 568 (moduli) · lista 780 · angoli 32; fumetto 370 con angoli 24, attaccato al pulsante e senza velo */
+.pop { border-radius: 32px; }
+.pop.medio.lista { width: min(780px, calc(100vw - 96px)); }
+@media (min-width: 900px) { .pop-livello:not(:first-child) .pop.medio.lista { width: min(740px, calc(100vw - 200px)); } }
+.pop-x .ico-su, .fin-x .ico-su { display: none; }
+.pop-x .ico-x, .fin-x .ico-x, .pop-x .ico-su, .fin-x .ico-su { line-height: 0; }
+.fin-x svg, .pop-x svg { width: 18px; height: 18px; }
+.f-fumetto > .pop-velo { background: transparent !important; }
+.tendina.fermo, .finestra.fermo { animation: none !important; }
+/* lista */
+.finestra { width: min(780px, calc(100vw - 48px)); border-radius: 32px; padding: 24px 32px 40px; transition: transform 300ms var(--molla), filter 300ms ease; }
+.dietro .finestra { transform: translate(-50%, calc(-50% - 14px)) scale(0.96); filter: brightness(0.97); }
+/* moduli: sul computer al centro, pulsanti fissi in fondo (come «Filtri») */
+@media (min-width: 744px) {
+	.tendina { left: 50%; top: 50%; right: auto; bottom: auto; width: min(568px, calc(100vw - 48px)); max-width: none; max-height: calc(100vh - 80px); margin: 0; transform: translate(-50%, -50%); border-radius: 32px; padding: 0 24px 24px; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28); animation: finEntra var(--t-tendina) var(--molla); overscroll-behavior: contain; transition: transform 300ms var(--molla), filter 300ms ease; }
+	.tendina.piccola { width: min(480px, calc(100vw - 48px)); }
+	.tendina.via { animation: finEsce var(--t-chiudi) ease forwards; }
+	.dietro .tendina { transform: translate(-50%, calc(-50% - 14px)) scale(0.96); filter: brightness(0.97); }
+	.tendina .maniglia { display: none; }
+	.tendina .testa-t { position: sticky; top: 0; z-index: 2; margin: 0 -24px 16px; padding: 0 16px 0 24px; min-height: 64px; background: var(--bianco); border-bottom: 1px solid var(--linea); }
+	.tendina .testa-t h3 { margin: 0; flex: 1; text-align: center; padding-left: 36px; font-size: var(--t-scheda); line-height: var(--lh-scheda); font-weight: var(--w-titolo); }
+	.tendina .chiudi-x { box-shadow: none; }
+	.tendina .chiudi-x:hover { background: #f2f2f2; }
+	.tendina .azioni { position: sticky; bottom: -24px; z-index: 2; display: flex; flex-direction: row-reverse; justify-content: space-between; align-items: center; gap: 12px; margin: 24px -24px -24px; padding: 16px 24px; background: var(--bianco); border-top: 1px solid var(--linea); }
+	.tendina .azioni .btn { width: auto; margin: 0 !important; }
+	.tendina .azioni .btn.linea { border-color: transparent; background: none; text-decoration: underline; text-underline-offset: 3px; padding-left: 8px; padding-right: 8px; }
+	/* fumetto attaccato al pulsante */
+	.rq.ancorato { transform: none; width: min(370px, calc(100vw - 32px)); border-radius: 24px; padding: 24px; animation: fumEntra var(--t-passo) var(--molla); }
+	.rq.ancorato.via { animation: fumEsce var(--t-rapido) ease forwards; }
+	@keyframes fumEntra { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+	@keyframes fumEsce { to { opacity: 0; } }
+}
+@media (max-width: 743px) {
+	/* sul telefono: grandi finestre con la freccia ← in alto; le liste lunghe entrano da destra a tutto schermo */
+	.finestra { top: 0; left: 0; right: 0; bottom: 0; width: auto; transform: none; border-radius: 0; animation-name: finDestra; padding-top: 12px; }
+	.finestra.via { animation-name: finDestraVia; }
+	@keyframes finDestra { from { transform: translateX(100%); } }
+	@keyframes finDestraVia { to { transform: translateX(100%); } }
+	.dietro .finestra { transform: none; filter: brightness(0.97); }
+	.fin-x .ico-x { display: none; } .fin-x .ico-su { display: block; }
+	/* il fumetto diventa un foglio basso, alto quanto il contenuto, con la × */
+	.f-fumetto > .pop-velo { background: rgba(34, 34, 34, 0.4) !important; }
+	.rq { top: auto; bottom: 0; left: 0; right: 0; width: auto; transform: none; border-radius: 24px 24px 0 0; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); animation-name: finSaleP; }
+	.rq.via { animation-name: finScendeP; }
+	.dietro .tendina { filter: brightness(0.97); }
+}
+@media (max-width: 899px) {
+	.pop-x { left: 12px; right: auto; }
+	.pop-x .ico-x { display: none; } .pop-x .ico-su { display: block; }
+}
+@media (prefers-reduced-motion: reduce) { .finestra, .tendina, .rq.ancorato { transition: none !important; animation: none !important; } }
+
+/* tour delle foto */
+.f-foto > .pop-velo { background: transparent !important; }
+.tour { position: fixed; inset: 0; z-index: 2; background: var(--bianco); overflow: auto; overscroll-behavior: contain; animation: tourSale var(--t-tendina) var(--molla); }
+.tour.via { animation: tourScende var(--t-chiudi) ease forwards; }
+@keyframes tourSale { from { transform: translateY(24px); opacity: 0; } }
+@keyframes tourScende { to { transform: translateY(24px); opacity: 0; } }
+.tour-testa { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: var(--bianco); }
+.tour-testa span { font-size: var(--t-piccolo); line-height: var(--lh-piccolo); color: var(--grigio); font-variant-numeric: tabular-nums; }
+.tour-x { box-shadow: none; } .tour-x:hover { background: #f2f2f2; }
+.tour-corpo { max-width: var(--contenuto); margin: 0 auto; padding: 8px 24px 64px; }
+.tour-corpo h2 { margin: 8px 0 4px; font-size: var(--t-titolo); line-height: var(--lh-titolo); font-weight: var(--w-titolo); color: var(--nero); }
+.tour-indice { display: flex; gap: 16px; margin: 24px 0 8px; overflow-x: auto; }
+.tour-indice button { flex: none; width: 140px; border: 0; background: none; padding: 0; text-align: left; font: inherit; font-size: var(--t-piccolo); line-height: var(--lh-piccolo); color: var(--nero); cursor: pointer; }
+.tour-indice img { display: block; width: 140px; height: 96px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; }
+.tour-indice button:hover span { text-decoration: underline; text-underline-offset: 3px; }
+.tour-gruppo { display: grid; grid-template-columns: 280px 1fr; gap: 24px; margin-top: 48px; scroll-margin-top: 72px; }
+.tour-tit h3 { margin: 0 0 4px; font-size: var(--t-sezione); line-height: var(--lh-sezione); font-weight: var(--w-titolo); color: var(--nero); }
+.tour-griglia { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tour-foto { position: relative; border: 0; padding: 0; background: var(--chiaro); cursor: zoom-in; aspect-ratio: 3 / 2; overflow: hidden; }
+.tour-foto:nth-child(3n+1) { grid-column: span 2; aspect-ratio: 16 / 10; }
+.tour-foto img { display: block; width: 100%; height: 100%; object-fit: cover; transition: filter 200ms ease; }
+.tour-foto:hover img { filter: brightness(0.92); }
+.tour-chi { position: absolute; left: 8px; bottom: 8px; padding: 2px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.92); color: var(--nero); font-size: var(--t-mini); line-height: var(--lh-mini); }
+.tour-did { margin-top: 32px; }
+.pr-tutte { position: absolute; left: 16px; bottom: 16px; z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--nero); border-radius: 8px; background: var(--bianco); font: inherit; font-size: var(--t-piccolo); line-height: var(--lh-piccolo); font-weight: var(--w-nome); color: var(--nero); cursor: pointer; }
+.pr-tutte:hover { background: #f7f7f7; }
+.pr-tutte svg { width: 16px; height: 16px; }
+@media (max-width: 743px) {
+	.tour { animation-name: finSaleP; } .tour.via { animation-name: finScendeP; }
+	.tour-testa { padding: 10px 16px; } .tour-corpo { padding: 4px 16px 48px; }
+	.tour-gruppo { grid-template-columns: 1fr; gap: 12px; margin-top: 32px; }
+	.pr-tutte { left: 12px; bottom: 12px; padding: 6px 10px; }
+}
+@media (max-width: 899px) { .imp-testa .pr-tutte { display: none; } }
+/* filtri a pillole nelle liste lunghe */
+.fin-chips { position: sticky; top: -24px; z-index: 2; display: flex; gap: 8px; margin: 20px -4px 0; padding: 12px 4px; overflow-x: auto; background: var(--bianco); scrollbar-width: none; }
+.fin-chips button { flex: none; padding: 8px 14px; border: 1px solid var(--linea-forte, #dddddd); border-radius: 999px; background: var(--bianco); font: inherit; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); color: var(--nero); cursor: pointer; }
+.fin-chips button span { color: var(--grigio); margin-left: 2px; }
+.fin-chips button:hover { border-color: var(--nero); }
+.fin-chips button[aria-pressed="true"] { border-color: var(--nero); box-shadow: inset 0 0 0 1px var(--nero); }
+.fin-gruppo[hidden] { display: none; }
+.fin-chips + .fin-gruppo h3 { margin-top: 16px; }
+@media (min-width: 744px) { .finestra.con-filtri { height: min(703px, calc(100vh - 80px)); } }
+@media (max-width: 743px) { .fin-chips { top: -12px; } }
+@media (prefers-reduced-motion: reduce) { .tour, .tour.via { animation: none !important; } }
 </style>
 
 <div class="proto" title="Prototipo: dati fittizi, nessun invio, niente va sul server"><b>PROTOTIPO</b> · dati finti, nessun invio</div>
@@ -1075,6 +1173,15 @@ const miniatura = (p) => { const f = fotoDi(p)[0] ?? FOTO_SERVIZIO[p.servizio]; 
 
 /* visore delle foto (a tutto schermo, scorrimento col dito o con le frecce) */
 let visore = null;
+/* TUTTE LE FOTO come il «tour fotografico» di Airbnb: a tutto schermo, divise in gruppi (dal cliente / dal cantiere),
+   tocco su una foto → visore nero sopra. Sta nella pila: X, Esc o Indietro per chiudere. */
+function apriTour(praticaId) {
+	const p = pratica(praticaId); if (!p || !fotoDi(p).length) return;
+	const cl = Array.isArray(p.foto) ? p.foto : [], ca = p.fotoCantiere ?? [];
+	const gruppi = [['Dal cliente', 'Mandate con la richiesta', cl.map((n, i) => [n, i])], ['Dal cantiere', 'Scattate dalla squadra', ca.map((x, j) => [x.nome, cl.length + j, x])]].filter((g) => g[2].length);
+	const foto = ([n, i, x]) => `<button type="button" class="tour-foto" onclick="apriVisore('${p.id}',${i})" aria-label="${esc(FOTO[n]?.[0] ?? 'Foto')}"><img src="${src(n)}" alt="" loading="lazy">${x ? `<span class="tour-chi">${nomeOp(x.chi)} · ${quando(x.quando)}</span>` : ''}</button>`;
+	apriFoglio('foto', 'Tutte le foto', `<div class="tour" role="dialog" aria-modal="true" aria-label="Tutte le foto · ${esc(p.nome)}"><div class="tour-testa"><button type="button" class="pop-tondo tour-x" aria-label="Chiudi" onclick="chiudiTendina()">${I.indietro}</button><span>${fotoDi(p).length} foto</span></div><div class="tour-corpo"><h2>Tutte le foto</h2><p class="nota">${esc(titoloLavoro(p))} · ${esc(p.nome)}</p>${gruppi.length > 1 ? `<div class="tour-indice">${gruppi.map(([t, , l], k) => `<button type="button" onclick="document.getElementById('tg-${k}').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })"><img src="${mini(l[0][0])}" alt=""><span>${t} · ${l.length}</span></button>`).join('')}</div>` : ''}${gruppi.map(([t, dd, l], k) => `<section class="tour-gruppo" id="tg-${k}"><div class="tour-tit"><h3>${t}</h3><p class="nota">${dd} · ${l.length}</p></div><div class="tour-griglia">${l.map(foto).join('')}</div></section>`).join('')}<p class="nota tour-did">Foto dimostrative (Pexels).</p></div></div>`);
+}
 function apriVisore(praticaId, i = 0) {
 	const p = pratica(praticaId); if (!p || !fotoDi(p).length) return;
 	visore = { p, i };
@@ -1102,7 +1209,7 @@ function chiudiVisore() {
 const galleria = (p) => {
 	const f = fotoDi(p); if (!f.length) return '';
 	const mostra = f.slice(0, 3);
-	return `<div class="galleria">${mostra.map((n, i) => `<button type="button" onclick="apriVisore('${p.id}',${i})" aria-label="Foto ${i + 1}"><img src="${mini(n)}" alt="${esc(FOTO[n]?.[0] ?? '')}" loading="lazy">${i === 2 && f.length > 3 ? `<span class="piu">+${f.length - 3}</span>` : ''}</button>`).join('')}</div><p class="didascalia">Foto dimostrative (Pexels), non lavori di ArtigianaMente. Si sostituiscono con quelle vere.</p>`;
+	return `<div class="galleria">${mostra.map((n, i) => `<button type="button" onclick="${i === 2 && f.length > 3 ? `apriTour('${p.id}')` : `apriVisore('${p.id}',${i})`}" aria-label="${i === 2 && f.length > 3 ? 'Tutte le foto' : `Foto ${i + 1}`}"><img src="${mini(n)}" alt="${esc(FOTO[n]?.[0] ?? '')}" loading="lazy">${i === 2 && f.length > 3 ? `<span class="piu">+${f.length - 3}</span>` : ''}</button>`).join('')}</div><p class="didascalia">Foto dimostrative (Pexels), non lavori di ArtigianaMente. Si sostituiscono con quelle vere.</p>`;
 };
 
 /* ===================== DATE ===================== */
@@ -1237,7 +1344,7 @@ function guardia(v, p) {
 	return [v, p];
 }
 function vai(v, p = null, { indietro = false } = {}) {
-	chiudiTendina(true); chiudiVisore(); pop = [];
+	chiudiVisore(); pop = []; FOGLI = {};
 	if (!indietro && (vista !== v || param !== p)) ritorno.push([vista, param]);
 	if (ritorno.length > 20) ritorno.shift();
 	[v, p] = guardia(v, p);
@@ -1252,73 +1359,170 @@ function vai(v, p = null, { indietro = false } = {}) {
    Le sezioni (Oggi, Agenda, Pratiche, Clienti, Altro) e il preventivo restano pagine. */
 const POP = ['p', 'imp', 'prev', 'cliente', 'lavoro', 'avvisi', 'erica', 'impostazioni', 'sito', 'sistema', 'crediti', 'pdf', 'materiali', 'tutteOggi'];
 let pop = [], popNuovo = false;
+/* UNA SOLA PILA (come Airbnb, Gian 14/10): nella stessa pila delle schede ci sono anche i «fogli»:
+   moduli (finestra media), conferme (piccola), elenchi «Mostra tutti» (lista) e fumetti attaccati al pulsante.
+   Si vedono al massimo 2 livelli; chiudendo quello sopra si torna a quello sotto. */
+let FOGLI = {}, nFoglio = 0;
+const eFoglio = (x) => !!x && x[0] === '_f';
+const eFumetto = (x) => eFoglio(x) && FOGLI[x[1]]?.tipo === 'fumetto';
+/* Tasto Indietro del telefono: ogni livello (non i fumetti) ha una voce nella cronologia; le schede anche il loro indirizzo (#oggi/p-r2) */
+// la voce si aggiunge solo dopo un tocco vero (x.s = ha la sua voce): così il browser non salta mai fuori dall'app tornando indietro.
+// Le mosse sulla cronologia vanno in fila: mai una voce nuova mentre il browser sta ancora tornando indietro.
+let codaStoria = [], inViaggio = false;
+const livStoria = () => pop.filter((x) => !eFumetto(x)).length;
+const hashDi = () => '#' + vista + (param ? '-' + param : '') + pop.filter((x) => !eFoglio(x)).map(([v, p]) => '/' + v + (p ? '-' + p : '')).join('');
+const livFino = (x) => pop.slice(0, pop.indexOf(x) + 1).filter((y) => !eFumetto(y)).length;
+function sincronizzaUrl() { try { history.replaceState(history.state?.liv != null || pop.length ? { liv: livStoria() } : history.state, '', hashDi()); } catch {} }
+function avantiStoria() {
+	while (!inViaggio && codaStoria.length) {
+		const op = codaStoria.shift();
+		try {
+			if (op.go) { inViaggio = true; history.go(op.go); setTimeout(() => { if (inViaggio) { inViaggio = false; avantiStoria(); } }, 700); }
+			else if (pop.includes(op.push)) { history.pushState({ liv: livFino(op.push) }, '', hashDi()); op.push.s = true; }
+		} catch { inViaggio = false; }
+	}
+	if (!inViaggio) sincronizzaUrl();
+}
+function pushStoria(x) {
+	if (navigator.userActivation && !navigator.userActivation.isActive) return sincronizzaUrl();
+	codaStoria.push({ push: x }); avantiStoria();
+}
+function tornaStoria(via) {
+	codaStoria = codaStoria.filter((op) => !via.includes(op.push));
+	const m = via.filter((x) => x.s).length;
+	if (m > 0) codaStoria.push({ go: -m });
+	avantiStoria();
+}
+function togliFumetti() { while (eFumetto(pop.at(-1))) delete FOGLI[pop.pop()[1]]; }
 const BASE_DI = { p: 'pratiche', prev: 'pratiche', pdf: 'pratiche', imp: 'agenda', cliente: 'clienti', lavoro: 'lavori', avvisi: 'altro', erica: 'oggi', impostazioni: 'altro', sito: 'altro', sistema: 'altro', crediti: 'altro', tutteOggi: 'oggi', login: 'oggi' };
 function apri(v, p = null) {
 	// SOLO_PAGINE: usato solo dalle prove automatiche dei flussi (prova3), che controllano le pagine intere
 	if (window.SOLO_PAGINE || !POP.includes(v) || !D.utente || (operatore() && v === 'materiali')) return vai(v, p);
 	[v, p] = guardia(v, p);
 	if (!POP.includes(v)) return vai(v, p);
-	chiudiTendina(true); chiudiVisore();
+	chiudiVisore(); togliFumetti();
 	// sotto i pop-up resta sempre una sezione (mai il preventivo o un'altra scheda)
 	if (!sezioni().some(([k]) => k === vista)) { vista = BASE_DI[vista] ?? 'oggi'; if (operatore() && vista === 'pratiche') vista = 'lavori'; param = null; try { history.replaceState(null, '', '#' + vista); } catch {} }
 	const cima = pop.at(-1);
 	if (cima && cima[0] === v && cima[1] === p) return render();
 	// se la scheda è già aperta più sotto, si torna lì invece di aprirne una copia
 	const k = pop.findIndex(([a, b]) => a === v && b === p);
-	if (k >= 0) { pop = pop.slice(0, k + 1); return render(); }
-	popNuovo = true; pop.push([v, p]); render();
+	if (k >= 0) { const via = pop.slice(k + 1); pop = pop.slice(0, k + 1); via.forEach((x) => eFoglio(x) && delete FOGLI[x[1]]); tornaStoria(via); return render(); }
+	const nuovo = [v, p]; popNuovo = true; pop.push(nuovo); pushStoria(nuovo); render();
+}
+// apre un foglio (modulo, piccola, lista, fumetto) in cima alla pila
+function apriFoglio(tipo, titolo, corpo, ancora = null) {
+	chiudiVisore(); togliFumetti();
+	const cima = pop.at(-1), f0 = eFoglio(cima) ? FOGLI[cima[1]] : null;
+	// lo stesso modulo ridisegnato: si sostituisce al suo posto, senza aprirne un altro sopra
+	if (f0 && tipo !== 'fumetto' && f0.tipo === tipo && f0.titolo === titolo) {
+		const L = livelliPop().at(-1); f0.corpo = corpo;
+		if (L) { L.innerHTML = htmlFoglio(f0, false); L.querySelector('.tendina, .finestra')?.classList.add('fermo'); }
+		return;
+	}
+	const id = 'f' + ++nFoglio;
+	FOGLI[id] = { tipo, titolo, corpo, ancora };
+	const nuovo = ['_f', id]; popNuovo = true; pop.push(nuovo);
+	if (tipo !== 'fumetto') pushStoria(nuovo);
+	disegnaPop(false);
+}
+const livelliPop = () => [...document.getElementById('pop').children].filter((x) => !x.classList.contains('esce'));
+const htmlFoglio = (f, nuovo) => `<div class="pop-velo ${nuovo ? 'entra' : ''}" onclick="chiudiTendina()"></div>${f.corpo}`;
+// un livello che se ne va: anima l'uscita e poi sparisce
+function esciLivello(L, subito = false) {
+	if (!L) return;
+	if (subito || matchMedia('(prefers-reduced-motion: reduce)').matches) return L.remove();
+	L.classList.add('esce'); L.inert = true;
+	L.querySelectorAll('.pop, .pop-velo, .tendina, .finestra, .rq, .tour').forEach((x) => x.classList.add('via'));
+	setTimeout(() => L.remove(), 260);
 }
 // chiude tutti i pop-up
 function chiudiPop() {
-	const el = document.getElementById('pop');
-	pop = [];
-	if (el.firstChild && !matchMedia('(prefers-reduced-motion: reduce)').matches) { el.querySelectorAll('.pop, .pop-velo').forEach((x) => x.classList.add('via')); setTimeout(() => { if (!pop.length) render(); }, 250); }
-	else render();
+	tornaStoria(pop);
+	pop = []; FOGLI = {};
+	livelliPop().forEach((L) => esciLivello(L));
+	render();
+}
+// toglie il livello in cima (storia: false quando è stato il tasto Indietro del telefono)
+function togliCima(subito = false, storia = true) {
+	const L = livelliPop()[pop.length - 1], x = pop.pop();
+	if (eFoglio(x)) delete FOGLI[x[1]];
+	if (storia) tornaStoria([x]);
+	esciLivello(L, subito);
+	return x;
 }
 // chiude solo il pop-up in cima: sotto si rivede quello di prima
-function popIndietro() {
-	if (pop.length <= 1) return chiudiPop();
-	const el = document.getElementById('pop'), ultimo = el.lastElementChild;
-	pop.pop();
-	if (ultimo && !matchMedia('(prefers-reduced-motion: reduce)').matches) { ultimo.querySelectorAll('.pop, .pop-velo').forEach((x) => x.classList.add('via')); setTimeout(render, 230); }
-	else render();
+function popIndietro(subito = false) {
+	if (!pop.length) return;
+	const x = togliCima(subito);
+	if (eFoglio(x) && pop.length) disegnaPop(false); else render();
 }
+function chiudiTendina(subito = false) { if (eFoglio(pop.at(-1))) popIndietro(subito); }
 const POP_GRANDI = ['p', 'imp', 'lavoro', 'prev'];
-function disegnaPop() {
+// elenchi semplici: larghi come la finestra «lista» di Airbnb (780)
+const POP_LISTA = ['avvisi', 'crediti', 'sistema'];
+function disegnaPop(rifai = true) {
 	const el = document.getElementById('pop');
-	if (!pop.length) { el.innerHTML = ''; document.body.classList.remove('con-pop'); return; }
-	// i livelli in più (chiusi) vanno via
-	[...el.children].slice(pop.length).forEach((x) => x.remove());
+	livelliPop().slice(pop.length).forEach((x) => x.remove());
+	if (!pop.length) { document.body.classList.remove('con-pop'); return; }
+	// la cima vera: l'ultimo livello che non è un fumetto (sotto un fumetto la scheda resta viva, come su Airbnb)
+	let cima = pop.length - 1; while (cima > 0 && eFumetto(pop[cima])) cima--;
+	const primo = Math.max(0, cima - 1);
 	pop.forEach(([v, p], i) => {
-		const chiave = `${v}-${p}`, sopra = i === pop.length - 1;
-		let L = el.children[i];
-		const giaDietro = L && L.dataset.chiave === chiave && L.dataset.dietro === '1';
-		if (!(giaDietro && !sopra)) {
-			// disegna (o ridisegna) il livello; quelli dietro senza id doppi e non toccabili
-			const sc = L && L.dataset.chiave === chiave ? L.querySelector('.pop-corpo')?.scrollTop ?? 0 : 0;
+		const f = v === '_f' ? FOGLI[p] : null, chiave = `${v}-${p}`, attivo = i >= cima, nuovoQui = popNuovo && i === pop.length - 1;
+		let L = livelliPop()[i];
+		const stesso = L && L.dataset.chiave === chiave;
+		if (f) {
+			if (!stesso) {
+				const n = document.createElement('div');
+				n.className = `pop-livello foglio f-${f.tipo}`; n.dataset.chiave = chiave; n.innerHTML = htmlFoglio(f, nuovoQui);
+				if (L) el.replaceChild(n, L); else el.appendChild(n);
+				L = n; if (f.tipo === 'fumetto') posaFumetto(L, f);
+			}
+		} else if (!stesso || (attivo && rifai) || L.dataset.dietro !== (attivo ? '0' : '1')) {
+			// disegna (o ridisegna) la scheda; quelle dietro senza id doppi e non toccabili
+			const sc = stesso ? L.querySelector('.pop-corpo')?.scrollTop ?? 0 : 0;
 			let html = vistaDi(v)(p);
-			if (!sopra) html = html.replace(/ id="/g, ' data-id="');
-			const nuovo = document.createElement('div');
-			nuovo.className = 'pop-livello';
-			nuovo.dataset.chiave = chiave;
-			nuovo.innerHTML = `<div class="pop-velo ${sopra && popNuovo ? 'entra' : ''} ${i ? 'sopra-altro' : ''}" onclick="popIndietro()"></div><div class="pop ${POP_GRANDI.includes(v) ? 'grande' : 'medio'} ${sopra && popNuovo ? 'entra' : ''}" role="dialog" aria-modal="true"><button type="button" class="pop-tondo pop-x" aria-label="Chiudi" onclick="popIndietro()">${I.chiudi}</button><div class="pop-corpo"><div class="schermo pop-schermo">${html}</div></div></div>`;
-			if (L) el.replaceChild(nuovo, L); else el.appendChild(nuovo);
-			L = nuovo; L.querySelector('.pop-corpo').scrollTop = sc;
+			if (!attivo) html = html.replace(/ id="/g, ' data-id="');
+			const n = document.createElement('div');
+			n.className = 'pop-livello'; n.dataset.chiave = chiave;
+			n.innerHTML = `<div class="pop-velo ${nuovoQui ? 'entra' : ''}" onclick="popIndietro()"></div><div class="pop ${POP_GRANDI.includes(v) ? 'grande' : POP_LISTA.includes(v) ? 'medio lista' : 'medio'} ${nuovoQui ? 'entra' : ''}" role="dialog" aria-modal="true"><button type="button" class="pop-tondo pop-x" aria-label="Chiudi" onclick="popIndietro()"><span class="ico-x">${I.chiudi}</span><span class="ico-su">${I.indietro}</span></button><div class="pop-corpo"><div class="schermo pop-schermo">${html}</div></div></div>`;
+			if (L) el.replaceChild(n, L); else el.appendChild(n);
+			L = n; L.querySelector('.pop-corpo').scrollTop = sc;
 		}
-		L.dataset.dietro = sopra ? '0' : '1';
-		L.inert = !sopra;
-		L.classList.toggle('dietro', !sopra);
-		L.style.setProperty('--dietro', pop.length - 1 - i);
+		L.dataset.dietro = attivo ? '0' : '1';
+		L.inert = !attivo;
+		L.classList.toggle('dietro', !attivo);
+		L.classList.toggle('nascosto', i < primo);
+		L.classList.toggle('primo', i === primo);
+		L.style.setProperty('--dietro', Math.max(0, cima - i));
 		L.style.setProperty('--liv', i);
+		L.style.setProperty('--vis', Math.max(0, Math.min(i, cima) - primo));
 	});
 	popNuovo = false;
-	document.body.classList.add('con-pop');
+	document.body.classList.toggle('con-pop', pop.some((x) => !eFumetto(x)));
 }
+// il fumetto si attacca al pulsante che lo apre (computer); sul telefono è un foglio basso
+function posaFumetto(L, f) {
+	const b = L.querySelector('.rq');
+	if (!b || !f.ancora || !matchMedia('(min-width: 744px)').matches) return;
+	b.classList.add('ancorato');
+	const r = f.ancora, w = b.offsetWidth, h = b.offsetHeight, vw = document.documentElement.clientWidth, vh = innerHeight;
+	let left = (r.left + r.right) / 2 < vw / 2 ? r.left : r.right - w;
+	left = Math.max(16, Math.min(left, vw - w - 16));
+	let top = r.bottom + 8;
+	if (top + h > vh - 16 && r.top - 8 - h >= 16) top = r.top - 8 - h;
+	top = Math.max(16, Math.min(top, vh - h - 16));
+	b.style.left = Math.round(left) + 'px'; b.style.top = Math.round(top) + 'px';
+}
+// il fumetto si chiude se la pagina scorre o cambia misura (come su Airbnb)
+addEventListener('scroll', (e) => { if (eFumetto(pop.at(-1)) && matchMedia('(min-width: 744px)').matches && !(e.target instanceof Element && e.target.closest('.rq'))) chiudiTendina(true); }, true);
+addEventListener('resize', () => { if (eFumetto(pop.at(-1)) && matchMedia('(min-width: 744px)').matches) chiudiTendina(true); });
 /* Piccolo riquadro sopra il pop-up (come «Dettagli del prezzo» di Airbnb) */
 function apriPiccolo(titolo, html) {
-	chiudiTendina(true);
-	document.getElementById('strato').innerHTML = `<div class="velo leggero" onclick="chiudiTendina()"></div><div class="rq" role="dialog" aria-modal="true" aria-label="${esc(titolo)}"><button type="button" class="fin-x" aria-label="Chiudi" onclick="chiudiTendina()">${I.chiudi}</button><h3 class="rq-titolo">${titolo}</h3>${html}</div>`;
-	tendinaAperta = true;
+	const t = window.event?.target, a = t instanceof Element ? t.closest('button, a, [role="button"], [onclick]') : null;
+	const r = a?.getBoundingClientRect();
+	apriFoglio('fumetto', titolo, `<div class="rq" role="dialog" aria-label="${esc(titolo)}"><button type="button" class="fin-x" aria-label="Chiudi" onclick="chiudiTendina()">${I.chiudi}</button><h3 class="rq-titolo">${titolo}</h3>${html}</div>`, r ? { left: r.left, right: r.right, top: r.top, bottom: r.bottom } : null);
 }
 function dettagliPrezzo(pid) {
 	const p = pratica(pid), pv = prevCorrente(pid);
@@ -1335,16 +1539,16 @@ function dettagliOre(g) {
 	apriPiccolo('Ore del giorno', `${per.map(([n, x]) => `<p class="rq-riga"><span><b>${n}</b> <small>${x.map((a) => a.inizio + '–' + a.fine).join(', ')}</small></span><span class="num">${hm(x.reduce((t, a) => t + minutiApp(a), 0))}</span></p>`).join('') || '<p class="nota">Nessun impegno.</p>'}<p class="rq-riga sep tot"><span>Ore della squadra</span><span class="num">${hm(l.reduce((t, a) => t + minutiApp(a) * a.chi.length, 0))}</span></p><p class="nota">Le ore della squadra contano ogni persona: 2 persone per 3 ore fanno 6 ore.</p>`);
 }
 function torna() { if (pop.length) return popIndietro(); const x = ritorno.pop() ?? ['oggi', null]; vai(x[0], x[1], { indietro: true }); }
-addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (visore) chiudiVisore(); else if (tendinaAperta) chiudiTendina(); else if (pop.length) popIndietro(); } if (visore && e.key === 'ArrowRight') visoreVai(1); if (visore && e.key === 'ArrowLeft') visoreVai(-1); });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (visore) chiudiVisore(); else if (pop.length) popIndietro(); } if (visore && e.key === 'ArrowRight') visoreVai(1); if (visore && e.key === 'ArrowLeft') visoreVai(-1); });
 function render() {
 	const app = document.getElementById('app');
 	app.className = 'app' + (D.senzaRete ? ' con-rete' : '');
 	document.getElementById('rete').hidden = !D.senzaRete;
 	const barraEl = document.querySelector('.barra');
-	if (!D.utente) { pop = []; document.getElementById('pop').innerHTML = ''; document.body.classList.remove('con-pop'); }
+	if (!D.utente) { pop = []; FOGLI = {}; document.getElementById('pop').innerHTML = ''; document.body.classList.remove('con-pop'); }
 	if (!D.utente) { barraEl.hidden = true; document.getElementById('erica-fab').innerHTML = ''; app.innerHTML = `<div class="schermo">${login()}</div>`; return; }
 	barraEl.hidden = false;
-	{ const [gv, gp] = guardia(vista, param); if (gv !== vista || gp !== param) { vista = gv; param = gp; try { history.replaceState(null, '', '#' + vista + (param ? '-' + param : '')); } catch {} } }
+	{ const [gv, gp] = guardia(vista, param); if (gv !== vista || gp !== param) { vista = gv; param = gp; try { history.replaceState(history.state, '', hashDi()); } catch {} } }
 	document.querySelector('.barra-destra').innerHTML = `${avatar(D.utente, operatore())}<span class="et-nome">${nomeOp(D.utente)}</span>`;
 	const r = vistaDi(vista);
 	app.innerHTML = `<div class="schermo" key="${vista}-${param}">${r(param)}</div>`;
@@ -1468,6 +1672,7 @@ function mediaTesta(p, pill) {
 	return `<div class="pr-media"><div class="pr-img" data-pr="${id}"><img id="pr-foto" src="${src(f[0])}" alt="${esc(FOTO[f[0]]?.[0] ?? '')}" onclick="apriVisore('${id}',fotoTesta.i)">
 			<button type="button" class="pr-indietro" aria-label="Indietro" onclick="torna()">${I.indietro}</button>
 			<span class="pr-pill">${pill}</span>
+			${f.length > 1 ? `<button type="button" class="pr-tutte" onclick="apriTour('${id}')">${I.foto}Tutte le foto</button>` : ''}
 			${f.length > 1 ? `<span class="pr-conta"><span id="pr-n">1</span> / ${f.length}</span><button type="button" class="pr-freccia prec" aria-label="Foto precedente" onclick="fotoTestaVai(-1)" disabled>${I.indietro}</button><button type="button" class="pr-freccia succ" aria-label="Foto successiva" onclick="fotoTestaVai(1)">${I.freccia}</button>` : ''}
 		</div>${f.length > 1 ? `<div class="pr-punti">${f.map((_, i) => `<button type="button" class="pr-punto ${i === 0 ? 'attivo' : ''}" aria-label="Foto ${i + 1}" onclick="fotoTestaA(${i})"></button>`).join('')}</div>` : ''}</div>`;
 }
@@ -1950,31 +2155,28 @@ function anteprimaPdf(id) {
 }
 
 /* ===================== TENDINE (moduli) ===================== */
-let tendinaAperta = null;
-function apriTendina(html, titolo = '') {
-	chiudiTendina(true);
-	const s = document.getElementById('strato');
-	s.innerHTML = `<div class="velo" onclick="chiudiTendina()"></div><div class="tendina" role="dialog" aria-modal="true" aria-label="${esc(titolo)}"><div class="maniglia"></div><div class="testa-t"><h3>${titolo}</h3><button type="button" class="chiudi-x" aria-label="Chiudi" onclick="chiudiTendina()">${I.chiudi}</button></div>${html}</div>`;
-	tendinaAperta = true;
+/* MODULI come la finestra «Filtri» di Airbnb: sul computer al centro (568) con i pulsanti fissi in fondo; sul telefono un foglio dal basso.
+   tipo 'piccola' (480) per conferme e spiegazioni brevi. */
+function apriTendina(html, titolo = '', tipo = 'modulo') {
+	apriFoglio(tipo, titolo, `<div class="tendina ${tipo === 'piccola' ? 'piccola' : ''}" role="dialog" aria-modal="true" aria-label="${esc(titolo)}"><div class="maniglia"></div><div class="testa-t"><h3>${titolo}</h3><button type="button" class="chiudi-x" aria-label="Chiudi" onclick="chiudiTendina()">${I.chiudi}</button></div>${html}</div>`);
 }
-function chiudiTendina(subito = false) {
-	const s = document.getElementById('strato');
-	tendinaAperta = false;
-	if (!s.firstChild) return;
-	if (subito) { s.innerHTML = ''; return; }
-	s.querySelector('.velo')?.classList.add('via'); s.querySelector('.tendina, .finestra, .rq')?.classList.add('via');
-	setTimeout(() => (s.innerHTML = ''), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300);
-}
-/* FINESTRA come «Mostra tutti i comfort» di Airbnb: al posto di andare su un'altra pagina, l'elenco completo si apre qui sopra.
-   Computer: finestra al centro con la X; telefono: foglio a tutto schermo. Esc, X o tocco fuori per chiudere. */
-function apriFinestra(titolo, gruppi, piede = '') {
-	chiudiTendina(true);
+/* FINESTRA «lista» come «Mostra tutti i comfort» di Airbnb (780): al posto di andare su un'altra pagina, l'elenco completo si apre qui sopra.
+   Computer: finestra al centro con la X; telefono: tutta la schermata, entra da destra, con la freccia ←. Esc, X o tocco fuori per chiudere. */
+function apriFinestra(titolo, gruppi, piede = '', opz = {}) {
+	const piene = gruppi.filter((g) => g[1].length), tot = piene.reduce((t, g) => t + g[1].length, 0);
+	const chips = opz.filtri !== false && piene.filter((g) => g[0]).length >= 2 && tot >= 5 ? `<div class="fin-chips" role="group" aria-label="Filtra">${[['Tutte', tot, '*'], ...piene.map((g, k) => [g[0], g[1].length, k])].map(([n, q, k]) => `<button type="button" aria-pressed="${k === '*'}" onclick="filtraFinestra(this,'${k}')">${n} <span>${q}</span></button>`).join('')}</div>` : '';
 	const riga = (r) => `<button type="button" class="fin-riga" onclick="${r.click}">${r.ico ?? ''}<span><b>${r.t}</b>${r.d ? `<span class="d">${r.d}</span>` : ''}</span></button>`;
-	document.getElementById('strato').innerHTML = `<div class="velo" onclick="chiudiTendina()"></div><div class="finestra" role="dialog" aria-modal="true" aria-label="${esc(titolo)}"><button type="button" class="fin-x" aria-label="Chiudi" onclick="chiudiTendina()">${I.chiudi}</button><h2 class="fin-titolo">${titolo}</h2>${gruppi.filter((g) => g[1].length).map(([nome, righe]) => `<section class="fin-gruppo">${nome ? `<h3>${nome}</h3>` : ''}${righe.map(riga).join('')}</section>`).join('')}${piede}</div>`;
-	tendinaAperta = true;
-	if (matchMedia('(hover: hover)').matches) setTimeout(() => document.querySelector('.finestra .fin-x')?.focus({ focusVisible: false }), 50);
+	apriFoglio('lista', titolo, `<div class="finestra ${chips ? 'con-filtri' : ''}" role="dialog" aria-modal="true" aria-label="${esc(titolo)}"><button type="button" class="fin-x" aria-label="Chiudi" onclick="chiudiTendina()"><span class="ico-x">${I.chiudi}</span><span class="ico-su">${I.indietro}</span></button><h2 class="fin-titolo">${titolo}</h2>${chips}${piene.map(([nome, righe], k) => `<section class="fin-gruppo" data-g="${k}">${nome ? `<h3>${nome}</h3>` : ''}${righe.map(riga).join('')}</section>`).join('')}${piede}</div>`);
+	if (matchMedia('(hover: hover)').matches) setTimeout(() => livelliPop().at(-1)?.querySelector('.finestra .fin-x')?.focus({ focusVisible: false }), 50);
 }
-const vaiDa = (v, id) => `chiudiTendina(true);apri('${v}','${id}')`;
+// filtro a pillole: cambia l'elenco qui dentro, senza aprire altro
+function filtraFinestra(b, k) {
+	const f = b.closest('.finestra');
+	f.querySelectorAll('.fin-chips button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+	f.querySelectorAll('.fin-gruppo').forEach((g) => (g.hidden = k !== '*' && g.dataset.g !== k));
+}
+// dalla lista la scheda si apre sopra: chiudendola si torna alla lista
+const vaiDa = (v, id) => `apri('${v}','${id}')`;
 function finestraDaFare() {
 	const df = daFare(), r = (x) => ({ ico: x.oggi ? I.avviso : I.pratiche, t: x.cosa, d: `${esc(x.p.nome)}, ${lavoroBreve(x.p)} · ${x.det}${x.attesa ? ' · ' + x.attesa : ''}`, click: vaiDa('p', x.p.id) });
 	apriFinestra('Cose da fare', [['Entro oggi', df.filter((x) => x.oggi).map(r)], ['Da fare', df.filter((x) => !x.oggi).map(r)]]);
@@ -2002,13 +2204,13 @@ function finestraCliente(cid, daPratica = '') {
 		['Contatti', [{ ico: I.tel, t: `<span class="num">${c.tel}</span>`, d: 'Tocca per chiamare', click: `location.href='tel:${c.tel.replace(/\s/g, '')}'` }, ...(c.email ? [{ ico: I.mail, t: esc(c.email), d: 'Email', click: `location.href='mailto:${esc(c.email)}'` }] : [])]],
 		['Dove abita', [{ ico: I.luogo, t: esc(c.indirizzo) || 'Non indicato', d: c.note ? esc(c.note) : '', click: '' }]],
 		[`Lavori (${prs.length})`, prs.map((x) => ({ ico: I.pratiche, t: esc(titoloLavoro(x)), d: `${x.codice} · ${NOMI_STATO[x.stato]}${x.id === daPratica ? ' · questa' : ''}`, click: x.id === daPratica ? 'chiudiTendina()' : vaiDa('p', x.id) }))]
-	], `<button type="button" class="vedi" onclick="chiudiTendina(true);apriCliente('${cid}')">Modifica cliente</button>`);
+	], `<button type="button" class="vedi" onclick="chiudiTendina(true);apriCliente('${cid}')">Modifica cliente</button>`, { filtri: false });
 }
 // Conferma prima di un'azione che butta via qualcosa: titolo, spiegazione, tasto, cosa fare.
 let _conferma = null;
 function apriConferma(titolo, testo, tasto, fai) {
 	_conferma = fai;
-	apriTendina(`<p class="nota" style="margin-bottom:12px">${testo}</p><div class="azioni"><button type="button" class="btn pericolo pieno" onclick="const f=_conferma;_conferma=null;chiudiTendina();f&&f()">${tasto}</button><button type="button" class="btn linea pieno" onclick="_conferma=null;chiudiTendina()">Lascia stare</button></div>`, titolo);
+	apriTendina(`<p class="nota" style="margin-bottom:12px">${testo}</p><div class="azioni"><button type="button" class="btn pericolo pieno" onclick="const f=_conferma;_conferma=null;chiudiTendina();f&&f()">${tasto}</button><button type="button" class="btn linea pieno" onclick="_conferma=null;chiudiTendina()">Lascia stare</button></div>`, titolo, 'piccola');
 }
 function eliminaBozza(pvId) {
 	if (bloccoRete()) return;
@@ -2385,7 +2587,7 @@ function lavoro(id) {
 	const f = fotoDi(p), apps = appDi(id).filter((a) => a.chi.includes(D.utente) && a.stato !== 'annullato'), mats = matDi(id);
 	const note = apps.filter((a) => a.note).map((a) => `<li><span class="q num">${giornoBreve(a.giorno)}</span><span>${esc(a.note)}</span></li>`).join('');
 	return bottoneIndietro()
-		+ `<div class="testata">${f.length ? `<div class="copertina-p"><img src="${src(f[0])}" alt=""><button type="button" aria-label="Apri le foto" onclick="apriVisore('${id}',0)"></button><span class="quante">${I.foto} ${f.length}</span></div>` : ''}<h1>${esc(titoloLavoro(p))}</h1><p class="codice">${esc(p.nome)}</p>${buoneHtml(buoneNotizie(p).filter((x) => !x.startsWith('Già cliente')))}</div>
+		+ `<div class="testata">${f.length ? `<div class="copertina-p"><img src="${src(f[0])}" alt=""><button type="button" aria-label="Apri le foto" onclick="${f.length > 1 ? `apriTour('${id}')` : `apriVisore('${id}',0)`}"></button><span class="quante">${I.foto} ${f.length}</span></div>` : ''}<h1>${esc(titoloLavoro(p))}</h1><p class="codice">${esc(p.nome)}</p>${buoneHtml(buoneNotizie(p).filter((x) => !x.startsWith('Già cliente')))}</div>
 		` + conLato(`<div class="foglio">
 			<section class="sez"><h2>Dove</h2><p style="color:var(--nero)">${esc(p.indirizzoLavoro)}</p></section>
 			<section class="sez"><h2>Cosa c'è da fare</h2><p>${esc(p.dettagli)}</p>${p.messaggio ? `<p class="nota" style="margin-top:6px">Il cliente ha scritto: «${esc(p.messaggio)}»</p>` : ''}</section>
@@ -2513,7 +2715,8 @@ function preparaErica(id, tipo) {
 		e = { tipo: 'riassunto', titolo: `Riassunto: ${titoloLavoro(p)}`, testo: righe.join('\n') };
 	}
 	Object.assign(e, { id: nuovoId('e'), praticaId: id, stato: 'da_vedere', quando: adessoIso() });
-	D.erica.push(e); salva(); apriProposta(e.id);
+	// la scelta dal menu «Chiedi a Erica» prende il posto del menu (cambio di argomento: si sostituisce, non si apre sopra)
+	D.erica.push(e); salva(); chiudiTendina(true); apriProposta(e.id);
 }
 // Domande a Erica: risposte calcolate sui dati di prova (non è un'intelligenza vera)
 function chiediErica(q) {
@@ -2561,12 +2764,39 @@ carica();
 addEventListener('offline', () => { cambiaRete(true); toast('Senza rete. Puoi girare e leggere; i salvataggi aspettano.'); });
 addEventListener('online', () => { cambiaRete(false); toast('Di nuovo in linea. Quello che avevi scritto è ancora qui: salvalo di nuovo.'); });
 const h = location.hash.slice(1);
-if (h) { const [v, ...rest] = h.split('-'); vista = v; param = rest.length ? rest.join('-') : null; }
+if (h) { const [v, ...rest] = h.split('/')[0].split('-'); vista = v; param = rest.length ? rest.join('-') : null; }
 if (!D.utente) vista = 'login';
 render();
+if (D.utente && h.includes('/')) apriStrati(stratiDi(h));
 // indietro/avanti del browser o indirizzo cambiato a mano: passa sempre dalla stessa guardia
-const daIndirizzo = () => { const [v, ...r] = location.hash.slice(1).split('-'); const p = r.length ? r.join('-') : null; if (v && (v !== vista || p !== param)) vai(v, p, { indietro: true }); };
+// indirizzo con le schede aperte sopra: #oggi/p-r2/imp-a1 (si può condividere, e la ricarica le riapre)
+function stratiDi(h) { return h.split('/').slice(1).map((x) => { const [a, ...b] = x.split('-'); return [a, b.length ? b.join('-') : null]; }).filter(([a]) => POP.includes(a)); }
+function apriStrati(voluti) {
+	pop = []; FOGLI = {};
+	if (!window.SOLO_PAGINE && D.utente) for (const [a, b] of voluti) { const [g, q] = guardia(a, b); if (POP.includes(g) && !(operatore() && g === 'materiali')) pop.push([g, q]); }
+	render();
+	try { history.replaceState({ liv: livStoria() }, '', hashDi()); } catch {}
+}
+function daIndirizzo() {
+	const h = location.hash.slice(1), [v, ...r] = h.split('/')[0].split('-'), p = r.length ? r.join('-') : null;
+	const voluti = stratiDi(h), ora = pop.filter((x) => !eFoglio(x));
+	if (v && (v !== vista || p !== param)) { vai(v, p, { indietro: true }); if (voluti.length) apriStrati(voluti); return; }
+	if (voluti.length !== ora.length || voluti.some(([a, b], i) => ora[i][0] !== a || ora[i][1] !== b)) apriStrati(voluti);
+}
 addEventListener('hashchange', daIndirizzo);
-addEventListener('popstate', daIndirizzo);
+// tasto Indietro (telefono o browser): chiude il pop-up in cima invece di uscire dalla sezione
+addEventListener('popstate', (e) => {
+	if (inViaggio) { inViaggio = false; avantiStoria(); return; }
+	codaStoria = [];
+	const liv = e.state?.liv ?? 0;
+	if (pop.length && livStoria() > liv) {
+		let vista0 = false;
+		while (pop.length && livStoria() > liv) if (!eFoglio(togliCima(false, false))) vista0 = true;
+		togliFumetti();
+		if (vista0 || !pop.length) render(); else disegnaPop(false);
+		return;
+	}
+	daIndirizzo();
+});
 </script>
 </body></html>
