@@ -872,12 +872,41 @@ body[data-servizio="ristrutturazioni"] svg[data-i] { --c: #463428; --cf: #efe7e0
 	.fin-titolo { margin-top: 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .finestra, .finestra.via { animation: none !important; } }
+/* POP-UP delle schede (come Airbnb): computer finestra grande al centro, telefono foglio a tutto schermo */
+.pop-velo { position: fixed; inset: 0; z-index: 54; background: rgba(0, 0, 0, 0.45); }
+.pop-velo.entra { animation: sfuma var(--t-tendina) var(--molla); }
+.pop { position: fixed; z-index: 55; left: 50%; top: 50%; width: min(1200px, calc(100vw - 96px)); height: calc(100vh - 64px); transform: translate(-50%, -50%); display: flex; flex-direction: column; background: var(--bianco); border-radius: 24px; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28); overflow: hidden; }
+.pop.entra { animation: finEntra var(--t-tendina) var(--molla); }
+.pop.via, .pop-velo.via { animation: finEsce var(--t-chiudi) ease forwards; }
+.pop-velo.via { animation-name: sfumaVia; }
+@keyframes sfumaVia { to { opacity: 0; } }
+.pop-barra { position: absolute; z-index: 3; top: 16px; left: 16px; display: flex; gap: 8px; }
+.pop-tondo { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--bianco); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); display: grid; place-items: center; color: var(--nero); cursor: pointer; }
+.pop-tondo svg { width: 18px; height: 18px; stroke-width: 2.2; }
+.pop-corpo { flex: 1; overflow: auto; overscroll-behavior: contain; padding: 64px 40px 48px; }
+.pop-schermo { max-width: var(--contenuto); margin: 0 auto; animation: none; }
+.pop .pr-box-fisso { top: 16px; max-height: calc(100vh - 140px); }
+.pop .pr-indietro { display: none; }
+.pop .indietro { display: none; }
+body.con-pop { overflow: hidden; }
+body.con-pop .erica-fab { visibility: hidden; }
+@media (max-width: 899px) {
+	.pop { left: 0; right: 0; top: 12px; bottom: 0; width: auto; height: auto; transform: none; border-radius: 16px 16px 0 0; }
+	.pop.entra { animation-name: finSaleP; }
+	.pop.via { animation-name: finScendeP; }
+	@keyframes finSaleP { from { transform: translateY(100%); } }
+	@keyframes finScendeP { to { transform: translateY(100%); } }
+	.pop-corpo { padding: 60px 20px calc(32px + env(safe-area-inset-bottom, 0px)); }
+	.pop-barra { top: 12px; left: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .pop, .pop-velo, .pop.via, .pop-velo.via { animation: none !important; } }
 </style>
 
 <div class="proto"><b>PROTOTIPO</b> · dati fittizi · nessun invio · niente va sul server</div>
 <div id="rete" class="rete" hidden><svg class="ico" viewBox="0 0 24 24"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M12 19h.01M3 3l18 18"/></svg><span>Senza rete: niente viene salvato finché non torna la connessione. Quello che scrivi resta qui.</span></div>
 <main id="app" class="app"></main>
 <header class="barra"><div class="marchio marchio-barra">Artigiana<span>Mente</span></div><nav id="barra" aria-label="Sezioni"></nav><div class="barra-destra">Fabri <button type="button" class="link" onclick="toast('Nel prototipo non c\'è il login.')">Esci</button></div></header>
+<div id="pop"></div>
 <div id="strato"></div>
 <div id="visore"></div>
 <div id="erica-fab"></div>
@@ -1172,7 +1201,7 @@ function guardia(v, p) {
 	return [v, p];
 }
 function vai(v, p = null, { indietro = false } = {}) {
-	chiudiTendina(true); chiudiVisore();
+	chiudiTendina(true); chiudiVisore(); pop = [];
 	if (!indietro && (vista !== v || param !== p)) ritorno.push([vista, param]);
 	if (ritorno.length > 20) ritorno.shift();
 	[v, p] = guardia(v, p);
@@ -1182,19 +1211,61 @@ function vai(v, p = null, { indietro = false } = {}) {
 	render();
 	scrollTo({ top: 0 });
 }
-function torna() { const x = ritorno.pop() ?? ['oggi', null]; vai(x[0], x[1], { indietro: true }); }
-addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (visore) chiudiVisore(); else if (tendinaAperta) chiudiTendina(); } if (visore && e.key === 'ArrowRight') visoreVai(1); if (visore && e.key === 'ArrowLeft') visoreVai(-1); });
+/* POP-UP come Airbnb (Gian 14/10: «fallo dappertutto»): pratiche, impegni, clienti, avvisi, materiali, Erica, impostazioni…
+   si aprono sopra la pagina invece di cambiarla. Dentro il pop-up si può andare avanti (freccia ‹ per tornare) e chiudere con la X, Esc o fuori.
+   Le sezioni (Oggi, Agenda, Pratiche, Clienti, Altro) e il preventivo restano pagine. */
+const POP = ['p', 'imp', 'cliente', 'lavoro', 'avvisi', 'erica', 'impostazioni', 'sito', 'sistema', 'crediti', 'pdf', 'materiali', 'tutteOggi'];
+let pop = [], popNuovo = false;
+const BASE_DI = { p: 'pratiche', prev: 'pratiche', pdf: 'pratiche', imp: 'agenda', cliente: 'clienti', lavoro: 'lavori', avvisi: 'altro', erica: 'oggi', impostazioni: 'altro', sito: 'altro', sistema: 'altro', crediti: 'altro', tutteOggi: 'oggi', login: 'oggi' };
+function apri(v, p = null) {
+	// SOLO_PAGINE: usato solo dalle prove automatiche dei flussi (prova3), che controllano le pagine intere
+	if (window.SOLO_PAGINE || !POP.includes(v) || !D.utente || (operatore() && v === 'materiali')) return vai(v, p);
+	[v, p] = guardia(v, p);
+	if (!POP.includes(v)) return vai(v, p);
+	chiudiTendina(true); chiudiVisore();
+	// sotto il pop-up resta sempre una sezione (mai il preventivo o un'altra scheda)
+	if (!sezioni().some(([k]) => k === vista)) { vista = BASE_DI[vista] ?? 'oggi'; if (operatore() && vista === 'pratiche') vista = 'lavori'; param = null; try { history.replaceState(null, '', '#' + vista); } catch {} }
+	const cima = pop.at(-1);
+	if (cima && cima[0] === v && cima[1] === p) return render();
+	popNuovo = !pop.length; pop.push([v, p]); render();
+}
+function chiudiPop() {
+	const el = document.querySelector('#pop .pop');
+	pop = [];
+	if (el && !matchMedia('(prefers-reduced-motion: reduce)').matches) { el.classList.add('via'); document.querySelector('#pop .pop-velo')?.classList.add('via'); setTimeout(() => { if (!pop.length) render(); }, 250); }
+	else render();
+}
+function popIndietro() { pop.pop(); if (!pop.length) return chiudiPop(); render(); }
+function disegnaPop() {
+	const el = document.getElementById('pop');
+	if (!pop.length) { el.innerHTML = ''; delete el.dataset.chiave; document.body.classList.remove('con-pop'); return; }
+	const [v, p] = pop.at(-1), chiave = `${v}-${p}`, vecchio = el.querySelector('.pop-corpo'), sc = vecchio && el.dataset.chiave === chiave ? vecchio.scrollTop : 0;
+	el.innerHTML = `<div class="pop-velo ${popNuovo ? 'entra' : ''}" onclick="chiudiPop()"></div><div class="pop ${popNuovo ? 'entra' : ''}" role="dialog" aria-modal="true"><div class="pop-barra">${pop.length > 1 ? `<button type="button" class="pop-tondo" aria-label="Indietro" onclick="popIndietro()">${I.indietro}</button>` : ''}<button type="button" class="pop-tondo pop-x" aria-label="Chiudi" onclick="chiudiPop()">${I.chiudi}</button></div><div class="pop-corpo"><div class="schermo pop-schermo">${vistaDi(v)(p)}</div></div></div>`;
+	el.dataset.chiave = chiave; el.querySelector('.pop-corpo').scrollTop = sc; popNuovo = false;
+	document.body.classList.add('con-pop');
+}
+function torna() { if (pop.length) return popIndietro(); const x = ritorno.pop() ?? ['oggi', null]; vai(x[0], x[1], { indietro: true }); }
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (visore) chiudiVisore(); else if (tendinaAperta) chiudiTendina(); else if (pop.length) chiudiPop(); } if (visore && e.key === 'ArrowRight') visoreVai(1); if (visore && e.key === 'ArrowLeft') visoreVai(-1); });
 function render() {
 	const app = document.getElementById('app');
 	app.className = 'app' + (D.senzaRete ? ' con-rete' : '');
 	document.getElementById('rete').hidden = !D.senzaRete;
 	const barraEl = document.querySelector('.barra');
+	if (!D.utente) { pop = []; document.getElementById('pop').innerHTML = ''; document.body.classList.remove('con-pop'); }
 	if (!D.utente) { barraEl.hidden = true; document.getElementById('erica-fab').innerHTML = ''; app.innerHTML = `<div class="schermo">${login()}</div>`; return; }
 	barraEl.hidden = false;
 	{ const [gv, gp] = guardia(vista, param); if (gv !== vista || gp !== param) { vista = gv; param = gp; try { history.replaceState(null, '', '#' + vista + (param ? '-' + param : '')); } catch {} } }
 	document.querySelector('.barra-destra').innerHTML = `${avatar(D.utente, operatore())}<span class="et-nome">${nomeOp(D.utente)}</span>`;
-	const r = { oggi: operatore() ? oggiOperatore : oggi, agenda, pratiche, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: operatore() ? impegnoOp : (id) => { const a = D.appuntamenti.find((x) => x.id === id); return a?.praticaId && pratica(a.praticaId) ? schedaPratica(a.praticaId, id) : impegno(id); }, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti, lavori, lavoro, materiali, erica, login: operatore() ? oggiOperatore : oggi }[vista] ?? (operatore() ? oggiOperatore : oggi);
+	const r = vistaDi(vista);
 	app.innerHTML = `<div class="schermo" key="${vista}-${param}">${r(param)}</div>`;
+	disegnaPop();
+	return dopoRender();
+}
+function vistaDi(v) {
+	return { oggi: operatore() ? oggiOperatore : oggi, agenda, pratiche, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: operatore() ? impegnoOp : (id) => { const a = D.appuntamenti.find((x) => x.id === id); return a?.praticaId && pratica(a.praticaId) ? schedaPratica(a.praticaId, id) : impegno(id); }, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti, lavori, lavoro, materiali, erica, login: operatore() ? oggiOperatore : oggi }[v] ?? (operatore() ? oggiOperatore : oggi);
+}
+function dopoRender() {
+	const app = document.getElementById('app');
 	const sezione = { p: 'pratiche', cliente: 'clienti', imp: 'agenda', prev: 'pratiche', pdf: 'pratiche', avvisi: 'altro', sistema: 'altro', impostazioni: 'altro', sito: 'altro', tutteOggi: 'oggi', crediti: 'altro', lavoro: 'lavori', erica: 'oggi', materiali: operatore() ? 'materiali' : 'altro', login: 'oggi' }[vista] ?? vista;
 	const nuove = D.avvisi.filter((a) => !a.letto).length;
 	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca">${navIcona('cerca', false)}<span class="et">Cerca</span></button><button type="button" class="solo-largo ${vista === 'altro' ? 'attiva' : ''}" onclick="vai('altro')" aria-label="Profilo">${avatar(D.utente, operatore())}<span class="et">Profilo</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" aria-label="${n}">${navIcona(k, sezione === k)}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
@@ -1202,11 +1273,12 @@ function render() {
 	const fab = document.getElementById('erica-fab'), dvF = ericaDaVedere();
 	const mostraFab = !operatore() && vista !== 'erica';
 	document.body.dataset.vista = vista;
-	// colore del servizio: le pagine di una ristrutturazione hanno pulsante e icone marroni
-	const pratDi = vista === 'p' || vista === 'lavoro' ? pratica(param) : vista === 'prev' || vista === 'pdf' ? pratica(D.preventivi.find((v) => v.id === param)?.praticaId) : vista === 'imp' ? pratica(D.appuntamenti.find((x) => x.id === param)?.praticaId) : null;
+	// colore del servizio: le pagine di una ristrutturazione hanno pulsante e icone marroni (anche nel pop-up)
+	const [vc, pc] = pop.length ? pop.at(-1) : [vista, param];
+	const pratDi = vc === 'p' || vc === 'lavoro' ? pratica(pc) : vc === 'prev' || vc === 'pdf' ? pratica(D.preventivi.find((v) => v.id === pc)?.praticaId) : vc === 'imp' ? pratica(D.appuntamenti.find((x) => x.id === pc)?.praticaId) : null;
 	document.body.dataset.servizio = pratDi?.servizio === 'Ristrutturazioni' ? 'ristrutturazioni' : '';
 	app.classList.toggle('con-fab', mostraFab);
-	fab.innerHTML = mostraFab ? `<button type="button" class="erica-fab" onclick="vai('erica')" aria-label="Erica${dvF.length ? ', ' + dvF.length + ' da vedere' : ''}">${ericaAvatar()}${dvF.length ? `<span class="badge">${dvF.length}</span>` : ''}<b>Erica</b><span class="mini-p">${[...new Set(dvF.map((e) => e.praticaId).filter(Boolean))].slice(0, 3).map((pid) => { const f = fotoDi(pratica(pid))[0]; return f ? `<img src="${mini(f)}" alt="">` : `<span>${esc(pratica(pid).nome.charAt(0))}</span>`; }).join('')}</span></button>` : '';
+	fab.innerHTML = mostraFab ? `<button type="button" class="erica-fab" onclick="apri('erica')" aria-label="Erica${dvF.length ? ', ' + dvF.length + ' da vedere' : ''}">${ericaAvatar()}${dvF.length ? `<span class="badge">${dvF.length}</span>` : ''}<b>Erica</b><span class="mini-p">${[...new Set(dvF.map((e) => e.praticaId).filter(Boolean))].slice(0, 3).map((pid) => { const f = fotoDi(pratica(pid))[0]; return f ? `<img src="${mini(f)}" alt="">` : `<span>${esc(pratica(pid).nome.charAt(0))}</span>`; }).join('')}</span></button>` : '';
 }
 const testa = (titolo, sotto = '', destra = '', marchio = false) => `<div class="testa"><div>${marchio ? '<span class="marchio">Artigiana<span>Mente</span></span>' : ''}<h1>${titolo}</h1>${sotto ? `<p class="sotto">${sotto}</p>` : ''}</div>${destra}</div>`;
 // Riquadro che segue la pagina (come pr-card della pratica): le cose da tenere a mente in ogni sezione
@@ -1231,16 +1303,16 @@ function oggi() {
 	const pp = prossimo?.praticaId ? pratica(prossimo.praticaId) : null;
 	const altri = apps.filter((a) => a !== prossimo);
 	const hero = prossimo
-		? `<section class="prossimo"><div class="testo-p"><small>Prossimo appuntamento · oggi</small><div class="ora-grande num">${prossimo.inizio}<em>fino alle ${prossimo.fine} · ${durata(prossimo)}</em></div><b>${esc(pp ? pp.nome : prossimo.titolo)}</b><span class="dett">${NOMI_TIPO[prossimo.tipo]}${pp ? ', ' + lavoroBreve(pp) : ''}</span><span class="dett">${esc(prossimo.luogo)}</span>${prossimo.stato === 'proposto' ? '<span class="dett" style="margin-top:8px"><span class="tag">Da confermare</span></span>' : ''}</div><div class="azioni"><button type="button" class="btn" onclick="vai('imp','${prossimo.id}')">Apri</button>${pp ? `<a class="btn linea" href="tel:${pp.tel.replace(/\s/g, '')}">${I.tel} Chiama</a>` : ''}${prossimo.stato === 'proposto' ? `<button type="button" class="btn linea" onclick="azioneApp('${prossimo.id}','conferma')">Conferma</button>` : ''}</div></section>`
+		? `<section class="prossimo"><div class="testo-p"><small>Prossimo appuntamento · oggi</small><div class="ora-grande num">${prossimo.inizio}<em>fino alle ${prossimo.fine} · ${durata(prossimo)}</em></div><b>${esc(pp ? pp.nome : prossimo.titolo)}</b><span class="dett">${NOMI_TIPO[prossimo.tipo]}${pp ? ', ' + lavoroBreve(pp) : ''}</span><span class="dett">${esc(prossimo.luogo)}</span>${prossimo.stato === 'proposto' ? '<span class="dett" style="margin-top:8px"><span class="tag">Da confermare</span></span>' : ''}</div><div class="azioni"><button type="button" class="btn" onclick="apri('imp','${prossimo.id}')">Apri</button>${pp ? `<a class="btn linea" href="tel:${pp.tel.replace(/\s/g, '')}">${I.tel} Chiama</a>` : ''}${prossimo.stato === 'proposto' ? `<button type="button" class="btn linea" onclick="azioneApp('${prossimo.id}','conferma')">Conferma</button>` : ''}</div></section>`
 		: `<section class="prossimo"><div class="testo-p"><small>Oggi</small><b style="margin-top:0">Nessun appuntamento</b><span class="dett">Giornata libera in agenda.</span></div><div class="azioni"><button type="button" class="btn" onclick="vai('agenda')">Apri l'agenda</button></div></section>`;
-	const rigaApp = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num">${a.inizio}<small>${durata(a)}</small></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}${a.stato === 'proposto' ? ' · <em>da confermare</em>' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; };
-	const rigaDf = (x) => `<li><button type="button" class="riga ${x.oggi ? 'urgente' : ''}" onclick="vai('p','${x.p.id}')"><span class="punto"></span><span class="cosa"><b>${x.cosa}</b><span>${esc(x.p.nome)}, ${lavoroBreve(x.p)}${x.attesa ? ' · ' + x.attesa : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`;
-	const rigaAtt = (x) => `<button type="button" class="attesa" onclick="vai('p','${x.p.id}')"><span><b>${esc(x.p.nome)}</b><span>${x.pv.numero} · ${euro(totali(x.pv).tot)} · inviato ${quando(x.pv.inviato)}</span></span><span class="giorni num"><b>${giorniDa(x.pv.inviato)}</b> g</span></button>`;
+	const rigaApp = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="apri('imp','${a.id}')"><span class="ora num">${a.inizio}<small>${durata(a)}</small></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}${a.stato === 'proposto' ? ' · <em>da confermare</em>' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; };
+	const rigaDf = (x) => `<li><button type="button" class="riga ${x.oggi ? 'urgente' : ''}" onclick="apri('p','${x.p.id}')"><span class="punto"></span><span class="cosa"><b>${x.cosa}</b><span>${esc(x.p.nome)}, ${lavoroBreve(x.p)}${x.attesa ? ' · ' + x.attesa : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`;
+	const rigaAtt = (x) => `<button type="button" class="attesa" onclick="apri('p','${x.p.id}')"><span><b>${esc(x.p.nome)}</b><span>${x.pv.numero} · ${euro(totali(x.pv).tot)} · inviato ${quando(x.pv.inviato)}</span></span><span class="giorni num"><b>${giorniDa(x.pv.inviato)}</b> g</span></button>`;
 	const bloccoApp = altri.length ? `<section class="riquadro"><h2>Poi oggi <span class="conta">${altri.length}</span></h2><ul class="lista">${altri.slice(0, 3).map(rigaApp).join('')}</ul>${altri.length > 3 ? `<button type="button" class="vedi" onclick="finestraGiornata()">Mostra tutta la giornata (${apps.length})</button>` : ''}</section>` : '';
 	const bloccoDf = `<section class="riquadro"><h2>Da fare <span class="conta">${df.length > 3 ? `3 di ${df.length}` : df.length || ''}</span></h2>${df.length ? `<ul class="lista">${df.slice(0, 3).map(rigaDf).join('')}</ul>` : '<p class="vuoto">Niente in sospeso. Bene così.</p>'}${df.length > 3 ? `<button type="button" class="vedi" onclick="finestraDaFare()">Mostra tutte e ${df.length} le cose da fare</button>` : ''}</section>`;
 	const bloccoAtt = `<section class="riquadro"><h2>In attesa di risposta <span class="conta">${att.length || ''}</span></h2>${att.length ? att.slice(0, 3).map(rigaAtt).join('') : '<p class="vuoto">Nessun preventivo in attesa.</p>'}${att.length > 3 ? `<button type="button" class="vedi" onclick="finestraAttesa()">Mostra tutti e ${att.length} i preventivi in attesa</button>` : ''}</section>`;
 	const dv = ericaDaVedere();
-	const bloccoErica = `<section class="riquadro"><h2><span style="display:inline-flex;gap:10px;align-items:center">${ericaAvatar()}Erica ha preparato</span> <span class="conta">${dv.length || ''}</span></h2>${dv.length ? `<ul class="lista">${dv.slice(0, 2).map(rigaErica).join('')}</ul>` : '<p class="vuoto">Niente da vedere. Puoi chiederle qualcosa.</p>'}<button type="button" class="vedi" onclick="${dv.length > 2 ? 'finestraErica()' : "vai('erica')"}">${dv.length > 2 ? `Mostra tutte e ${dv.length} le proposte` : 'Apri Erica'}</button></section>`;
+	const bloccoErica = `<section class="riquadro"><h2><span style="display:inline-flex;gap:10px;align-items:center">${ericaAvatar()}Erica ha preparato</span> <span class="conta">${dv.length || ''}</span></h2>${dv.length ? `<ul class="lista">${dv.slice(0, 2).map(rigaErica).join('')}</ul>` : '<p class="vuoto">Niente da vedere. Puoi chiederle qualcosa.</p>'}<button type="button" class="vedi" onclick="${dv.length > 2 ? 'finestraErica()' : "apri('erica')"}">${dv.length > 2 ? `Mostra tutte e ${dv.length} le proposte` : 'Apri Erica'}</button></section>`;
 	return testa('Oggi', giornoLungo(OGGI).charAt(0).toUpperCase() + giornoLungo(OGGI).slice(1) + ' · Fabri', tastoCerca(), true)
 		+ conLato(hero + bloccoApp + bloccoDf + bloccoAtt + bloccoErica, latoOggi(apps, prossimo, pp, df, att, dv), 'Da tenere a mente oggi', 'lato-dopo');
 }
@@ -1250,20 +1322,20 @@ function latoOggi(apps, prossimo, pp, df, att, dv) {
 		grande: `Oggi <strong class="num">${apps.length}</strong> ${apps.length === 1 ? 'impegno' : 'impegni'}`,
 		sotto: dfOggi ? `${dfOggi} ${dfOggi === 1 ? 'cosa da fare' : 'cose da fare'} entro oggi.` : buona('Niente di urgente oggi'),
 		celle: [
-			{ et: 'Prossimo', val: prossimo ? `${prossimo.inizio} · ${esc(pp ? pp.nome.split(' ').slice(-1)[0] : prossimo.titolo)}` : 'Nessuno', click: prossimo ? `vai('imp','${prossimo.id}')` : "vai('agenda')" },
+			{ et: 'Prossimo', val: prossimo ? `${prossimo.inizio} · ${esc(pp ? pp.nome.split(' ').slice(-1)[0] : prossimo.titolo)}` : 'Nessuno', click: prossimo ? `apri('imp','${prossimo.id}')` : "vai('agenda')" },
 			{ et: 'Da fare', val: `${df.length}`, click: 'finestraDaFare()' },
 			{ et: 'In attesa', val: `${att.length} preventiv${att.length === 1 ? 'o' : 'i'}`, click: 'finestraAttesa()' },
-			{ et: 'Da comprare', val: `${comprare} material${comprare === 1 ? 'e' : 'i'}`, click: "vai('materiali')" },
+			{ et: 'Da comprare', val: `${comprare} material${comprare === 1 ? 'e' : 'i'}`, click: "apri('materiali')" },
 			...(pp ? [{ et: `Telefono · ${esc(pp.nome)}`, val: `<span class="num">${pp.tel}</span>`, href: `tel:${pp.tel.replace(/\s/g, '')}`, intera: true }] : [])
 		],
-		azione: `<button type="button" class="btn pieno pr-azione" onclick="${prossimo ? `vai('imp','${prossimo.id}')` : "vai('agenda')"}">${prossimo ? 'Apri il prossimo impegno' : "Apri l'agenda"}</button>`,
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="${prossimo ? `apri('imp','${prossimo.id}')` : "vai('agenda')"}">${prossimo ? 'Apri il prossimo impegno' : "Apri l'agenda"}</button>`,
 		blocco: promemoriaLato(),
-		link: [linkLato(I.erica, dv.length ? `Erica: ${dv.length} da vedere` : 'Chiedi a Erica', "vai('erica')"), linkLato(I.piu, 'Nuova pratica a mano', 'apriAMano()')]
+		link: [linkLato(I.erica, dv.length ? `Erica: ${dv.length} da vedere` : 'Chiedi a Erica', "apri('erica')"), linkLato(I.piu, 'Nuova pratica a mano', 'apriAMano()')]
 	});
 }
 function tutteOggi() {
 	const df = daFare();
-	return bottoneIndietro('Oggi') + testa('Da fare', `${df.length} cose: prima quelle di oggi, poi dalla più vecchia`) + `<section class="riquadro"><ul class="lista">${df.map((x) => `<li><button type="button" class="riga ${x.oggi ? 'urgente' : ''}" onclick="vai('p','${x.p.id}')"><span class="punto"></span><span class="cosa"><b>${x.cosa}</b><span>${esc(x.p.nome)}, ${lavoroBreve(x.p)} · ${x.det}${x.attesa ? ' · ' + x.attesa : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul></section>`;
+	return bottoneIndietro('Oggi') + testa('Da fare', `${df.length} cose: prima quelle di oggi, poi dalla più vecchia`) + `<section class="riquadro"><ul class="lista">${df.map((x) => `<li><button type="button" class="riga ${x.oggi ? 'urgente' : ''}" onclick="apri('p','${x.p.id}')"><span class="punto"></span><span class="cosa"><b>${x.cosa}</b><span>${esc(x.p.nome)}, ${lavoroBreve(x.p)} · ${x.det}${x.attesa ? ' · ' + x.attesa : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul></section>`;
 }
 
 function pratiche() {
@@ -1294,7 +1366,7 @@ function pratiche() {
 		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriAMano()">${I.piu} Nuova pratica a mano</button>`,
 		nota: 'Per chi chiama o scrive su WhatsApp. Quelle dal sito arrivano da sole.'
 	});
-	return conLato(pagina.replace('<!--LISTA-->', `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${NOMI_STATO[p.stato]}</span>${p.stato === 'nuova' ? '<span class="tag att">Nuova richiesta</span>' : etichettaPrev(p)}${buoneNotizie(p).filter((x) => x !== 'Preventivo accettato').slice(0, 1).map(buona).join('')}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : vuotoGrande(t ? 'Nessun risultato' : 'Nessuna pratica qui', t ? `Niente per «${esc(cercaTesto)}». Prova con il cognome o il comune.` : 'Con questo filtro non c\'è niente da mostrare.')}</section>`), card, 'Riepilogo pratiche', 'lato-dopo');
+	return conLato(pagina.replace('<!--LISTA-->', `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((p) => `<li><button type="button" class="riga con-mini" onclick="apri('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${NOMI_STATO[p.stato]}</span>${p.stato === 'nuova' ? '<span class="tag att">Nuova richiesta</span>' : etichettaPrev(p)}${buoneNotizie(p).filter((x) => x !== 'Preventivo accettato').slice(0, 1).map(buona).join('')}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : vuotoGrande(t ? 'Nessun risultato' : 'Nessuna pratica qui', t ? `Niente per «${esc(cercaTesto)}». Prova con il cognome o il comune.` : 'Con questo filtro non c\'è niente da mostrare.')}</section>`), card, 'Riepilogo pratiche', 'lato-dopo');
 }
 const vuotoGrande = (titolo, testo) => `<div class="vuoto-grande">${I.pratiche.replace('class="ico"', 'class="ico" style="width:36px;height:36px"')}<b>${titolo}</b>${testo}</div>`;
 
@@ -1338,10 +1410,10 @@ function schedaPratica(id, impId = null) {
 	const apps = appDi(id), pvs = prevDi(id), pv = pvs.at(-1), sug = suggerita(p), cl = p.clienteId ? cliente(p.clienteId) : null;
 	const prossimo = apps.find((a) => aperte(a) && a.giorno >= OGGI);
 	const f = fotoDi(p);
-	const azioneSug = sug?.azione ? (sug.azione === 'nuovo-sopralluogo' ? `apriNuovoApp('${id}','sopralluogo')` : sug.azione === 'nuovo-lavoro' ? `apriNuovoApp('${id}','inizio_lavori')` : sug.azione === 'stato' ? `apriStato('${id}')` : sug.azione === 'prev' ? "document.getElementById('prev').scrollIntoView({behavior:'smooth',block:'start'})" : sug.azione.startsWith('imp-') ? `vai('imp','${sug.azione.slice(4)}')` : sug.azione.startsWith('prev-') ? `vai('prev','${sug.azione.slice(5)}')` : sug.azione === 'agenda' ? "vai('agenda')" : '') : '';
+	const azioneSug = sug?.azione ? (sug.azione === 'nuovo-sopralluogo' ? `apriNuovoApp('${id}','sopralluogo')` : sug.azione === 'nuovo-lavoro' ? `apriNuovoApp('${id}','inizio_lavori')` : sug.azione === 'stato' ? `apriStato('${id}')` : sug.azione === 'prev' ? "document.getElementById('prev').scrollIntoView({behavior:'smooth',block:'start'})" : sug.azione.startsWith('imp-') ? `apri('imp','${sug.azione.slice(4)}')` : sug.azione.startsWith('prev-') ? `vai('prev','${sug.azione.slice(5)}')` : sug.azione === 'agenda' ? "vai('agenda')" : '') : '';
 	const bloccoPrev = () => {
 		if (!pvs.length) return `<p class="nota">Nessun preventivo.</p><div class="azioni">${p.stima && !p.stima.startsWith('Da fare') ? `<button type="button" class="btn piccolo" onclick="creaPreventivo('${id}',true)">Crea dalla stima</button>` : ''}<button type="button" class="btn piccolo linea" onclick="creaPreventivo('${id}',false)">Crea vuoto</button></div>`;
-		return pvs.map((v) => { const t = totali(v); return `<div class="versione"><div class="testa-v"><b>${v.numero ?? 'Bozza v' + v.n}</b>${tagPrev(v)}</div><p class="nota num">${v.righe.length} voci · ${euro(t.tot)} con IVA ${v.iva}%</p>${v.inviato ? `<p class="nota">Inviato ${quando(v.inviato)} via ${CANALI[v.canale]} (registrato da te)</p>` : ''}${v.accettato ? `<p class="nota">Accettato ${quando(v.accettato)} · ${CANALI[v.accettatoCanale]}</p>` : ''}${v.rifiutato ? `<p class="nota">Rifiutato ${quando(v.rifiutato)} · ${esc(v.motivo)}</p>` : ''}<div class="azioni">${v.stato === 'bozza' ? `<button type="button" class="btn piccolo" onclick="vai('prev','${v.id}')">Apri la bozza</button><button type="button" class="btn piccolo pericolo" onclick="apriConferma('Eliminare la bozza v${v.n}?','Non ha ancora un numero: sparisce e basta. Le versioni già generate restano.','Elimina la bozza',()=>eliminaBozza('${v.id}'))">Elimina</button>` : `<button type="button" class="btn piccolo linea" onclick="vai('pdf','${v.id}')">Vedi PDF</button>`}${v.stato === 'pronta' ? `<button type="button" class="btn piccolo" onclick="apriRegistra('${v.id}','inviata')">Segna inviato</button>` : ''}${v.stato === 'inviata' ? `<button type="button" class="btn piccolo" onclick="apriRegistra('${v.id}','accettata')">Accettato</button><button type="button" class="btn piccolo linea" onclick="apriRegistra('${v.id}','rifiutata')">Rifiutato</button>` : ''}${['inviata', 'rifiutata', 'accettata'].includes(v.stato) && v === pv ? `<button type="button" class="btn piccolo linea" onclick="nuovaVersione('${id}')">Rivedi preventivo</button>` : ''}</div>${v.stato === 'pronta' ? '<p class="nota" style="margin-top:8px">Lo mandi tu al cliente (WhatsApp o email). Poi premi «Segna inviato».</p>' : ''}</div>`; }).join('');
+		return pvs.map((v) => { const t = totali(v); return `<div class="versione"><div class="testa-v"><b>${v.numero ?? 'Bozza v' + v.n}</b>${tagPrev(v)}</div><p class="nota num">${v.righe.length} voci · ${euro(t.tot)} con IVA ${v.iva}%</p>${v.inviato ? `<p class="nota">Inviato ${quando(v.inviato)} via ${CANALI[v.canale]} (registrato da te)</p>` : ''}${v.accettato ? `<p class="nota">Accettato ${quando(v.accettato)} · ${CANALI[v.accettatoCanale]}</p>` : ''}${v.rifiutato ? `<p class="nota">Rifiutato ${quando(v.rifiutato)} · ${esc(v.motivo)}</p>` : ''}<div class="azioni">${v.stato === 'bozza' ? `<button type="button" class="btn piccolo" onclick="vai('prev','${v.id}')">Apri la bozza</button><button type="button" class="btn piccolo pericolo" onclick="apriConferma('Eliminare la bozza v${v.n}?','Non ha ancora un numero: sparisce e basta. Le versioni già generate restano.','Elimina la bozza',()=>eliminaBozza('${v.id}'))">Elimina</button>` : `<button type="button" class="btn piccolo linea" onclick="apri('pdf','${v.id}')">Vedi PDF</button>`}${v.stato === 'pronta' ? `<button type="button" class="btn piccolo" onclick="apriRegistra('${v.id}','inviata')">Segna inviato</button>` : ''}${v.stato === 'inviata' ? `<button type="button" class="btn piccolo" onclick="apriRegistra('${v.id}','accettata')">Accettato</button><button type="button" class="btn piccolo linea" onclick="apriRegistra('${v.id}','rifiutata')">Rifiutato</button>` : ''}${['inviata', 'rifiutata', 'accettata'].includes(v.stato) && v === pv ? `<button type="button" class="btn piccolo linea" onclick="nuovaVersione('${id}')">Rivedi preventivo</button>` : ''}</div>${v.stato === 'pronta' ? '<p class="nota" style="margin-top:8px">Lo mandi tu al cliente (WhatsApp o email). Poi premi «Segna inviato».</p>' : ''}</div>`; }).join('');
 	};
 	const storico = [...p.storico].reverse();
 	// --- Apertura come la pagina di un lavoro del sito (Copertina.svelte): titolo leggero e lista con icone, foto con freccia, etichetta e contatore
@@ -1374,7 +1446,7 @@ function schedaPratica(id, impId = null) {
 		<section class="sez"><h2>Cliente ${cl ? `<button type="button" class="link" onclick="finestraCliente('${cl.id}','${id}')">Scheda</button>` : `<button type="button" class="link" onclick="collegaCliente('${id}')">Crea e collega</button>`}</h2><p><b>${esc(p.nome)}</b>${cl ? '' : ' <span class="nota">· richiesta dal sito, non ancora in rubrica</span>'}</p><div class="contatti" style="margin-top:6px"><span>${I.tel}<a class="num" href="tel:${p.tel.replace(/\s/g, '')}">${p.tel}</a></span>${p.email ? `<span>${I.mail}<a href="mailto:${esc(p.email)}">${esc(p.email)}</a></span>` : ''}</div><dl class="coppia" style="margin-top:10px"><dt>Dove si lavora</dt><dd>${esc(p.indirizzoLavoro)}</dd><dt>Dove abita</dt><dd>${esc(p.indirizzoCliente || cl?.indirizzo || '') || '<span class="nota">non indicato</span>'}</dd></dl></section>
 		<section class="sez"><h2>Lavoro richiesto</h2><dl class="coppia"><dt>Lavoro</dt><dd><b>${esc(p.servizio)}</b></dd><dt>Dettagli</dt><dd>${esc(p.dettagli)}</dd>${p.preferenze ? `<dt>Preferenze</dt><dd>${esc(p.preferenze)}</dd>` : ''}${p.messaggio ? `<dt>Messaggio</dt><dd>«${esc(p.messaggio)}»</dd>` : ''}<dt>Stima vista dal cliente</dt><dd><span class="stima">${esc(p.stima) || '—'}</span>${p.stimaNota ? `<br><span class="nota">${esc(p.stimaNota)}</span>` : ''}</dd></dl></section>
 		<section class="sez" id="prev"><h2>Preventivo</h2>${bloccoPrev()}</section>
-		<section class="sez"><h2>Appuntamenti ${!chiusa(p) ? `<button type="button" class="link" onclick="apriNuovoApp('${id}')">+ Nuovo</button>` : ''}</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga ${a.id === impId ? 'questo' : ''}" onclick="vai('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')} · ${durata(a)}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : `<p class="nota">Nessun appuntamento.${!chiusa(p) ? ` <button type="button" class="link" onclick="apriNuovoApp('${id}')">Fissa il primo</button>` : ''}</p>`}</section>
+		<section class="sez"><h2>Appuntamenti ${!chiusa(p) ? `<button type="button" class="link" onclick="apriNuovoApp('${id}')">+ Nuovo</button>` : ''}</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga ${a.id === impId ? 'questo' : ''}" onclick="apri('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')} · ${durata(a)}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : `<p class="nota">Nessun appuntamento.${!chiusa(p) ? ` <button type="button" class="link" onclick="apriNuovoApp('${id}')">Fissa il primo</button>` : ''}</p>`}</section>
 		<section class="sez"><h2>Materiali <span class="conta">${matDi(id).length || ''}</span>${!chiusa(p) ? ` <button type="button" class="link" onclick="apriMateriale(null,'${id}')">+ Aggiungi</button>` : ''}</h2>${matDi(id).length ? `<ul class="lista">${matDi(id).map((m) => rigaMat(m)).join('')}</ul>` : `<p class="nota">Nessun materiale. ${!chiusa(p) ? `<button type="button" class="link" onclick="preparaErica('${id}','materiali')">Fatti proporre la lista da Erica</button>` : ''}</p>`}</section>
 		<section class="sez"><h2>Note interne</h2><textarea class="campo" rows="3" placeholder="Solo per te: operatori e cliente non le vedono" onchange="salvaNote('${id}',this.value)">${esc(p.note)}</textarea><p class="nota" style="margin-top:6px">Si salvano quando esci dal campo.</p></section>
 		<section class="sez"><h2>Stato</h2><div class="contatti" style="align-items:center;justify-content:space-between"><span>${tagStato(p)}</span>${chiusa(p) ? `<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn piccolo linea" onclick="riapri('${id}')">Riapri</button><button type="button" class="btn piccolo linea" onclick="archivia('${id}',${!p.archiviata})">${p.archiviata ? 'Togli dall\'archivio' : 'Archivia'}</button></span>` : `<button type="button" class="btn piccolo linea" onclick="apriStato('${id}')">Cambia stato</button>`}</div><p class="nota" style="margin-top:8px">${chiusa(p) ? 'Pratica chiusa: per lavorarci ancora, riaprila.' : 'Lo stato lo cambi tu: preventivo accettato, appuntamento svolto e lavoro concluso sono passi diversi.'}</p></section>
@@ -1432,7 +1504,7 @@ function agenda() {
 	// griglia delle ore (giorno e settimana)
 	const ore = Array.from({ length: ORA_A - ORA_DA + 1 }, (_, i) => ORA_DA + i);
 	const ora = new Date(), oraMin = ora.getHours() * 60 + ora.getMinutes();
-	const colonna = (g) => { const l = del(g), c = corsie(l); return `<div class="cal-col ${g === OGGI ? 'oggi' : ''} ${d(g).getUTCDay() === 0 || d(g).getUTCDay() === 6 ? 'festa' : ''}" onclick="if(event.target===this)apriGiorno('${g}')">${l.map((a) => { const [k, n] = c.get(a.id); const top = Math.max(0, (aMin(a.inizio) - ORA_DA * 60) / 60 * PX_ORA), h = Math.max(24, (Math.min(aMin(a.fine), ORA_A * 60) - Math.max(aMin(a.inizio), ORA_DA * 60)) / 60 * PX_ORA - 2); const [nm, t] = nomeDi(a); return `<button type="button" class="cal-ev ${classe(a)} ${h < 44 ? 'corto' : ''}" style="top:${top}px;height:${h}px;left:calc(${(k / n) * 100}% + 2px);width:calc(${100 / n}% - 4px)" onclick="vai('imp','${a.id}')" title="${a.inizio}–${a.fine} ${nm}"><span class="riga1"><b class="num">${a.inizio}</b> <span class="nm">${nm}</span></span><span class="tp">${t}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></button>`; }).join('')}${g === OGGI && oraMin >= ORA_DA * 60 && oraMin <= ORA_A * 60 ? `<div class="cal-ora" style="top:${(oraMin - ORA_DA * 60) / 60 * PX_ORA}px"></div>` : ''}</div>`; };
+	const colonna = (g) => { const l = del(g), c = corsie(l); return `<div class="cal-col ${g === OGGI ? 'oggi' : ''} ${d(g).getUTCDay() === 0 || d(g).getUTCDay() === 6 ? 'festa' : ''}" onclick="if(event.target===this)apriGiorno('${g}')">${l.map((a) => { const [k, n] = c.get(a.id); const top = Math.max(0, (aMin(a.inizio) - ORA_DA * 60) / 60 * PX_ORA), h = Math.max(24, (Math.min(aMin(a.fine), ORA_A * 60) - Math.max(aMin(a.inizio), ORA_DA * 60)) / 60 * PX_ORA - 2); const [nm, t] = nomeDi(a); return `<button type="button" class="cal-ev ${classe(a)} ${h < 44 ? 'corto' : ''}" style="top:${top}px;height:${h}px;left:calc(${(k / n) * 100}% + 2px);width:calc(${100 / n}% - 4px)" onclick="apri('imp','${a.id}')" title="${a.inizio}–${a.fine} ${nm}"><span class="riga1"><b class="num">${a.inizio}</b> <span class="nm">${nm}</span></span><span class="tp">${t}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></button>`; }).join('')}${g === OGGI && oraMin >= ORA_DA * 60 && oraMin <= ORA_A * 60 ? `<div class="cal-ora" style="top:${(oraMin - ORA_DA * 60) / 60 * PX_ORA}px"></div>` : ''}</div>`; };
 	const griglia = (giorni) => `<div class="cal-griglia ${giorni.length === 1 ? 'uno' : ''}" style="--px-ora:${PX_ORA}px;--n:${giorni.length}">
 		${giorni.length > 1 ? `<div class="cal-intesta"><span></span>${giorni.map((g) => `<button type="button" class="${g === OGGI ? 'oggi' : ''} ${g === agendaGiorno ? 'scelto' : ''}" onclick="apriGiorno('${g}')">${GIORNI_B[d(g).getUTCDay()]} <b>${d(g).getUTCDate()}</b></button>`).join('')}</div>` : ''}
 		<div class="cal-corpo" style="height:${(ORA_A - ORA_DA) * PX_ORA + 12}px"><div class="cal-ore">${ore.map((h) => `<span style="top:${(h - ORA_DA) * PX_ORA}px">${String(h).padStart(2, '0')}:00</span>`).join('')}${giorni.includes(OGGI) && oraMin >= ORA_DA * 60 && oraMin <= ORA_A * 60 ? `<span class="adesso" style="top:${(oraMin - ORA_DA * 60) / 60 * PX_ORA}px">${String(ora.getHours()).padStart(2, '0')}:${String(ora.getMinutes()).padStart(2, '0')}</span>` : ''}</div>
@@ -1477,7 +1549,7 @@ function latoAgenda(l, nomeDi) {
 		piccolo: g === OGGI ? 'oggi' : '',
 		sotto: l.length ? `${l.length} ${l.length === 1 ? 'impegno' : 'impegni'}${da ? ` · ${da} da confermare` : ''}` : 'Giornata libera.',
 		celle: [{ et: 'Appuntamenti', val: l.length ? hm(minuti) : '—' }, { et: 'Ore della squadra', val: l.length ? hm(oreSquadra) : '—' }, { et: 'Liberi tutto il giorno', val: liberi.length ? liberi.join(', ') : 'Nessuno', intera: true }],
-		dopoCelle: (fasce.length ? `<div class="fasce"><span class="pr-et">Fasce libere (8–18)</span>${fasce.map(([n, f]) => `<p><b>${n}</b> ${f.length ? f.map(([i, e]) => `<span class="num">${i}–${e}</span>`).join(', ') : '<span class="nota">pieno</span>'}</p>`).join('')}</div>` : '') + `<ul class="lato-lista lista-giorno-lato">${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<li><button type="button" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}</b><span><b>${n}</b><span>${t}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></span></button></li>`; }).join('') : '<li class="vuoto-l">Niente in agenda.</li>'}</ul>`,
+		dopoCelle: (fasce.length ? `<div class="fasce"><span class="pr-et">Fasce libere (8–18)</span>${fasce.map(([n, f]) => `<p><b>${n}</b> ${f.length ? f.map(([i, e]) => `<span class="num">${i}–${e}</span>`).join(', ') : '<span class="nota">pieno</span>'}</p>`).join('')}</div>` : '') + `<ul class="lato-lista lista-giorno-lato">${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<li><button type="button" onclick="apri('imp','${a.id}')"><b class="num">${a.inizio}</b><span><b>${n}</b><span>${t}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></span></button></li>`; }).join('') : '<li class="vuoto-l">Niente in agenda.</li>'}</ul>`,
 		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriNuovoApp(null,null,'${g}')">${I.piu} Nuovo appuntamento</button>`,
 		blocco: notaLato('Nota del giorno', D.noteGiorno?.[g], `salvaNotaGiorno('${g}',this.value)`, 'es. furgone dal meccanico fino alle 10'),
 		link: [...(g !== OGGI ? [linkLato(I.agenda, 'Torna a oggi', `agendaGiorno='${OGGI}';render()`)] : []), linkLato(I.chiudi, 'Nascondi il riepilogo', 'giraAgendaLato()')]
@@ -1494,8 +1566,8 @@ function impegno(id) {
 	const sezioni = `<section class="sez imp-dett-sez"><h2>Dettagli</h2>${dett}</section>
 		${a.stato === 'annullato' && a.motivo ? `<section class="sez"><h2>Annullato</h2><p>${esc(a.motivo)}</p></section>` : ''}
 		${sezioneChiusura(a)}
-		<section class="sez"><h2>Cambia l'impegno</h2><p class="nota">Se il cliente chiede un altro giorno, o salta tutto.</p><div class="azioni">${aperte(a) ? `<button type="button" class="btn linea" onclick="apriSposta('${a.id}')">Sposta</button><button type="button" class="btn pericolo" onclick="apriAnnulla('${a.id}')">Annulla</button>` : ''}${p ? `<button type="button" class="btn linea" onclick="vai('p','${p.id}')">Apri la pratica</button>` : ''}</div></section>
-		${p ? `<section class="sez"><h2>Altri appuntamenti della pratica <span class="conta">${altri.length || ''}</span></h2>${altri.length ? `<ul class="lista">${altri.map((x) => `<li><button type="button" class="riga" onclick="vai('imp','${x.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(x.giorno)}<small>${x.inizio}–${x.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[x.tipo]}</b><span>${x.chi.map(nomeOp).join(', ')} · ${durata(x)}</span>${tagApp(x.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessun altro appuntamento.</p>'}</section>` : ''}`;
+		<section class="sez"><h2>Cambia l'impegno</h2><p class="nota">Se il cliente chiede un altro giorno, o salta tutto.</p><div class="azioni">${aperte(a) ? `<button type="button" class="btn linea" onclick="apriSposta('${a.id}')">Sposta</button><button type="button" class="btn pericolo" onclick="apriAnnulla('${a.id}')">Annulla</button>` : ''}${p ? `<button type="button" class="btn linea" onclick="apri('p','${p.id}')">Apri la pratica</button>` : ''}</div></section>
+		${p ? `<section class="sez"><h2>Altri appuntamenti della pratica <span class="conta">${altri.length || ''}</span></h2>${altri.length ? `<ul class="lista">${altri.map((x) => `<li><button type="button" class="riga" onclick="apri('imp','${x.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(x.giorno)}<small>${x.inizio}–${x.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[x.tipo]}</b><span>${x.chi.map(nomeOp).join(', ')} · ${durata(x)}</span>${tagApp(x.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessun altro appuntamento.</p>'}</section>` : ''}`;
 	return testataImpegno(a, p, false) + conLato(sezioni, latoImpegno(a, p, false), 'Da tenere a mente per questo impegno');
 }
 function latoImpegno(a, p, op) {
@@ -1523,13 +1595,13 @@ function clienti() {
 	const lista = D.clienti.filter((c) => !t || c.nome.toLowerCase().includes(t) || c.tel.replace(/\D/g, '').includes(t.replace(/\D/g, '') || '§')).sort((a, b) => a.nome.localeCompare(b.nome));
 	const pagina = testa('Clienti', `${D.clienti.length} in anagrafica`, `<button type="button" class="btn piccolo linea" onclick="apriCliente(null)">${I.piu} Nuovo</button>`)
 		+ `<input id="cerca" class="cerca" type="search" placeholder="Cerca per nome o telefono" value="${esc(cercaTesto)}" oninput="cercaTesto=this.value;render();const c=document.getElementById('cerca');c.focus();c.setSelectionRange(c.value.length,c.value.length)">`
-		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((c) => { const n = D.pratiche.filter((p) => p.clienteId === c.id).length; return `<li><button type="button" class="riga" onclick="vai('cliente','${c.id}')"><span class="punto"></span><span class="cosa"><b>${esc(c.nome)}</b><span class="num">${c.tel} · ${n} pratic${n === 1 ? 'a' : 'he'}</span>${n > 1 ? buona(`Già cliente · ${n} lavori`) : ''}</span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun cliente trovato', `Niente per «${esc(cercaTesto)}».`)}</section>`
+		+ `<section class="riquadro">${lista.length ? `<ul class="lista">${lista.map((c) => { const n = D.pratiche.filter((p) => p.clienteId === c.id).length; return `<li><button type="button" class="riga" onclick="apri('cliente','${c.id}')"><span class="punto"></span><span class="cosa"><b>${esc(c.nome)}</b><span class="num">${c.tel} · ${n} pratic${n === 1 ? 'a' : 'he'}</span>${n > 1 ? buona(`Già cliente · ${n} lavori`) : ''}</span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun cliente trovato', `Niente per «${esc(cercaTesto)}».`)}</section>`
 		+ `<p class="nota">Chi scrive dal sito entra in rubrica quando lo colleghi dalla sua pratica («Crea e collega»).</p>`;
 	const fuori = D.pratiche.filter((p) => !p.clienteId && !p.archiviata);
 	return conLato(pagina, latoCard({
 		grande: `<strong class="num">${D.clienti.length}</strong> clienti`,
 		sotto: fuori.length ? `${fuori.length} ${fuori.length === 1 ? 'richiesta dal sito non è' : 'richieste dal sito non sono'} ancora in rubrica.` : 'Tutte le richieste sono in rubrica.',
-		dopoCelle: fuori.length ? `<ul class="lato-lista">${fuori.slice(0, 4).map((p) => `<li><button type="button" onclick="vai('p','${p.id}')"><b class="num">${p.codice.slice(-4)}</b><span><b>${esc(p.nome)}</b><span>${esc(lavoroBreve(p))} · collega dalla pratica</span></span></button></li>`).join('')}</ul>` : '',
+		dopoCelle: fuori.length ? `<ul class="lato-lista">${fuori.slice(0, 4).map((p) => `<li><button type="button" onclick="apri('p','${p.id}')"><b class="num">${p.codice.slice(-4)}</b><span><b>${esc(p.nome)}</b><span>${esc(lavoroBreve(p))} · collega dalla pratica</span></span></button></li>`).join('')}</ul>` : '',
 		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriCliente(null)">${I.piu} Nuovo cliente</button>`
 	}), 'Riepilogo clienti', 'lato-dopo');
 }
@@ -1541,13 +1613,13 @@ function schedaCliente(id) {
 	const card = latoCard({
 		grande: `<strong class="num">${c.tel}</strong>`,
 		sotto: esc(c.indirizzo) || 'Indirizzo non indicato',
-		celle: [{ et: 'Pratiche', val: prs.length }, { et: 'Prossimo', val: prossimo ? `${giornoBreve(prossimo.giorno)} ${prossimo.inizio}` : 'Nessuno' }, ...(ultima ? [{ et: 'Ultima pratica', val: `${esc(lavoroBreve(ultima))} · ${NOMI_STATO[ultima.stato]}`, click: `vai('p','${ultima.id}')`, intera: true }] : [])],
+		celle: [{ et: 'Pratiche', val: prs.length }, { et: 'Prossimo', val: prossimo ? `${giornoBreve(prossimo.giorno)} ${prossimo.inizio}` : 'Nessuno' }, ...(ultima ? [{ et: 'Ultima pratica', val: `${esc(lavoroBreve(ultima))} · ${NOMI_STATO[ultima.stato]}`, click: `apri('p','${ultima.id}')`, intera: true }] : [])],
 		azione: `<a class="btn pieno pr-azione" href="tel:${c.tel.replace(/\s/g, '')}">${I.tel} Chiama ${esc(c.nome.split(' ')[0])}</a>`,
 		blocco: notaLato('Note sul cliente', c.note, `salvaNotaCliente('${c.id}',this.value)`, 'es. preferisce essere chiamato dopo le 18')
 	});
 	return bottoneIndietro('Clienti') + testa(esc(c.nome), '', '') + buoneHtml([...(prs.length > 1 ? [`Già cliente · ${prs.length} lavori`] : []), ...(prs.some((x) => prevCorrente(x.id)?.stato === 'accettata') ? ['Ha accettato un preventivo'] : [])]) + conLato(''
 		+ `<section class="riquadro"><div class="contatti"><span>${I.tel}<span class="num">${c.tel}</span></span>${c.email ? `<span>${I.mail}${esc(c.email)}</span>` : ''}</div><dl class="coppia" style="margin-top:12px"><dt>Indirizzo</dt><dd>${esc(c.indirizzo) || '<span class="nota">non indicato</span>'}</dd>${c.note ? `<dt>Note</dt><dd>${esc(c.note)}</dd>` : ''}</dl><div class="azioni"><button type="button" class="btn piccolo linea" onclick="apriCliente('${c.id}')">Modifica cliente</button></div></section>`
-		+ `<section class="riquadro"><h2>Pratiche collegate <span class="conta">${prs.length}</span></h2>${prs.length ? `<ul class="lista">${prs.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${p.codice} · ${NOMI_STATO[p.stato]}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuna pratica collegata.</p>'}</section>`, card, 'Da tenere a mente sul cliente');
+		+ `<section class="riquadro"><h2>Pratiche collegate <span class="conta">${prs.length}</span></h2>${prs.length ? `<ul class="lista">${prs.map((p) => `<li><button type="button" class="riga con-mini" onclick="apri('p','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${p.codice} · ${NOMI_STATO[p.stato]}</span></span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuna pratica collegata.</p>'}</section>`, card, 'Da tenere a mente sul cliente');
 }
 function apriCliente(id) {
 	const c = id ? cliente(id) : { nome: '', tel: '', email: '', indirizzo: '', note: '' };
@@ -1568,27 +1640,27 @@ function salvaCliente(id) {
 	if (dati.tel.replace(/\D/g, '').length < 6) return esito('cl-esito', 'Controlla il telefono: troppo corto.');
 	if (dati.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dati.email)) return esito('cl-esito', 'L\'email non sembra giusta (manca la @ o il punto).');
 	const doppio = D.clienti.find((c) => c.id !== id && c.tel.replace(/\D/g, '') === dati.tel.replace(/\D/g, ''));
-	if (doppio && !id) return esito('cl-esito', `Questo numero è già di <b>${esc(doppio.nome)}</b>. <button type="button" class="link" onclick="chiudiTendina();vai('cliente','${doppio.id}')">Apri la sua scheda</button>`, 'att');
+	if (doppio && !id) return esito('cl-esito', `Questo numero è già di <b>${esc(doppio.nome)}</b>. <button type="button" class="link" onclick="chiudiTendina();apri('cliente','${doppio.id}')">Apri la sua scheda</button>`, 'att');
 	if (id) { Object.assign(cliente(id), dati); salva(); chiudiTendina(); render(); toast('Cliente aggiornato.'); }
-	else { const c = { id: nuovoId('c'), ...dati }; D.clienti.push(c); salva(); chiudiTendina(); toast('Cliente creato.'); vai('cliente', c.id); }
+	else { const c = { id: nuovoId('c'), ...dati }; D.clienti.push(c); salva(); chiudiTendina(); toast('Cliente creato.'); apri('cliente', c.id); }
 }
 
 function altro() {
 	const nuove = D.avvisi.filter((x) => !x.letto).length;
 	const voce = (ico, nome, azione, nota = '') => `<li><button type="button" onclick="${azione}">${ico}${nome}${nota ? `<span class="nota">${nota}</span>` : ''}<span class="freccia">${I.freccia}</span></button></li>`;
-	const prova = `<h2 style="margin:26px 0 8px">Solo per la prova</h2><ul class="voci"><li><button type="button" onclick="cambiaRete()">${I.avviso}Simula «senza rete»<span class="nota">${D.senzaRete ? 'attivo' : 'spento'}</span></button></li>${voce(I.foto, 'Foto dimostrative', "vai('crediti')", 'fonti')}<li><button type="button" onclick="apriConferma('Ripristinare i dati di prova?','Tutto quello che hai inserito nel prototipo sparisce e tornano i dati di partenza.','Ripristina',azzera)">${I.altro}Ripristina i dati di prova</button></li></ul>`;
+	const prova = `<h2 style="margin:26px 0 8px">Solo per la prova</h2><ul class="voci"><li><button type="button" onclick="cambiaRete()">${I.avviso}Simula «senza rete»<span class="nota">${D.senzaRete ? 'attivo' : 'spento'}</span></button></li>${voce(I.foto, 'Foto dimostrative', "apri('crediti')", 'fonti')}<li><button type="button" onclick="apriConferma('Ripristinare i dati di prova?','Tutto quello che hai inserito nel prototipo sparisce e tornano i dati di partenza.','Ripristina',azzera)">${I.altro}Ripristina i dati di prova</button></li></ul>`;
 	const profilo = `<div class="profilo">${avatar(D.utente, operatore())}<span><b>${nomeOp(D.utente)}</b><span>${operatore() ? 'Operatore' : 'Titolare'}</span></span><button type="button" class="btn piccolo linea" onclick="esci()">Esci</button></div>`;
-	if (operatore()) return testa('Altro') + conLato(profilo + `<ul class="voci">${voce(I.materiali, 'Materiali', "vai('materiali')")}${voce(I.installa, 'Aggiungi alla schermata Home', 'apriInstalla()')}</ul><p class="nota" style="margin-top:12px">Vedi i tuoi impegni e i lavori dove sei in squadra. Prezzi, preventivi e note di Fabri restano a lui.</p>` + prova, latoCard({ grande: `<strong>${io().nome}</strong>`, piccolo: 'operatore', sotto: 'I tuoi impegni e i lavori dove sei in squadra.', azione: `<button type="button" class="btn pieno pr-azione" onclick="vai('oggi')">I miei impegni di oggi</button>`, blocco: promemoriaLato() }), 'Da tenere a mente', 'lato-dopo');
+	if (operatore()) return testa('Altro') + conLato(profilo + `<ul class="voci">${voce(I.materiali, 'Materiali', "apri('materiali')")}${voce(I.installa, 'Aggiungi alla schermata Home', 'apriInstalla()')}</ul><p class="nota" style="margin-top:12px">Vedi i tuoi impegni e i lavori dove sei in squadra. Prezzi, preventivi e note di Fabri restano a lui.</p>` + prova, latoCard({ grande: `<strong>${io().nome}</strong>`, piccolo: 'operatore', sotto: 'I tuoi impegni e i lavori dove sei in squadra.', azione: `<button type="button" class="btn pieno pr-azione" onclick="vai('oggi')">I miei impegni di oggi</button>`, blocco: promemoriaLato() }), 'Da tenere a mente', 'lato-dopo');
 	const nuoveL = D.avvisi.filter((x) => !x.letto).slice(0, 3);
 	const cardA = latoCard({
 		grande: `<strong class="num">${nuove}</strong> ${nuove === 1 ? 'avviso' : 'avvisi'} da leggere`,
 		dopoCelle: nuoveL.length ? `<ul class="lato-lista">${nuoveL.map((x) => `<li><button type="button" onclick="leggiAvviso('${x.id}')"><b class="num">${quando(x.quando).split(' ')[0]}</b><span><b>${esc(x.titolo)}</b><span>${esc(x.testo)}</span></span></button></li>`).join('')}</ul>` : '',
-		celle: [{ et: 'Erica', val: `${ericaDaVedere().length} da vedere`, click: "vai('erica')" }, { et: 'Da comprare', val: `${D.materiali.filter((m) => m.stato === 'da_comprare').length} materiali`, click: "vai('materiali')" }],
-		azione: `<button type="button" class="btn pieno pr-azione" onclick="vai('avvisi')">Apri gli avvisi</button>`,
+		celle: [{ et: 'Erica', val: `${ericaDaVedere().length} da vedere`, click: "apri('erica')" }, { et: 'Da comprare', val: `${D.materiali.filter((m) => m.stato === 'da_comprare').length} materiali`, click: "apri('materiali')" }],
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="apri('avvisi')">Apri gli avvisi</button>`,
 		blocco: promemoriaLato()
 	});
 	return testa('Altro') + conLato(profilo
-		+ `<ul class="voci">${voce(I.avviso, 'Avvisi', "vai('avvisi')", nuove ? `${nuove} da leggere` : '')}${voce(I.erica, 'Erica', "vai('erica')", ericaDaVedere().length ? `${ericaDaVedere().length} da vedere` : '')}${voce(I.materiali, 'Materiali', "vai('materiali')", D.materiali.filter((m) => m.stato === 'da_comprare').length + ' da comprare')}${voce(I.pratiche, 'Impostazioni dei preventivi', "vai('impostazioni')")}${voce(I.casa, 'Sito: prezzi e ferie', "vai('sito')")}${voce(I.installa, 'Aggiungi alla schermata Home', 'apriInstalla()')}${voce(I.orologio, 'Stato del sistema', "vai('sistema')")}</ul>`
+		+ `<ul class="voci">${voce(I.avviso, 'Avvisi', "apri('avvisi')", nuove ? `${nuove} da leggere` : '')}${voce(I.erica, 'Erica', "apri('erica')", ericaDaVedere().length ? `${ericaDaVedere().length} da vedere` : '')}${voce(I.materiali, 'Materiali', "apri('materiali')", D.materiali.filter((m) => m.stato === 'da_comprare').length + ' da comprare')}${voce(I.pratiche, 'Impostazioni dei preventivi', "apri('impostazioni')")}${voce(I.casa, 'Sito: prezzi e ferie', "apri('sito')")}${voce(I.installa, 'Aggiungi alla schermata Home', 'apriInstalla()')}${voce(I.orologio, 'Stato del sistema', "apri('sistema')")}</ul>`
 		+ prova, cardA, 'Da tenere a mente', 'lato-dopo');
 }
 function cambiaRete(valore = !D.senzaRete) {
@@ -1612,7 +1684,7 @@ function avvisi() {
 		+ `<section class="riquadro">${l.length ? `<ul class="lista">${l.map((x) => `<li><button type="button" class="riga avv ${x.letto ? 'letto' : ''}" onclick="leggiAvviso('${x.id}')"><span class="punto"></span><span class="cosa"><b>${esc(x.titolo)}</b><span>${esc(x.testo)} · ${quando(x.quando)}</span>${x.segnalazione ? '<span class="tag att">Segnalazione</span>' : ''}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="vuoto">Nessun avviso da leggere.</p>'}</section>`
 		+ `<section class="riquadro"><h2>Email di avviso (prova)</h2><p class="nota" style="margin-bottom:8px">In modalità prova restano qui: non parte niente.</p><ul class="lista">${D.email.map((m) => `<li><div class="riga" style="grid-template-columns:1fr"><span class="cosa"><b>${m.oggetto}</b><span>${quando(m.quando)} · ${m.stato}</span></span></div></li>`).join('')}</ul></section>`;
 }
-function leggiAvviso(id) { const x = D.avvisi.find((v) => v.id === id); x.letto = true; salva(); if (x.praticaId) vai('p', x.praticaId); else render(); }
+function leggiAvviso(id) { const x = D.avvisi.find((v) => v.id === id); x.letto = true; salva(); if (x.praticaId) apri('p', x.praticaId); else render(); }
 function sistema() {
 	return bottoneIndietro('Altro') + testa('Stato del sistema')
 		+ `<section class="riquadro"><dl class="coppia"><dt>Ultimo backup</dt><dd>13 ott, 03:10 · 9 ore fa · 4,2 MB</dd><dt>Esito</dt><dd><span class="tag ok">ok</span></dd><dt>Spazio</dt><dd>database 4,2 MB di 500 MB · foto 38 MB di 1 GB</dd></dl></section>`;
@@ -1721,7 +1793,7 @@ function editorPreventivo(id) {
 		<div class="pv-ris-tot num"><span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span></div>
 		<p class="pv-ris-cifra num"><span>Totale</span><b>${euro(t.tot)}</b></p>${notaStima(pv, t)}
 		${bozza ? `<ul class="passi-pdf" id="passi-pdf" hidden><li>Numero assegnato</li><li>PDF creato</li><li>PDF controllato</li></ul><button type="button" class="btn pieno" id="btn-genera" onclick="generaPdf('${id}')">Genera PDF</button><p class="pv-ris-tel">Il PDF non parte da solo: lo mandi tu (WhatsApp o email), poi «Segna inviato».</p>`
-		: `<div class="azioni" style="margin-top:4px"><button type="button" class="btn linea pieno" onclick="vai('pdf','${id}')">Vedi il PDF</button>${pv.stato === 'pronta' ? `<button type="button" class="btn pieno" onclick="apriRegistra('${id}','inviata')">Segna inviato</button>` : ''}</div><p class="pv-ris-tel">${NOMI_PREV[pv.stato]}${pv.generato ? ' · generato ' + quando(pv.generato) : ''}</p>`}</div></aside>`;
+		: `<div class="azioni" style="margin-top:4px"><button type="button" class="btn linea pieno" onclick="apri('pdf','${id}')">Vedi il PDF</button>${pv.stato === 'pronta' ? `<button type="button" class="btn pieno" onclick="apriRegistra('${id}','inviata')">Segna inviato</button>` : ''}</div><p class="pv-ris-tel">${NOMI_PREV[pv.stato]}${pv.generato ? ' · generato ' + quando(pv.generato) : ''}</p>`}</div></aside>`;
 	if (!bozza) return bottoneIndietro('Pratica') + scelto + `<div class="pv-griglia"><div class="pv-passi"><section class="pv-passo aperto"><div class="pv-passo-testa"><span class="pv-num">${I.spunta}</span><span class="pv-passo-titolo">Voci del preventivo</span></div><div class="pv-passo-corpo">${pv.righe.map((r) => `<div class="voce sola-lettura"><span>${esc(r[0])}</span><span class="q num">${esc(r[1])}</span><span class="num">${euro(r[3])}</span></div>`).join('')}</div></section></div>${ris.replace('su-tel', '')}</div>`;
 	const corpo = [
 		`${pv.daStima ? `<p class="pv-stima-nota">Voci create dalla richiesta del cliente. Totale preso da ${pv.daStima.regola} (${esc(pv.daStima.stima)}, IVA inclusa): imponibile ${euro(t.imp)} + IVA ${pv.iva}%. Se cambi un importo, sotto vedi di quanto ti sposti dalla stima.</p>` : ''}<p class="pv-aiuto">Una riga per ogni lavoro o materiale. L'importo è senza IVA.</p><div class="intest-voci"><span>Descrizione</span><span>Quantità</span><span>Importo</span><span></span></div>${pv.righe.map((r, i) => `<div class="voce"><input class="campo" value="${esc(r[0])}" placeholder="Descrizione" aria-label="Descrizione voce ${i + 1}" onchange="pv_riga('${id}',${i},0,this.value)"><input class="campo num" value="${esc(r[1])}" placeholder="Quantità" aria-label="Quantità" onchange="pv_riga('${id}',${i},1,this.value)"><span class="pv-importo"><input class="campo num" value="${r[3]}" inputmode="decimal" placeholder="Importo" aria-label="Importo in euro" onchange="pv_riga('${id}',${i},3,this.value)"><span>€</span></span><button type="button" class="togli" aria-label="Togli la voce ${i + 1}" title="Togli questa voce" onclick="pv_togli('${id}',${i})">${I.cestino}</button></div>`).join('')}<button type="button" class="pv-aggiungi" onclick="pv_aggiungi('${id}')">${I.piu} Aggiungi una voce</button>`,
@@ -1794,7 +1866,7 @@ function apriFinestra(titolo, gruppi, piede = '') {
 	tendinaAperta = true;
 	if (matchMedia('(hover: hover)').matches) setTimeout(() => document.querySelector('.finestra .fin-x')?.focus({ focusVisible: false }), 50);
 }
-const vaiDa = (v, id) => `chiudiTendina(true);vai('${v}','${id}')`;
+const vaiDa = (v, id) => `chiudiTendina(true);apri('${v}','${id}')`;
 function finestraDaFare() {
 	const df = daFare(), r = (x) => ({ ico: x.oggi ? I.avviso : I.pratiche, t: x.cosa, d: `${esc(x.p.nome)}, ${lavoroBreve(x.p)} · ${x.det}${x.attesa ? ' · ' + x.attesa : ''}`, click: vaiDa('p', x.p.id) });
 	apriFinestra('Cose da fare', [['Entro oggi', df.filter((x) => x.oggi).map(r)], ['Da fare', df.filter((x) => !x.oggi).map(r)]]);
@@ -1809,7 +1881,7 @@ function finestraAttesa() {
 }
 function finestraErica() {
 	const dv = ericaDaVedere();
-	apriFinestra('Erica ha preparato', Object.entries(TIPI_ERICA).map(([k, n]) => [n, dv.filter((e) => e.tipo === k).map((e) => ({ ico: I.erica, t: esc(e.titolo), d: esc(e.perche ?? ''), click: `apriProposta('${e.id}')` }))]), `<button type="button" class="vedi" onclick="chiudiTendina(true);vai('erica')">Apri Erica</button>`);
+	apriFinestra('Erica ha preparato', Object.entries(TIPI_ERICA).map(([k, n]) => [n, dv.filter((e) => e.tipo === k).map((e) => ({ ico: I.erica, t: esc(e.titolo), d: esc(e.perche ?? ''), click: `apriProposta('${e.id}')` }))]), `<button type="button" class="vedi" onclick="chiudiTendina(true);apri('erica')">Apri Erica</button>`);
 }
 function finestraStorico(id) {
 	const p = pratica(id), per = {};
@@ -1881,7 +1953,7 @@ function salvaNuovoApp(praticaIdFisso, deroga = '') {
 	D.appuntamenti.push(a);
 	if (praticaId) pratica(praticaId).storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} proposto per il ${quando(a.giorno)} ore ${a.inizio}${deroga ? ' (sovrapposizione accettata)' : ''}`]);
 	salva(); chiudiTendina(); toast('Appuntamento proposto. Confermalo quando il cliente dice sì.');
-	praticaId ? vai('p', praticaId) : vai('agenda');
+	praticaId ? apri('p', praticaId) : vai('agenda');
 }
 function esito(id, html, tipo = 'err') { document.getElementById(id).innerHTML = `<div class="avviso ${tipo}">${html}</div>`; }
 
@@ -1996,7 +2068,7 @@ function salvaRegistra(pvId, azione) {
 	if (azione === 'inviata') { pv.stato = 'inviata'; pv.inviato = q; pv.canale = valore('rg-canale'); p.storico.push([q, `Preventivo ${pv.numero} segnato inviato (${CANALI[pv.canale]})`]); toast('Registrato come inviato: nessun messaggio è partito da qui.'); }
 	if (azione === 'accettata') { pv.stato = 'accettata'; pv.accettato = q; pv.accettatoCanale = valore('rg-canale'); p.storico.push([q, `Preventivo ${pv.numero} registrato come accettato (${CANALI[pv.accettatoCanale]})`]); toast('Accettazione registrata. Adesso: programma il lavoro.'); }
 	if (azione === 'rifiutata') { const m = valore('rg-motivo'); if (!m.trim()) return toast('Scrivi il motivo.'); pv.stato = 'rifiutata'; pv.rifiutato = q; pv.motivo = m; p.storico.push([q, `Preventivo ${pv.numero} registrato come rifiutato: ${m}`]); toast('Rifiuto registrato.'); }
-	salva(); chiudiTendina(); vai('p', p.id, { indietro: true });
+	salva(); chiudiTendina(); apri('p', p.id, { indietro: true });
 }
 function apriStato(id) {
 	const p = pratica(id);
@@ -2082,8 +2154,8 @@ function aggiornaRicerca() {
 	const vaiP = operatore() ? 'lavoro' : 'p';
 	const gruppo = (titolo, righe) => (righe.length ? `<h2 class="gruppo-r">${titolo}</h2><ul class="lista">${righe.join('')}</ul>` : '');
 	const html = gruppo(operatore() ? 'Lavori' : 'Pratiche', prs.map((p) => `<li><button type="button" class="riga con-mini" onclick="vai('${vaiP}','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${NOMI_STATO[p.stato]}</span></span><span class="freccia">${I.freccia}</span></button></li>`))
-		+ gruppo('Clienti', cls.map((c) => `<li><button type="button" class="riga" onclick="vai('cliente','${c.id}')">${avatar('x', true).replace('>x<', '>' + esc(c.nome.charAt(0)) + '<')}<span class="cosa"><b>${esc(c.nome)}</b><span class="num">${c.tel}</span></span><span class="freccia">${I.freccia}</span></button></li>`))
-		+ gruppo('Appuntamenti', apps.map((a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num">${a.inizio}<small>${giornoBreve(a.giorno)}</small></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]} · ${a.chi.map(nomeOp).join(', ')}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }));
+		+ gruppo('Clienti', cls.map((c) => `<li><button type="button" class="riga" onclick="apri('cliente','${c.id}')">${avatar('x', true).replace('>x<', '>' + esc(c.nome.charAt(0)) + '<')}<span class="cosa"><b>${esc(c.nome)}</b><span class="num">${c.tel}</span></span><span class="freccia">${I.freccia}</span></button></li>`))
+		+ gruppo('Appuntamenti', apps.map((a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="apri('imp','${a.id}')"><span class="ora num">${a.inizio}<small>${giornoBreve(a.giorno)}</small></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]} · ${a.chi.map(nomeOp).join(', ')}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }));
 	out.innerHTML = html || `<div class="vuoto-grande">${I.cerca}<b>Nessun risultato</b>Niente per «${esc(t)}». Prova col cognome, il comune o il telefono.</div>`;
 }
 const tastoCerca = () => `<button type="button" class="tondo-cerca" aria-label="Cerca" onclick="apriRicerca()">${I.cerca}</button>`;
@@ -2107,10 +2179,10 @@ function salvaAMano(forza = false) {
 	if (nome.length < 2) return esito('am-esito', 'Serve il nome di chi chiede.');
 	if (tel.replace(/\D/g, '').length < 6) return esito('am-esito', 'Controlla il telefono: troppo corto.');
 	const doppia = D.pratiche.find((p) => p.tel.replace(/\D/g, '') === tel.replace(/\D/g, '') && !chiusa(p));
-	if (doppia && !forza) return esito('am-esito', `Questo numero ha già una pratica aperta: <b>${esc(titoloLavoro(doppia))}</b> di ${esc(doppia.nome)}. <div class="azioni"><button type="button" class="btn piccolo linea" onclick="chiudiTendina();vai('p','${doppia.id}')">Apri quella</button><button type="button" class="btn piccolo" onclick="salvaAMano(true)">Crea comunque</button></div>`, 'att');
+	if (doppia && !forza) return esito('am-esito', `Questo numero ha già una pratica aperta: <b>${esc(titoloLavoro(doppia))}</b> di ${esc(doppia.nome)}. <div class="azioni"><button type="button" class="btn piccolo linea" onclick="chiudiTendina();apri('p','${doppia.id}')">Apri quella</button><button type="button" class="btn piccolo" onclick="salvaAMano(true)">Crea comunque</button></div>`, 'att');
 	const canale = v('am-canale');
 	const p = { id: nuovoId('r'), codice: `R-2026-${String(D.prossimaRichiesta++).padStart(4, '0')}`, nome, tel, email: '', comune, indirizzoLavoro: v('am-indirizzo') || comune, indirizzoCliente: '', clienteId: (D.clienti.find((c) => c.tel.replace(/\D/g, '') === tel.replace(/\D/g, '')) ?? {}).id ?? null, servizio: v('am-servizio'), dettagli: v('am-cosa') || 'Da chiarire al sopralluogo', stima: '', stimaNota: '', foto: [], messaggio: '', preferenze: '', ricevuta: adessoIso(), stato: 'nuova', note: '', aMano: canale, storico: [[adessoIso(), `Richiesta inserita a mano (${CANALI[canale]}) da Fabri`]] };
-	D.pratiche.push(p); salva(); chiudiTendina(); toast('Pratica creata. Prossimo passo: fissa il sopralluogo.'); vai('p', p.id);
+	D.pratiche.push(p); salva(); chiudiTendina(); toast('Pratica creata. Prossimo passo: fissa il sopralluogo.'); apri('p', p.id);
 }
 
 /* ---------- archivio ---------- */
@@ -2169,9 +2241,9 @@ function oggiOperatore() {
 	const domani = D.appuntamenti.filter((a) => a.giorno === piuGiorni(OGGI, 1) && aperte(a) && a.chi.includes(D.utente)).sort((a, b) => a.inizio.localeCompare(b.inizio));
 	const prossimo = mie.find((a) => a.inizio >= '08:00') ?? mie[0];
 	const pp = prossimo?.praticaId ? pratica(prossimo.praticaId) : null;
-	const hero = prossimo ? `<section class="prossimo"><div class="testo-p"><small>Il tuo prossimo impegno · oggi</small><div class="ora-grande num">${prossimo.inizio}<em>fino alle ${prossimo.fine} · ${durata(prossimo)}</em></div><b>${esc(pp ? pp.nome : prossimo.titolo)}</b><span class="dett">${NOMI_TIPO[prossimo.tipo]}${pp ? ', ' + lavoroBreve(pp) : ''}</span><span class="dett">${esc(prossimo.luogo)}</span>${prossimo.note ? `<span class="dett nota-fabri">«${esc(prossimo.note)}»</span>` : ''}</div><div class="azioni"><button type="button" class="btn" onclick="vai('imp','${prossimo.id}')">Apri</button><a class="btn linea" href="${linkMappe(prossimo.luogo)}" target="_blank" rel="noopener">${I.mappa} Mappe</a>${pp ? `<a class="btn linea" href="tel:${pp.tel.replace(/\s/g, '')}">${I.tel} Chiama</a>` : ''}</div></section>`
+	const hero = prossimo ? `<section class="prossimo"><div class="testo-p"><small>Il tuo prossimo impegno · oggi</small><div class="ora-grande num">${prossimo.inizio}<em>fino alle ${prossimo.fine} · ${durata(prossimo)}</em></div><b>${esc(pp ? pp.nome : prossimo.titolo)}</b><span class="dett">${NOMI_TIPO[prossimo.tipo]}${pp ? ', ' + lavoroBreve(pp) : ''}</span><span class="dett">${esc(prossimo.luogo)}</span>${prossimo.note ? `<span class="dett nota-fabri">«${esc(prossimo.note)}»</span>` : ''}</div><div class="azioni"><button type="button" class="btn" onclick="apri('imp','${prossimo.id}')">Apri</button><a class="btn linea" href="${linkMappe(prossimo.luogo)}" target="_blank" rel="noopener">${I.mappa} Mappe</a>${pp ? `<a class="btn linea" href="tel:${pp.tel.replace(/\s/g, '')}">${I.tel} Chiama</a>` : ''}</div></section>`
 		: `<section class="prossimo"><div class="testo-p"><small>Oggi</small><b style="margin-top:0">Nessun impegno per te</b><span class="dett">Se Fabri ti assegna qualcosa lo vedi qui.</span></div></section>`;
-	const riga = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num">${a.inizio}<small>${durata(a)}</small></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]} · ${esc(a.luogo)}</span>${a.stato === 'proposto' ? '<span class="tag att">Da confermare</span>' : ''}</span><span class="freccia">${I.freccia}</span></button></li>`; };
+	const riga = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="apri('imp','${a.id}')"><span class="ora num">${a.inizio}<small>${durata(a)}</small></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]} · ${esc(a.luogo)}</span>${a.stato === 'proposto' ? '<span class="tag att">Da confermare</span>' : ''}</span><span class="freccia">${I.freccia}</span></button></li>`; };
 	const oggiPids = new Set(mie.concat(domani).map((a) => a.praticaId).filter(Boolean));
 	// «Devi ritirare tu»: solo i materiali dove l'incaricato sei tu. «Materiali del cantiere»: gli altri dei tuoi lavori di oggi e domani.
 	const tuoi = D.materiali.filter((m) => m.chi === D.utente && m.stato !== 'in_cantiere');
@@ -2193,10 +2265,10 @@ function lavori() {
 	const l = mieiLavori().sort((a, b) => { const pa = appDi(a.id).find((x) => aperte(x) && x.giorno >= OGGI), pb = appDi(b.id).find((x) => aperte(x) && x.giorno >= OGGI); return ((pa ? pa.giorno + pa.inizio : '9') > (pb ? pb.giorno + pb.inizio : '9') ? 1 : -1); });
 	const prossimi = D.appuntamenti.filter((a) => aperte(a) && a.giorno >= OGGI && a.chi.includes(D.utente)).sort((a, b) => (a.giorno + a.inizio).localeCompare(b.giorno + b.inizio)).slice(0, 4);
 	return testa('Lavori', `${l.length} dove sei in squadra`, tastoCerca())
-		+ conLato(`<section class="riquadro">${l.length ? `<ul class="lista">${l.map((p) => { const a = appDi(p.id).find((x) => aperte(x) && x.giorno >= OGGI && x.chi.includes(D.utente)); return `<li><button type="button" class="riga con-mini" onclick="vai('lavoro','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${esc(p.indirizzoLavoro)}</span>${a ? `<span class="tag">${I.orologio} ${giornoBreve(a.giorno)} ${a.inizio}</span>` : '<span class="tag">Nessun impegno in arrivo</span>'}</span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun lavoro', 'Quando Fabri ti mette in squadra, il lavoro compare qui.')}</section>`, latoCard({
+		+ conLato(`<section class="riquadro">${l.length ? `<ul class="lista">${l.map((p) => { const a = appDi(p.id).find((x) => aperte(x) && x.giorno >= OGGI && x.chi.includes(D.utente)); return `<li><button type="button" class="riga con-mini" onclick="apri('lavoro','${p.id}')">${miniatura(p)}<span class="cosa"><b>${esc(titoloLavoro(p))}</b><span>${esc(p.nome)} · ${esc(p.indirizzoLavoro)}</span>${a ? `<span class="tag">${I.orologio} ${giornoBreve(a.giorno)} ${a.inizio}</span>` : '<span class="tag">Nessun impegno in arrivo</span>'}</span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : vuotoGrande('Nessun lavoro', 'Quando Fabri ti mette in squadra, il lavoro compare qui.')}</section>`, latoCard({
 		grande: `<strong class="num">${l.length}</strong> lavori`,
 		sotto: 'I tuoi prossimi impegni:',
-		dopoCelle: `<ul class="lato-lista">${prossimi.length ? prossimi.map((a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}</b><span><b>${giornoBreve(a.giorno)}</b><span>${esc(p ? p.nome : a.titolo)}</span></span></button></li>`; }).join('') : '<li class="vuoto-l">Nessun impegno in arrivo.</li>'}</ul>`
+		dopoCelle: `<ul class="lato-lista">${prossimi.length ? prossimi.map((a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" onclick="apri('imp','${a.id}')"><b class="num">${a.inizio}</b><span><b>${giornoBreve(a.giorno)}</b><span>${esc(p ? p.nome : a.titolo)}</span></span></button></li>`; }).join('') : '<li class="vuoto-l">Nessun impegno in arrivo.</li>'}</ul>`
 	}), 'I tuoi prossimi impegni', 'lato-dopo');
 }
 function lavoro(id) {
@@ -2212,7 +2284,7 @@ function lavoro(id) {
 			${note ? `<section class="sez"><h2>Note di Fabri</h2><ul class="storico">${note}</ul></section>` : ''}
 			<section class="sez"><h2>Foto <span class="conta">${f.length || ''}</span></h2>${f.length ? galleria(p) : '<p class="nota">Ancora nessuna foto.</p>'}<div class="azioni"><button type="button" class="btn piccolo linea" onclick="apriFotoCantiere('${id}')">${I.foto} Aggiungi una foto</button></div></section>
 		</div><div class="foglio">
-			<section class="sez"><h2>I tuoi impegni qui</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuno.</p>'}</section>
+			<section class="sez"><h2>I tuoi impegni qui</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga" onclick="apri('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessuno.</p>'}</section>
 			<section class="sez"><h2>Materiali <span class="conta">${mats.length || ''}</span></h2>${mats.length ? `<ul class="lista">${mats.map((m) => rigaMat(m)).join('')}</ul>` : '<p class="nota">Nessun materiale segnato.</p>'}</section>
 			<section class="sez"><h2>Qualcosa non va?</h2><p class="nota">Manca un materiale, il cliente non c'è, serve più tempo: avvisa Fabri da qui.</p><div class="azioni"><button type="button" class="btn piccolo linea" onclick="apriSegnala('${id}')">${I.avviso} Segnala a Fabri</button></div></section>
 		</div>`, latoCard({
@@ -2230,7 +2302,7 @@ function impegnoOp(id) {
 	const sezioni = `<section class="sez imp-dett-sez"><h2>Dettagli</h2><dl class="coppia imp-dett"><dt>Dove</dt><dd>${esc(a.luogo)}</dd>${p ? `<dt>Da fare</dt><dd>${esc(p.dettagli)}</dd>` : ''}${a.note ? `<dt>Nota di Fabri</dt><dd><b>${esc(a.note)}</b></dd>` : ''}</dl></section>
 		${sezioneChiusura(a)}
 		${a.stato === 'proposto' ? '<section class="sez"><p class="nota">Ancora da confermare: lo conferma Fabri col cliente.</p></section>' : ''}
-		${p ? `<section class="sez"><h2>Dal cantiere</h2><div class="azioni" style="margin-top:4px"><button type="button" class="btn piccolo linea" onclick="apriFotoCantiere('${p.id}')">${I.foto} Aggiungi una foto</button><button type="button" class="btn piccolo linea" onclick="apriSegnala('${p.id}','${a.id}')">${I.avviso} Segnala a Fabri</button><button type="button" class="btn piccolo linea" onclick="vai('lavoro','${p.id}')">Apri il lavoro</button></div><p class="nota" style="margin-top:10px">Quello che mandi da qui lo vede solo Fabri, nell'app.</p></section>` : ''}`;
+		${p ? `<section class="sez"><h2>Dal cantiere</h2><div class="azioni" style="margin-top:4px"><button type="button" class="btn piccolo linea" onclick="apriFotoCantiere('${p.id}')">${I.foto} Aggiungi una foto</button><button type="button" class="btn piccolo linea" onclick="apriSegnala('${p.id}','${a.id}')">${I.avviso} Segnala a Fabri</button><button type="button" class="btn piccolo linea" onclick="apri('lavoro','${p.id}')">Apri il lavoro</button></div><p class="nota" style="margin-top:10px">Quello che mandi da qui lo vede solo Fabri, nell'app.</p></section>` : ''}`;
 	return testataImpegno(a, p, true) + conLato(sezioni, latoImpegno(a, p, true), 'Da tenere a mente per questo impegno');
 }
 
@@ -2286,7 +2358,7 @@ function apriProposta(id) {
 	const azioni = e.stato !== 'da_vedere' ? `<button type="button" class="btn linea pieno" onclick="chiudiTendina()">Chiudi</button>`
 		: e.tipo === 'materiali' ? `<button type="button" class="btn pieno" onclick="approvaMateriali('${id}')">Aggiungi ai materiali</button><button type="button" class="btn linea pieno" onclick="esitoProposta('${id}','scartata')">Scarta</button>`
 		: `<button type="button" class="btn pieno" onclick="copiaProposta('${id}')">Copia il testo</button><button type="button" class="btn linea pieno" onclick="esitoProposta('${id}','fatta')">Segna come fatto</button><button type="button" class="btn pericolo pieno" onclick="esitoProposta('${id}','scartata')">Scarta</button>`;
-	apriTendina(`<p class="nota">${TIPI_ERICA[e.tipo]}${p ? ` · <button type="button" class="link" onclick="vai('p','${p.id}')">${esc(titoloLavoro(p))}</button>` : ''}</p>${e.perche ? `<p class="perche">${ericaAvatar()}<span>${esc(e.perche)}</span></p>` : ''}${corpo}<div class="azioni">${azioni}</div>`, esc(e.titolo));
+	apriTendina(`<p class="nota">${TIPI_ERICA[e.tipo]}${p ? ` · <button type="button" class="link" onclick="apri('p','${p.id}')">${esc(titoloLavoro(p))}</button>` : ''}</p>${e.perche ? `<p class="perche">${ericaAvatar()}<span>${esc(e.perche)}</span></p>` : ''}${corpo}<div class="azioni">${azioni}</div>`, esc(e.titolo));
 }
 // la proposta resta modificabile: quello che scrivi si salva subito, prima di copiarla
 function testoProposta(id, v) { const e = D.erica.find((x) => x.id === id); if (e && e.stato === 'da_vedere') { e.testo = v; salva(); } }
