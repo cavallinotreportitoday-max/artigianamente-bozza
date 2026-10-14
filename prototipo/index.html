@@ -1035,6 +1035,50 @@ body.con-pop .erica-fab { visibility: hidden; }
 @media (max-width: 743px) { .fin-chips { top: -12px; } }
 @media (prefers-reduced-motion: reduce) { .tour, .tour.via { animation: none !important; } }
 .scelte label[hidden] { display: none !important; }
+
+/* preventivo completo: voci per tipo */
+.pv-tipi { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 8px; }
+.pv-tipi button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px solid var(--linea-forte, #dddddd); border-radius: 999px; background: var(--bianco); font: inherit; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); color: var(--nero); cursor: pointer; }
+.pv-tipi button:hover { border-color: var(--nero); }
+.pv-tipi svg { width: 14px; height: 14px; }
+.pv-cat { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--linea); }
+.pv-cat-testa { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.pv-cat-testa svg { width: 22px; height: 22px; flex: none; color: var(--c, var(--nero)); }
+.pv-cat-testa b { font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-titolo); }
+.pv-cat-testa > span { margin-left: auto; font-weight: var(--w-nome); }
+.pv-cat-testa.sola { margin-top: 16px; }
+.voce.v2 { display: grid; grid-template-columns: 0.8fr 1fr 1fr 1.1fr 36px; grid-template-areas: "d d d d x" "q u p i ."; gap: 8px 8px; align-items: end; padding: 12px 0; border-bottom: 1px solid var(--linea); }
+.voce.v2 .v-d { grid-area: d; } .voce.v2 .v-q { grid-area: q; } .voce.v2 .v-u { grid-area: u; } .voce.v2 .v-p { grid-area: p; } .voce.v2 .v-i { grid-area: i; } .voce.v2 .togli { grid-area: x; align-self: center; }
+.voce.v2 label { display: grid; gap: 2px; min-width: 0; }
+.voce.v2 label small { font-size: var(--t-mini); line-height: var(--lh-mini); color: var(--grigio); }
+.voce.v2 input { width: 100%; min-width: 0; }
+.voce.v2 .v-i input { font-weight: var(--w-nome); }
+.pv-cat .pv-aggiungi { margin-top: 8px; }
+.pv-sconto { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--linea); font-size: var(--t-piccolo); color: var(--nero); }
+.pv-sconto .pv-importo { max-width: 160px; }
+.pv-controllo { margin: 4px 0 16px; padding: 14px 16px; border-radius: 12px; background: var(--chiaro); }
+.pv-controllo.ok { background: var(--buona-f, #eaf6ee); }
+.pv-controllo b { display: block; font-size: var(--t-nome); line-height: var(--lh-nome); margin-bottom: 6px; }
+.pv-controllo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.pv-controllo li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); }
+.pv-controllo li > svg, .pv-controllo li::marker { width: 16px; height: 16px; }
+.pv-controllo li.si { color: var(--buona, #1f7a3d); } .pv-controllo li.si svg { color: var(--buona, #1f7a3d); }
+.pv-controllo li.no { color: var(--nero); } .pv-controllo li.no::before { content: ''; }
+.pv-controllo li.ns { color: var(--grigio); }
+.pv-controllo li .link { font-size: var(--t-piccolo); }
+.pv-controllo li .link.grigio { color: var(--grigio); }
+.pv-controllo li span { margin-right: 4px; }
+.pv-ris-manca { margin: 4px 0 8px; padding: 8px 10px; border-radius: 8px; background: #fff4e5; color: #8a4b00; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); }
+.pv-sug { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 0; border: 0; border-bottom: 1px solid var(--linea); background: none; font: inherit; text-align: left; color: var(--nero); cursor: pointer; }
+.pv-sug:last-child { border-bottom: 0; }
+.pv-sug b { display: block; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); font-weight: var(--w-nome); }
+.pv-sug small { display: block; color: var(--grigio); font-size: var(--t-mini); line-height: var(--lh-mini); }
+.pv-sug:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.pv-sug svg { width: 22px; height: 22px; flex: none; color: var(--c, var(--nero)); }
+.pv-sug.forte { background: var(--chiaro); border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; border: 0; }
+.pdf table.righe thead th { text-align: left; font-size: var(--t-mini); color: var(--grigio); font-weight: var(--w-etichetta); padding-bottom: 4px; }
+.pdf table.righe tr.cat td { padding-top: 12px; font-weight: var(--w-nome); border-bottom: 1px solid var(--linea); }
+@media (max-width: 743px) { .voce.v2 { grid-template-columns: 1fr 1fr 32px; grid-template-areas: "d d x" "q u ." "p i ."; gap: 8px; } }
 </style>
 
 <div class="proto" title="Prototipo: dati fittizi, nessun invio, niente va sul server"><b>PROTOTIPO</b> · dati finti, nessun invio</div>
@@ -1141,7 +1185,7 @@ function datiIniziali() {
 			{ id: 'e2', tipo: 'sollecito', praticaId: 'r11', stato: 'da_vedere', titolo: 'Sollecito gentile a Rita Gallo', perche: 'Preventivo P-2026-0008 inviato 11 giorni fa, nessuna risposta.', testo: 'Buongiorno Rita, le scrivo per il preventivo P-2026-0008 per la cucina che le abbiamo mandato il 2 ottobre. Se ha domande o vuole cambiare qualcosa sono a disposizione. Fabri, ArtigianaMente' },
 			{ id: 'e3', tipo: 'materiali', praticaId: 'r2', stato: 'da_vedere', titolo: 'Materiali per il parquet di Luca Bianchi', perche: 'Posa prefinito 40 m², rovere naturale (dalle tue note del sopralluogo).', fornitore: 'Ferramenta Bertolin', voci: [['Prefinito rovere naturale 14 mm', '44 m² (40 + 10% sfrido)'], ['Tappetino fonoassorbente', '40 m²'], ['Profili di raccordo', '3']] }
 		],
-		impostazioni: { intestazione: 'ArtigianaMente', sede: 'Cavallino-Treporti (VE)', telefono: '339 828 4863', piva: '', validita: 30, acconto: 30, esclusioni: 'Opere murarie non indicate, smaltimenti speciali.', tempi: 'Tempi da concordare dopo l\'accettazione.' },
+		impostazioni: { intestazione: 'ArtigianaMente', sede: 'Cavallino-Treporti (VE)', telefono: '339 828 4863', piva: '', validita: 30, acconto: 30, tariffaOra: 35, consumoPerc: 5, esclusioni: 'Opere murarie non indicate, smaltimenti speciali.', tempi: 'Tempi da concordare dopo l\'accettazione.' },
 		sito: { ferieAttive: false, ferieDal: '2026-12-23', ferieAl: '2027-01-06', ferieTesto: 'Siamo in ferie: rispondiamo dal 7 gennaio.' },
 		prossimaRichiesta: 142,
 		senzaRete: false,
@@ -1225,7 +1269,8 @@ const piuGiorni = (s, n) => { const x = d(s); x.setUTCDate(x.getUTCDate() + n); 
 const lunediDi = (s) => piuGiorni(s, -((d(s).getUTCDay() + 6) % 7));
 const giorniDa = (iso) => Math.round((d(OGGI) - d(iso)) / 86400000);
 const euro = (n) => n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-const totali = (p) => { const imp = p.righe.reduce((s, r) => s + r[3], 0); const iva = Math.round(imp * p.iva) / 100; return { imp, iva, tot: imp + iva }; };
+// totale voci − sconto = imponibile; poi IVA (lo sconto è facoltativo)
+const totali = (p) => { const voci = Math.round(p.righe.reduce((s, r) => s + r[3], 0) * 100) / 100, sconto = Math.min(+p.sconto || 0, voci), imp = Math.round((voci - sconto) * 100) / 100, iva = Math.round(imp * p.iva) / 100; return { voci, sconto, imp, iva, tot: Math.round((imp + iva) * 100) / 100 }; };
 
 /* ===================== AZIONE SUGGERITA ===================== */
 // Solo lettura: guarda il preventivo corrente e gli appuntamenti, non cambia niente. Il motivo è sempre scritto.
@@ -2052,7 +2097,7 @@ function impostazioni() {
 	const st = D.impostazioni;
 	return bottoneIndietro('Altro') + testa('Impostazioni dei preventivi', 'Compaiono su ogni PDF')
 		+ `<div class="due"><div><section class="riquadro"><h2>Intestazione</h2><div class="campi-box"><label>Nome<input name="im-int" value="${esc(st.intestazione)}"></label><label>Sede<input name="im-sede" value="${esc(st.sede)}"></label></div><div class="campi-box"><label>Telefono<input name="im-tel" value="${esc(st.telefono)}" inputmode="tel"></label><label>Partita IVA<input name="im-piva" value="${esc(st.piva)}" placeholder="da inserire"></label></div></section>
-		<section class="riquadro"><h2>Condizioni</h2><div class="campi-box"><label>Validità (giorni)<input name="im-val" value="${st.validita}" inputmode="numeric"></label><label>Acconto (%)<input name="im-acc" value="${st.acconto}" inputmode="numeric"></label></div><label class="campo">Esclusioni<textarea class="campo" name="im-escl" rows="2">${esc(st.esclusioni)}</textarea></label><label class="campo">Tempi<textarea class="campo" name="im-tempi" rows="2">${esc(st.tempi)}</textarea></label><p class="nota" style="margin-top:10px">IVA ammesse: 10% e 22% (non si cambiano da qui).</p><div id="im-esito"></div><div class="azioni"><button type="button" class="btn" onclick="salvaImpostazioni()">Salva</button><button type="button" class="btn linea" onclick="render();toast('Modifiche annullate.')">Annulla</button></div></section></div>
+		<section class="riquadro"><h2>Condizioni</h2><div class="campi-box"><label>Validità (giorni)<input name="im-val" value="${st.validita}" inputmode="numeric"></label><label>Acconto (%)<input name="im-acc" value="${st.acconto}" inputmode="numeric"></label><label>Tariffa oraria (€/ora)<input name="im-ora" value="${st.tariffaOra ?? 35}" inputmode="decimal"></label><label>Consumo a forfait (% sui materiali)<input name="im-cons" value="${st.consumoPerc ?? 5}" inputmode="decimal"></label></div><p class="nota" style="margin-top:6px">Tariffa e consumo sono d'esempio: mettici i tuoi. Servono solo a precompilare le voci nuove.</p><label class="campo">Esclusioni<textarea class="campo" name="im-escl" rows="2">${esc(st.esclusioni)}</textarea></label><label class="campo">Tempi<textarea class="campo" name="im-tempi" rows="2">${esc(st.tempi)}</textarea></label><p class="nota" style="margin-top:10px">IVA ammesse: 10% e 22% (non si cambiano da qui).</p><div id="im-esito"></div><div class="azioni"><button type="button" class="btn" onclick="salvaImpostazioni()">Salva</button><button type="button" class="btn linea" onclick="render();toast('Modifiche annullate.')">Annulla</button></div></section></div>
 		<div><section class="riquadro"><h2>Come appare sul PDF</h2><div class="pdf"><p class="marchio">${esc(st.intestazione).toUpperCase().replace('MENTE', '<span>MENTE</span>')}</p><p class="nota">${esc(st.sede)} · ${esc(st.telefono)} · P. IVA ${esc(st.piva) || '…'}</p><hr><p class="nota">Valido ${st.validita} giorni. Esclusioni: ${esc(st.esclusioni)} Acconto ${st.acconto}% all'accettazione, saldo a fine lavori. ${esc(st.tempi)}</p></div></section></div></div>`;
 }
 function salvaImpostazioni() {
@@ -2061,7 +2106,7 @@ function salvaImpostazioni() {
 	if (!v('im-int')) return esito('im-esito', 'Serve il nome in intestazione.');
 	if (!(val >= 1 && val <= 365)) return esito('im-esito', 'Validità: un numero di giorni tra 1 e 365.');
 	if (!(acc >= 0 && acc <= 100)) return esito('im-esito', 'Acconto: una percentuale tra 0 e 100.');
-	Object.assign(D.impostazioni, { intestazione: v('im-int'), sede: v('im-sede'), telefono: v('im-tel'), piva: v('im-piva'), validita: val, acconto: acc, esclusioni: v('im-escl'), tempi: v('im-tempi') });
+	Object.assign(D.impostazioni, { intestazione: v('im-int'), sede: v('im-sede'), telefono: v('im-tel'), piva: v('im-piva'), validita: val, acconto: acc, tariffaOra: parseFloat(String(v('im-ora')).replace(',', '.')) || 0, consumoPerc: parseFloat(String(v('im-cons')).replace(',', '.')) || 0, esclusioni: v('im-escl'), tempi: v('im-tempi') });
 	salva(); render(); toast('Impostazioni salvate: valgono per i prossimi PDF.');
 }
 // Prezzi «da» del sito, IVA inclusa, presi da src/lib/calcoli.js (aPartireDa + iva): qui si leggono soltanto.
@@ -2122,6 +2167,7 @@ function righeDaStima(p) {
 	const imp = Math.round((t.tot / (1 + iva / 100)) * 100), peso = voci.reduce((s, v) => s + v[2], 0);
 	let resto = imp;
 	const righe = voci.map(([n, q, w], i) => { const c = i === voci.length - 1 ? resto : Math.round((imp * w) / peso); resto -= c; const qn = parseFloat(String(q).replace(',', '.')) || 1; return [n, q, Math.round(c / qn) / 100, c / 100]; });
+	righe.forEach((r) => (r[4] = catDi(r)));
 	return { righe, iva, daStima: { stima: p.stima, ...t } };
 }
 function _vecchieRigheDaStima(p) {
@@ -2132,11 +2178,45 @@ function nuovaVersione(praticaId) {
 	if (bloccoRete()) return;
 	const vecchio = prevCorrente(praticaId);
 	if (vecchio.stato === 'inviata') vecchio.stato = 'superata';
-	const pv = { id: nuovoId('p'), praticaId, n: vecchio.n + 1, numero: null, stato: 'bozza', righe: vecchio.righe.map((r) => [...r]), iva: vecchio.iva };
+	const pv = { id: nuovoId('p'), praticaId, n: vecchio.n + 1, numero: null, stato: 'bozza', righe: vecchio.righe.map((r) => [...r]), iva: vecchio.iva, sconto: vecchio.sconto, note: vecchio.note, esclusi: vecchio.esclusi, nonServe: [...(vecchio.nonServe ?? [])] };
 	D.preventivi.push(pv);
 	pratica(praticaId).storico.push([adessoIso(), `Nuova versione v${pv.n} in bozza`]);
 	salva(); apri('prev', pv.id);
 }
+/* PREVENTIVO COMPLETO (Gian 14/10: «devono includere tutto, anche i materiali di consumo»):
+   le voci sono divise per tipo, ognuna con quantità × prezzo; il controllo «Hai messo tutto?» dice cosa manca.
+   Riga: [descrizione, quantità con unità, prezzo unitario, importo, tipo]. Importi senza IVA. */
+const CAT_PV = [['lavoro', 'Manodopera', 'orologio', 'ore'], ['materiali', 'Materiali', 'materiali', 'pz'], ['consumo', 'Materiali di consumo', 'scatola', 'forfait'], ['noleggi', 'Noleggi e attrezzature', 'attrezzi', 'giorni'], ['trasporto', 'Trasporto e trasferte', 'furgone', 'viaggi'], ['smaltimento', 'Smaltimento e pulizia', 'cestino', 'forfait'], ['altro', 'Altre voci', 'piu', 'forfait']];
+const CAT_CONTROLLO = ['lavoro', 'materiali', 'consumo', 'trasporto', 'smaltimento'];
+const UNITA = ['ore', 'giorni', 'm²', 'ml', 'm³', 'pz', 'kg', 'l', 'sacchi', 'km', 'viaggi', 'forfait'];
+const nomeCat = (k) => (CAT_PV.find((c) => c[0] === k) ?? CAT_PV[6])[1];
+// le righe vecchie non hanno il tipo: si deduce dalla descrizione
+function catDi(r) {
+	if (r[4]) return r[4];
+	const x = (r[0] || '').toLowerCase();
+	if (/smaltiment|discarica|macerie|pulizia finale/.test(x)) return 'smaltimento';
+	if (/noleggio|piattaforma|ponteggio/.test(x)) return 'noleggi';
+	if (/trasport|trasfert|in barca|viaggio/.test(x) && !/trasloco/.test(x)) return 'trasporto';
+	if (/di consumo|fissaggio|nastro|silicone|scatolon|teli /.test(x)) return 'consumo';
+	if (/^materiale|tappetino|profili|battiscopa/.test(x)) return 'materiali';
+	return 'lavoro';
+}
+const qDi = (r) => { const m = String(r[1] ?? '').trim().match(/^([\d.,]+)\s*(.*)$/); return { q: m ? parseFloat(m[1].replace(/\./g, '').replace(',', '.')) || 0 : 1, u: m ? m[2] : String(r[1] ?? '') }; };
+const fmtQ = (n) => String(Math.round(n * 100) / 100).replace('.', ',');
+const LAGUNA = /venezia|burano|murano|lido|pellestrina|torcello|sant'erasmo|giudecca|vignole/i;
+// voci pronte per tipo e lavoro (i prezzi li metti tu; la manodopera parte dalla tua tariffa)
+function suggerimenti(p, cat) {
+	const s = p.servizio, ora = D.impostazioni.tariffaOra ?? 35;
+	if (cat === 'lavoro') return [['Manodopera', 'ore', ora], ['Giornata di lavoro, 1 persona', 'giorni', ora * 8], ['Giornata di lavoro, 2 persone', 'giorni', ora * 16], ['Sopralluogo e misure', 'forfait', 0]];
+	if (cat === 'materiali') return ({ Imbiancatura: [['Pittura lavabile', 'l'], ['Fissativo / primer', 'l'], ['Stucco in pasta', 'kg']], Parquet: [['Parquet prefinito', 'm²'], ['Tappetino isolante', 'm²'], ['Battiscopa', 'ml'], ['Profili e soglie', 'pz']], Ristrutturazioni: [['Piastrelle', 'm²'], ['Colla per piastrelle', 'sacchi'], ['Sanitari e rubinetteria', 'pz'], ['Cartongesso e profili', 'm²']], 'Risanamento umidità': [['Intonaco deumidificante', 'sacchi'], ['Barriera chimica', 'ml'], ['Pittura traspirante', 'l']], Falegnameria: [['Legname', 'pz'], ['Ferramenta (cerniere, maniglie)', 'pz'], ['Vernice / impregnante', 'l']], 'Montaggio mobili': [['Ferramenta e staffe', 'pz']], Traslochi: [['Scatoloni', 'pz']] }[s] ?? [['Materiale', 'pz']]).map(([n, u]) => [n, u, 0]);
+	if (cat === 'consumo') return [[`Materiali di consumo (forfait ${D.impostazioni.consumoPerc ?? 5}% sui materiali)`, 'forfait', -1], ...({ Imbiancatura: ['Nastro di carta e teli di protezione', 'Carta abrasiva', 'Rulli e pennelli'], Parquet: ['Colla e nastro', 'Silicone', 'Sacchi per i ritagli'], Ristrutturazioni: ['Dischi da taglio e punte', 'Sacchi per macerie', 'Silicone, viti e tasselli'], 'Risanamento umidità': ['Sacchi per macerie', 'Dischi e punte', 'Teli di protezione'], Falegnameria: ['Viti e colla vinilica', 'Carta abrasiva', 'Cera e stucco per legno'], 'Montaggio mobili': ['Viti, tasselli e silicone'], Traslochi: ['Nastro, film estensibile e coperte'] }[s] ?? ['Viti, tasselli e silicone']).map((n) => [n, 'forfait', 0])];
+	if (cat === 'noleggi') return [['Ponteggio', 'giorni', 0], ['Piattaforma aerea', 'giorni', 0], ['Levigatrice / attrezzatura', 'giorni', 0], ['Deumidificatore', 'giorni', 0]];
+	if (cat === 'trasporto') return [...(LAGUNA.test(p.indirizzoLavoro) ? [['Trasporto in barca (laguna)', 'viaggi', 0]] : []), ['Trasporto materiali e attrezzatura', 'viaggi', 0], ['Trasferta della squadra', 'km', 0], ['Parcheggio / ZTL', 'forfait', 0]];
+	if (cat === 'smaltimento') return [['Smaltimento macerie in discarica autorizzata', 'forfait', 0], ['Smaltimento imballi', 'forfait', 0], ['Pulizia finale del cantiere', 'forfait', 0]];
+	return [['Voce libera', 'forfait', 0]];
+}
+// cosa manca: i tipi da controllare senza voci e non segnati «non serve»
+const mancaPv = (pv) => CAT_CONTROLLO.filter((k) => !pv.righe.some((r) => catDi(r) === k) && !(pv.nonServe ?? []).includes(k));
 // Preventivo: stessa struttura e misure della pagina Preventivo del sito (preventivo.html: passi tr2-passo, scelte pv-carta, riquadro «risultato»;
 // sul telefono foglio a tutto schermo pv-foglio con la barra dei passi in fondo tr2-avanti).
 let pvPasso = 1, pvPassoId = null;
@@ -2150,18 +2230,19 @@ function editorPreventivo(id) {
 	const scelto = `<div class="pv-scelto"><span class="pv-scelto-icona">${icoServ}</span><h1 class="pv-scelto-t">${bozza ? `Bozza v${pv.n}` : pv.numero}</h1><span class="pv-scelto-p">· ${esc(p.nome)} · ${esc(titoloLavoro(p))}</span></div>`;
 	// riquadro a destra (come «Il tuo progetto»)
 	const ris = `<aside class="pv-ris ${pvPasso === 3 ? 'su-tel' : ''}"><div class="pv-ris-in"><span class="pv-ris-label">Il tuo preventivo</span><p class="pv-ris-titolo">${esc(titoloLavoro(p))}</p><p class="pv-ris-sotto">${esc(p.nome)} · ${esc(p.indirizzoLavoro)}</p>
-		<ul class="pv-ris-voci">${pv.righe.map((r) => `<li><span>${esc(r[0]) || '<em>voce senza descrizione</em>'}${r[1] ? ` <small>${esc(r[1])}</small>` : ''}</span><b class="num">${euro(r[3])}</b></li>`).join('')}</ul>
-		<div class="pv-ris-tot num"><span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span></div>
+		<ul class="pv-ris-voci">${CAT_PV.map(([k, n]) => { const l = pv.righe.filter((r) => catDi(r) === k); return l.length ? `<li><span>${n} <small>${l.length} ${l.length === 1 ? 'voce' : 'voci'}</small></span><b class="num">${euro(l.reduce((x, r) => x + r[3], 0))}</b></li>` : ''; }).join('')}</ul>
+		${bozza && mancaPv(pv).length ? `<p class="pv-ris-manca">Manca: ${mancaPv(pv).map((k) => nomeCat(k).toLowerCase()).join(', ')}</p>` : ''}
+		<div class="pv-ris-tot num">${t.sconto ? `<span>Totale voci</span><span>${euro(t.voci)}</span><span>Sconto</span><span>− ${euro(t.sconto)}</span>` : ''}<span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span></div>
 		<p class="pv-ris-cifra num"><span>Totale</span><b>${euro(t.tot)}</b></p>${notaStima(pv, t)}
 		${bozza ? `<ul class="passi-pdf" id="passi-pdf" hidden><li>Numero assegnato</li><li>PDF creato</li><li>PDF controllato</li></ul><button type="button" class="btn pieno" id="btn-genera" onclick="generaPdf('${id}')">Genera PDF</button><p class="pv-ris-tel">Il PDF non parte da solo: lo mandi tu (WhatsApp o email), poi «Segna inviato».</p>`
 		: `<div class="azioni" style="margin-top:4px"><button type="button" class="btn linea pieno" onclick="apri('pdf','${id}')">Vedi il PDF</button>${pv.stato === 'pronta' ? `<button type="button" class="btn pieno" onclick="apriRegistra('${id}','inviata')">Segna inviato</button>` : ''}</div><p class="pv-ris-tel">${NOMI_PREV[pv.stato]}${pv.generato ? ' · generato ' + quando(pv.generato) : ''}</p>`}</div></aside>`;
-	if (!bozza) return bottoneIndietro('Pratica') + scelto + `<div class="pv-griglia"><div class="pv-passi"><section class="pv-passo aperto"><div class="pv-passo-testa"><span class="pv-num">${I.spunta}</span><span class="pv-passo-titolo">Voci del preventivo</span></div><div class="pv-passo-corpo">${pv.righe.map((r) => `<div class="voce sola-lettura"><span>${esc(r[0])}</span><span class="q num">${esc(r[1])}</span><span class="num">${euro(r[3])}</span></div>`).join('')}</div></section></div>${ris.replace('su-tel', '')}</div>`;
+	if (!bozza) return bottoneIndietro('Pratica') + scelto + `<div class="pv-griglia"><div class="pv-passi"><section class="pv-passo aperto"><div class="pv-passo-testa"><span class="pv-num">${I.spunta}</span><span class="pv-passo-titolo">Voci del preventivo</span></div><div class="pv-passo-corpo">${CAT_PV.map(([k, n, ico]) => { const l = pv.righe.filter((r) => catDi(r) === k); return l.length ? `<div class="pv-cat-testa sola">${I[ico]}<b>${n}</b><span class="num">${euro(l.reduce((x, r) => x + r[3], 0))}</span></div>${l.map((r) => `<div class="voce sola-lettura"><span>${esc(r[0])}</span><span class="q num">${esc(r[1])}${r[2] ? ' × ' + euro(r[2]) : ''}</span><span class="num">${euro(r[3])}</span></div>`).join('')}` : ''; }).join('')}</div></section></div>${ris.replace('su-tel', '')}</div>`;
 	const corpo = [
-		`${pv.daStima ? `<p class="pv-stima-nota">Voci create dalla richiesta del cliente. Totale preso da ${pv.daStima.regola} (${esc(pv.daStima.stima)}, IVA inclusa): imponibile ${euro(t.imp)} + IVA ${pv.iva}%. Se cambi un importo, sotto vedi di quanto ti sposti dalla stima.</p>` : ''}<p class="pv-aiuto">Una riga per ogni lavoro o materiale. L'importo è senza IVA.</p><div class="intest-voci"><span>Descrizione</span><span>Quantità</span><span>Importo</span><span></span></div>${pv.righe.map((r, i) => `<div class="voce"><input class="campo" value="${esc(r[0])}" placeholder="Descrizione" aria-label="Descrizione voce ${i + 1}" onchange="pv_riga('${id}',${i},0,this.value)"><input class="campo num" value="${esc(r[1])}" placeholder="Quantità" aria-label="Quantità" onchange="pv_riga('${id}',${i},1,this.value)"><span class="pv-importo"><input class="campo num" value="${r[3]}" inputmode="decimal" placeholder="Importo" aria-label="Importo in euro" onchange="pv_riga('${id}',${i},3,this.value)"><span>€</span></span><button type="button" class="togli" aria-label="Togli la voce ${i + 1}" title="Togli questa voce" onclick="pv_togli('${id}',${i})">${I.cestino}</button></div>`).join('')}<button type="button" class="pv-aggiungi" onclick="pv_aggiungi('${id}')">${I.piu} Aggiungi una voce</button>`,
+		`${pv.daStima ? `<p class="pv-stima-nota">Voci create dalla richiesta del cliente. Totale preso da ${pv.daStima.regola} (${esc(pv.daStima.stima)}, IVA inclusa): imponibile ${euro(t.imp)} + IVA ${pv.iva}%. Se cambi un importo, sotto vedi di quanto ti sposti dalla stima.</p>` : ''}${controlloPv(pv)}<p class="pv-aiuto">Ogni voce: quantità × prezzo. Importi senza IVA. Aggiungi per tipo:</p><div class="pv-tipi">${CAT_PV.map(([k, n, ico]) => `<button type="button" onclick="pv_menu('${id}','${k}')">${I.piu}${n}</button>`).join('')}</div>${vociPerTipo(pv, id)}<label class="pv-sconto">Sconto (facoltativo)<span class="pv-importo"><input class="campo num" value="${pv.sconto ? fmtQ(pv.sconto) : ''}" inputmode="decimal" placeholder="0" aria-label="Sconto in euro" onchange="pv_sconto('${id}',this.value)"><span>€</span></span></label><datalist id="unita">${UNITA.map((u) => `<option value="${u}">`).join('')}</datalist>`,
 		`<p class="pv-aiuto">Scegli l'aliquota per questo cliente.</p><div class="pv-carte">${[[10, 'casa', 'Lavori sulla casa', 'Ristrutturazioni, imbiancatura, umidità, parquet'], [22, 'martello', 'Servizi', 'Falegnameria, montaggio mobili, traslochi']].map(([v, ico, n, x]) => `<label class="pv-carta ${pv.iva === v ? 'scelta' : ''}"><input type="radio" name="pv-iva" value="${v}" ${pv.iva === v ? 'checked' : ''} onchange="pv_iva('${id}',${v})">${I[ico]}<b>IVA ${v}% · ${n}</b><small>${x}</small><span class="pv-segno">${I.spunta}</span></label>`).join('')}</div>`,
-		`<p class="pv-aiuto">Queste condizioni vanno su ogni PDF. Si cambiano in Altro → Impostazioni dei preventivi.</p><dl class="coppia"><dt>Validità</dt><dd>${st.validita} giorni</dd><dt>Acconto</dt><dd>${st.acconto}% all'accettazione, saldo a fine lavori</dd><dt>Esclusioni</dt><dd>${esc(st.esclusioni)}</dd><dt>Tempi</dt><dd>${esc(st.tempi)}</dd></dl>`
+		`<p class="pv-aiuto">Queste condizioni vanno su ogni PDF. Si cambiano in Altro → Impostazioni dei preventivi.</p><dl class="coppia"><dt>Validità</dt><dd>${st.validita} giorni</dd><dt>Acconto</dt><dd>${st.acconto}% all'accettazione, saldo a fine lavori</dd><dt>Tempi</dt><dd>${esc(st.tempi)}</dd></dl><label class="campo" style="margin-top:16px">Cosa non è compreso<textarea class="campo" rows="2" onchange="pv_testo('${id}','esclusi',this.value)">${esc(pv.esclusi ?? st.esclusioni)}</textarea></label><label class="campo">Note per il cliente (facoltative)<textarea class="campo" rows="2" placeholder="es. il colore lo scegliamo insieme al sopralluogo" onchange="pv_testo('${id}','note',this.value)">${esc(pv.note ?? '')}</textarea></label>`
 	];
-	const passo = (n) => { const aperto = pvPasso === n, fatto = pvPasso > n; return `<section class="pv-passo ${aperto ? 'aperto' : ''} ${fatto ? 'fatto' : ''}"><div class="pv-passo-testa" ${!aperto ? `onclick="pvVai(${n})" role="button" tabindex="0"` : ''}><span class="pv-num">${n}</span><span class="pv-passo-titolo">${PASSI_PV[n - 1][0]}${fatto ? `<small>${n === 1 ? `${pv.righe.length} voci · ${euro(t.imp)}` : n === 2 ? `IVA ${pv.iva}%` : ''}</small>` : ''}</span>${fatto ? '<span class="pv-modifica">Modifica</span>' : ''}</div>${aperto ? `<div class="pv-passo-corpo">${corpo[n - 1]}<div class="pv-avanti"><p class="pv-avanti-nota"><b>Passo ${n} di 3</b>${n < 3 ? `<span>Poi: ${PASSI_PV[n][1]}</span>` : '<span>Ultimo passo</span>'}</p>${n < 3 ? `<button type="button" class="btn" onclick="pvVai(${n + 1})">Avanti</button>` : ''}</div></div>` : ''}</section>`; };
+	const passo = (n) => { const aperto = pvPasso === n, fatto = pvPasso > n; return `<section class="pv-passo ${aperto ? 'aperto' : ''} ${fatto ? 'fatto' : ''}"><div class="pv-passo-testa" ${!aperto ? `onclick="pvVai(${n})" role="button" tabindex="0"` : ''}><span class="pv-num">${n}</span><span class="pv-passo-titolo">${PASSI_PV[n - 1][0]}${fatto ? `<small>${n === 1 ? `${pv.righe.length} voci · ${euro(t.imp)}${mancaPv(pv).length ? ' · manca ' + mancaPv(pv).length : ''}` : n === 2 ? `IVA ${pv.iva}%` : ''}</small>` : ''}</span>${fatto ? '<span class="pv-modifica">Modifica</span>' : ''}</div>${aperto ? `<div class="pv-passo-corpo">${corpo[n - 1]}<div class="pv-avanti"><p class="pv-avanti-nota"><b>Passo ${n} di 3</b>${n < 3 ? `<span>Poi: ${PASSI_PV[n][1]}</span>` : '<span>Ultimo passo</span>'}</p>${n < 3 ? `<button type="button" class="btn" onclick="pvVai(${n + 1})">Avanti</button>` : ''}</div></div>` : ''}</section>`; };
 	// telefono: barra in alto con la X e barra dei passi in fondo
 	const foglioTesta = `<div class="pv-foglio-barra"><span></span><span class="pv-foglio-titolo">${bozza ? `Bozza v${pv.n}` : pv.numero} · ${esc(p.nome)}</span><button type="button" class="pv-foglio-chiudi" aria-label="Chiudi" onclick="torna()">${I.chiudi}</button></div>`;
 	const fondo = `<div class="pv-fondo"><div class="pv-strada">${[1, 2, 3].map((n) => `<i class="${n <= pvPasso ? 'si' : ''}"></i>`).join('')}</div><p class="pv-fondo-nota"><b>Passo ${pvPasso} di 3</b><span>${pvPasso < 3 ? 'Poi: ' + PASSI_PV[pvPasso][1] : 'Ultimo passo'}</span></p><div class="pv-fondo-barra"><span class="pv-fondo-stima num"><small>Totale con IVA</small><b>${euro(t.tot)}</b></span>${pvPasso > 1 ? `<button type="button" class="pv-fondo-dietro" aria-label="Passo prima" onclick="pvVai(${pvPasso - 1})">${I.indietro}</button>` : ''}${pvPasso < 3 ? `<button type="button" class="btn" onclick="pvVai(${pvPasso + 1})">Avanti</button>` : `<button type="button" class="btn" id="btn-genera-2" onclick="generaPdf('${id}')">Genera PDF</button>`}</div></div>`;
@@ -2174,14 +2255,61 @@ function notaStima(pv, t) {
 	const cambio = Math.abs(diff) < 1 ? 'uguale alla stima' : `${diff > 0 ? '+' : '−'}${euro(Math.abs(diff))} rispetto alla stima${s.max ? (dentro ? ', dentro la forchetta' : ', <b>fuori dalla forchetta</b>') : ''}`;
 	return `<p class="pv-stima-nota ${Math.abs(diff) >= 1 && !dentro ? 'fuori' : ''}">Stima vista dal cliente: <b>${esc(s.stima)}</b> IVA inclusa. Preventivo: <b class="num">${euro(t.tot)}</b> IVA inclusa, ${cambio}.</p>`;
 }
+// le voci raggruppate per tipo, con il subtotale; l'indice resta quello della riga (per togliere quella giusta)
+function vociPerTipo(pv, id) {
+	return CAT_PV.map(([k, n, ico]) => {
+		const righe = pv.righe.map((r, i) => [r, i]).filter(([r]) => catDi(r) === k);
+		if (!righe.length) return '';
+		const sub = righe.reduce((x, [r]) => x + r[3], 0);
+		return `<section class="pv-cat"><div class="pv-cat-testa">${I[ico]}<b>${n}</b><span class="num">${euro(sub)}</span></div>${righe.map(([r, i]) => { const { q, u } = qDi(r); return `<div class="voce v2"><input class="campo v-d" value="${esc(r[0])}" placeholder="Descrizione" aria-label="Descrizione voce ${i + 1}" onchange="pv_campo('${id}',${i},'d',this.value)"><label class="v-q"><small>Quantità</small><input class="campo num" value="${fmtQ(q)}" inputmode="decimal" aria-label="Quantità" onchange="pv_campo('${id}',${i},'q',this.value)"></label><label class="v-u"><small>Unità</small><input class="campo" list="unita" value="${esc(u)}" aria-label="Unità" onchange="pv_campo('${id}',${i},'u',this.value)"></label><label class="v-p"><small>Prezzo €</small><input class="campo num" value="${r[2] ? fmtQ(r[2]) : ''}" inputmode="decimal" placeholder="0" aria-label="Prezzo unitario" onchange="pv_campo('${id}',${i},'p',this.value)"></label><label class="v-i"><small>Importo €</small><input class="campo num" value="${r[3] ? fmtQ(r[3]) : ''}" inputmode="decimal" placeholder="0" aria-label="Importo in euro" onchange="pv_riga('${id}',${i},3,this.value)"></label><button type="button" class="togli" aria-label="Togli la voce ${i + 1}" title="Togli questa voce" onclick="pv_togli('${id}',${i})">${I.cestino}</button></div>`; }).join('')}<button type="button" class="pv-aggiungi" onclick="pv_menu('${id}','${k}')">${I.piu} ${n === 'Altre voci' ? 'Altra voce' : n === 'Manodopera' ? 'Altra manodopera' : 'Aggiungi ' + n.toLowerCase()}</button></section>`;
+	}).join('');
+}
+// «Hai messo tutto?»: un pallino per tipo; quello che manca si aggiunge con un tocco o si segna «non serve»
+function controlloPv(pv) {
+	const m = mancaPv(pv);
+	return `<div class="pv-controllo ${m.length ? 'manca' : 'ok'}"><b>${m.length ? 'Hai messo tutto?' : 'C\'è tutto'}</b><ul>${CAT_CONTROLLO.map((k) => { const c = pv.righe.some((r) => catDi(r) === k), ns = (pv.nonServe ?? []).includes(k); return `<li class="${c ? 'si' : ns ? 'ns' : 'no'}">${c ? I.spunta : ns ? '–' : '!'}<span>${nomeCat(k)}${ns ? ' · non serve' : ''}</span>${!c ? (ns ? `<button type="button" class="link" onclick="pv_serve('${pv.id}','${k}',true)">Serve</button>` : `<button type="button" class="link" onclick="pv_menu('${pv.id}','${k}')">Aggiungi</button><button type="button" class="link grigio" onclick="pv_serve('${pv.id}','${k}',false)">Non serve</button>`) : ''}</li>`; }).join('')}</ul></div>`;
+}
+// menu delle voci pronte (fumetto attaccato al pulsante)
+function pv_menu(id, cat) {
+	const pv = D.preventivi.find((x) => x.id === id), p = pratica(pv.praticaId), sug = suggerimenti(p, cat);
+	const mat = cat === 'materiali' ? matDi(p.id).filter((m) => !pv.righe.some((r) => r[0] === m.nome)) : [];
+	apriPiccolo(nomeCat(cat), `${mat.length ? `<button type="button" class="pv-sug forte" onclick="chiudiTendina(true);pv_importaMateriali('${id}')">${I.materiali}<span><b>Prendi dalla lista materiali</b><small>${mat.length} ${mat.length === 1 ? 'materiale' : 'materiali'} di questa pratica</small></span></button>` : ''}${sug.map(([n, u, pr], k) => `<button type="button" class="pv-sug" onclick="chiudiTendina(true);pv_daSug('${id}','${cat}',${k})"><span><b>${esc(n)}</b><small>${u}${pr > 0 ? ' · ' + euro(pr) : pr < 0 ? ' · calcolato' : ''}</small></span></button>`).join('')}<button type="button" class="pv-sug" onclick="chiudiTendina(true);pv_aggiungi('${id}','${cat}')"><span><b>Voce libera</b><small>scrivi tu</small></span></button>`);
+}
+function pv_daSug(id, cat, k) {
+	const pv = D.preventivi.find((x) => x.id === id), [n, u, pr] = suggerimenti(pratica(pv.praticaId), cat)[k];
+	if (pr < 0) { const mat = pv.righe.filter((r) => catDi(r) === 'materiali').reduce((x, r) => x + r[3], 0), v = Math.round(mat * (D.impostazioni.consumoPerc ?? 5)) / 100; pv.righe.push([n, '1 forfait', v, v, cat]); if (!mat) toast('Non ci sono ancora materiali: metti il prezzo a mano.'); }
+	else pv.righe.push([n, `1 ${u}`, pr, pr, cat]);
+	pv.nonServe = (pv.nonServe ?? []).filter((x) => x !== cat);
+	salva(); render();
+}
+function pv_importaMateriali(id) {
+	const pv = D.preventivi.find((x) => x.id === id), nuovi = matDi(pv.praticaId).filter((m) => !pv.righe.some((r) => r[0] === m.nome));
+	nuovi.forEach((m) => pv.righe.push([m.nome, m.qta || '1 pz', 0, 0, 'materiali']));
+	salva(); render(); toast(`${nuovi.length} materiali aggiunti: metti il prezzo a ognuno.`);
+}
+function pv_serve(id, cat, serve) { const pv = D.preventivi.find((x) => x.id === id); pv.nonServe = (pv.nonServe ?? []).filter((x) => x !== cat); if (!serve) pv.nonServe.push(cat); salva(); render(); }
+// quantità, unità, prezzo → importo (quantità × prezzo)
+function pv_campo(id, i, k, v) {
+	const pv = D.preventivi.find((x) => x.id === id), r = pv.righe[i], { q, u } = qDi(r), num = (x) => parseFloat(String(x).replace(',', '.')) || 0;
+	if (k === 'd') r[0] = v;
+	else {
+		const nq = k === 'q' ? num(v) : q, nu = k === 'u' ? v.trim() : u, np = k === 'p' ? num(v) : r[2];
+		r[1] = `${fmtQ(nq)}${nu ? ' ' + nu : ''}`; r[2] = Math.round(np * 100) / 100; r[3] = Math.round(nq * np * 100) / 100;
+	}
+	r[4] = catDi(r); salva(); render();
+}
+function pv_sconto(id, v) { const pv = D.preventivi.find((x) => x.id === id); pv.sconto = Math.max(0, Math.round((parseFloat(String(v).replace(',', '.')) || 0) * 100) / 100); salva(); render(); }
+function pv_testo(id, k, v) { D.preventivi.find((x) => x.id === id)[k] = v; salva(); }
 function pvVai(n) { pvPasso = n; render(); }
-function pv_riga(id, i, k, v) { const pv = D.preventivi.find((x) => x.id === id); if (k === 3) { const n = parseFloat(String(v).replace(',', '.')) || 0; pv.righe[i][3] = Math.round(n * 100) / 100; } else pv.righe[i][k] = v; salva(); render(); }
-function pv_aggiungi(id) { D.preventivi.find((x) => x.id === id).righe.push(['', '1', 0, 0]); salva(); render(); }
+function pv_riga(id, i, k, v) { const pv = D.preventivi.find((x) => x.id === id), r = pv.righe[i]; if (k === 3) { const n = parseFloat(String(v).replace(',', '.')) || 0, q = qDi(r).q || 1; r[3] = Math.round(n * 100) / 100; r[2] = Math.round((r[3] / q) * 100) / 100; } else r[k] = v; r[4] = catDi(r); salva(); render(); }
+function pv_aggiungi(id, cat = 'altro') { const u = (CAT_PV.find((c) => c[0] === cat) ?? CAT_PV[6])[3], pv = D.preventivi.find((x) => x.id === id); pv.righe.push(['', `1 ${u}`, cat === 'lavoro' ? D.impostazioni.tariffaOra ?? 0 : 0, cat === 'lavoro' ? D.impostazioni.tariffaOra ?? 0 : 0, cat]); pv.nonServe = (pv.nonServe ?? []).filter((x) => x !== cat); salva(); render(); }
 function pv_togli(id, i) { const pv = D.preventivi.find((x) => x.id === id); if (pv.righe.length === 1) return toast('Serve almeno una voce: cambiala invece di toglierla.'); pv.righe.splice(i, 1); salva(); render(); toast('Voce tolta.'); }
 function pv_iva(id, v) { D.preventivi.find((x) => x.id === id).iva = +v; salva(); render(); }
-function generaPdf(id) {
+function generaPdf(id, forza = false) {
 	if (bloccoRete()) return;
 	const pv = D.preventivi.find((x) => x.id === id);
+	const manca = mancaPv(pv);
+	if (manca.length && !forza) return apriConferma('Manca qualcosa?', `Nel preventivo non ci sono: <b>${manca.map((k) => nomeCat(k).toLowerCase()).join(', ')}</b>. Se non servono va bene così; se servono, aggiungili prima di mandarlo.`, 'Genera lo stesso', () => generaPdf(id, true));
 	if (pv.righe.some((r) => !r[0].trim())) return toast('Ogni voce ha bisogno di una descrizione.');
 	if (pv.righe.some((r) => !(r[3] > 0))) return toast('Ogni voce ha bisogno di un importo.');
 	const ul = document.getElementById('passi-pdf'); ul.hidden = false;
@@ -2201,7 +2329,7 @@ function generaPdf(id) {
 function anteprimaPdf(id) {
 	const pv = D.preventivi.find((x) => x.id === id), p = pratica(pv.praticaId), t = totali(pv);
 	return bottoneIndietro() + `<span class="filigrana">Anteprima dimostrativa del PDF</span>
-	<article class="pdf"><p class="marchio">ARTIGIANA<span>MENTE</span></p><p class="nota">${esc(D.impostazioni.sede)} · ${esc(D.impostazioni.telefono)} · P. IVA ${esc(D.impostazioni.piva) || '…'}</p><hr><h3>Preventivo ${pv.numero ?? '(bozza)'}</h3><p class="nota">del ${quando(pv.generato ?? OGGI)} · valido ${D.impostazioni.validita} giorni</p><p style="margin-top:10px"><b>${p.nome}</b><br>${p.indirizzoCliente || p.indirizzoLavoro}<br>Lavoro: ${p.servizio} · ${p.indirizzoLavoro}</p><hr><table class="righe"><tbody>${pv.righe.map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="num">${euro(r[3])}</td></tr>`).join('')}</tbody></table><div class="totali num"><span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span><span><b>Totale</b></span><span><b>${euro(t.tot)}</b></span></div><hr><p class="nota">Esclusioni: ${esc(D.impostazioni.esclusioni)} Acconto ${D.impostazioni.acconto}% all'accettazione, saldo a fine lavori. ${esc(D.impostazioni.tempi)}</p></article>`;
+	<article class="pdf"><p class="marchio">ARTIGIANA<span>MENTE</span></p><p class="nota">${esc(D.impostazioni.sede)} · ${esc(D.impostazioni.telefono)} · P. IVA ${esc(D.impostazioni.piva) || '…'}</p><hr><h3>Preventivo ${pv.numero ?? '(bozza)'}</h3><p class="nota">del ${quando(pv.generato ?? OGGI)} · valido ${D.impostazioni.validita} giorni</p><p style="margin-top:10px"><b>${p.nome}</b><br>${p.indirizzoCliente || p.indirizzoLavoro}<br>Lavoro: ${p.servizio} · ${p.indirizzoLavoro}</p><hr><table class="righe"><thead><tr><th>Descrizione</th><th>Q.tà</th><th class="num">Prezzo</th><th class="num">Importo</th></tr></thead><tbody>${CAT_PV.map(([k, n]) => { const l = pv.righe.filter((r) => catDi(r) === k); return l.length ? `<tr class="cat"><td colspan="3">${n}</td><td class="num">${euro(l.reduce((x, r) => x + r[3], 0))}</td></tr>${l.map((r) => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td class="num">${r[2] ? euro(r[2]) : ''}</td><td class="num">${euro(r[3])}</td></tr>`).join('')}` : ''; }).join('')}</tbody></table><div class="totali num">${t.sconto ? `<span>Totale voci</span><span>${euro(t.voci)}</span><span>Sconto</span><span>− ${euro(t.sconto)}</span>` : ''}<span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span><span><b>Totale</b></span><span><b>${euro(t.tot)}</b></span><span>Acconto ${D.impostazioni.acconto}% all'accettazione</span><span>${euro(Math.round(t.tot * D.impostazioni.acconto) / 100)}</span></div><hr>${pv.note ? `<p class="nota"><b>Note:</b> ${esc(pv.note)}</p>` : ''}<p class="nota"><b>Non compreso:</b> ${esc(pv.esclusi ?? D.impostazioni.esclusioni)}</p><p class="nota">Saldo a fine lavori. ${esc(D.impostazioni.tempi)} Prezzi validi ${D.impostazioni.validita} giorni.</p></article>`;
 }
 
 /* ===================== TENDINE (moduli) ===================== */
