@@ -29,7 +29,7 @@
 	--t-scheda: 16px; --lh-scheda: 20px; /* righe di elenco: nome, dettagli, importo — Airbnb 15/500/19 */
 	--t-piccolo: 15px; --lh-piccolo: 21px; --lh-piccolo-stretto: 19px; /* punti in evidenza, note, valori — Airbnb 14 */
 	--t-mini: 13px; --lh-mini: 17px; /* didascalie, barra in basso — Airbnb 12/16 */
-	--t-etichetta: 10.5px; --lh-etichetta: 13px; /* «CHECK-IN» — Airbnb 10/700 */
+	--t-etichetta: 11.5px; --lh-etichetta: 14px; /* «CHECK-IN» — Airbnb 10/700 */
 	--t-prezzo: 23px; --lh-prezzo: 27px; /* prezzo o totale principale — Airbnb «Da 317 € in totale» 22/500 */
 	--w-testo: 400; --w-titolo: 600; --w-nome: 600; --w-etichetta: 700;
 	--ls-titolo: -0.01em; --ls-sezione: -0.02em; --ls-etichetta: 0.04em;
@@ -717,6 +717,32 @@ svg[data-i="avviso"] { --c: var(--c-rosso); --cf: var(--cf-rosso); }
 .pr-lista li { gap: 16px; }
 .voci button > svg { box-sizing: border-box; width: 36px; height: 36px; padding: 8px; border-radius: 10px; background: var(--cf, var(--chiaro)); flex: none; }
 .vuoto-grande svg { box-sizing: border-box; padding: 12px; width: 60px !important; height: 60px !important; border-radius: 16px; background: var(--cf, var(--chiaro)); }
+.pv-stima-nota { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--chiaro); font-size: var(--t-piccolo); line-height: var(--lh-piccolo); color: var(--testo); }
+.pv-stima-nota.fuori { background: var(--att-f); color: #6b3d00; }
+.pv-passo-corpo > .pv-stima-nota:first-child { margin: 0 0 12px; }
+/* Chiusura: scelta della foto */
+.ch-foto { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
+.ch-foto label { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: 10px; overflow: hidden; border: 2px solid transparent; background: var(--chiaro); cursor: pointer; font-size: var(--t-mini); color: var(--grigio); }
+.ch-foto input { position: absolute; opacity: 0; }
+.ch-foto img { width: 100%; height: 100%; object-fit: cover; }
+.ch-foto label:has(input:checked) { border-color: var(--nero); }
+.ch-foto label:has(input:focus-visible) { outline: 2px solid var(--nero); outline-offset: 2px; }
+/* Agenda: fasce libere */
+.fasce { margin-top: 14px; display: grid; gap: 6px; font-size: var(--t-piccolo); line-height: var(--lh-piccolo); }
+.fasce p b { font-weight: var(--w-nome); margin-right: 6px; }
+.agenda-testa .mostra-lato { margin-left: 8px; }
+/* Impegno: foto piccola, istruzioni e azioni subito visibili */
+.imp-testa .pr-img { aspect-ratio: 21 / 9; }
+@media (min-width: 900px) {
+	.imp-testa { grid-template-columns: minmax(0, 1fr) 320px; }
+	.imp-testa .pr-media { order: 1; }
+	.imp-testa .pr-img { aspect-ratio: 4 / 3; }
+	.pr-due.lato-agenda { grid-template-columns: minmax(0, 1fr) 280px; column-gap: 32px; }
+}
+@media (max-width: 899px) { .imp-testa .pr-img { aspect-ratio: auto; height: 140px; } }
+@media (max-width: 899px) { .imp-testa .pr-img img { height: 100%; object-fit: cover; } }
+/* Erica sul computer: se a destra c'è il riquadro che segue la pagina e lo spazio non basta, resta solo il tondo (non copre il riquadro) */
+@media (min-width: 900px) and (max-width: 1599px) { body:has(.pr-lato) .erica-fab > b, body:has(.pr-lato) .erica-fab .mini-p { display: none; } body:has(.pr-lato) .erica-fab { gap: 0; } }
 </style>
 
 <div class="proto"><b>PROTOTIPO</b> · dati fittizi · nessun invio · niente va sul server</div>
@@ -818,7 +844,7 @@ function datiIniziali() {
 			{ id: 'm7', praticaId: 'r6', nome: 'Cerniere a scomparsa', qta: '2', stato: 'da_comprare', chi: null, fornitore: 'Ferramenta Bertolin' }
 		],
 		erica: [
-			{ id: 'e1', tipo: 'messaggio', praticaId: 'r8', stato: 'da_vedere', titolo: 'Conferma del sopralluogo a Chiara Moro', perche: 'Il sopralluogo di oggi alle 15:00 è ancora «proposto».', testo: 'Buongiorno Chiara, sono Fabri di ArtigianaMente. Le confermo il sopralluogo per il parquet oggi alle 15:00 in Via Treportina 44. Viene il nostro Davide. Per qualsiasi cosa mi scriva qui. Grazie!' },
+			{ id: 'e1', tipo: 'messaggio', praticaId: 'r8', stato: 'da_vedere', titolo: 'Chiedi a Chiara Moro di confermare il sopralluogo', perche: 'Il sopralluogo di oggi alle 15:00 è ancora «proposto»: va chiesto se le va bene.', testo: 'Buongiorno Chiara, sono Fabri di ArtigianaMente. Le proponiamo il sopralluogo per il parquet oggi alle 15:00 in Via Treportina 44: verrebbe il nostro Davide. Le va bene? Se preferisce un altro orario me lo scriva qui. Grazie!' },
 			{ id: 'e2', tipo: 'sollecito', praticaId: 'r11', stato: 'da_vedere', titolo: 'Sollecito gentile a Rita Gallo', perche: 'Preventivo P-2026-0008 inviato 11 giorni fa, nessuna risposta.', testo: 'Buongiorno Rita, le scrivo per il preventivo P-2026-0008 per la cucina che le abbiamo mandato il 2 ottobre. Se ha domande o vuole cambiare qualcosa sono a disposizione. Fabri, ArtigianaMente' },
 			{ id: 'e3', tipo: 'materiali', praticaId: 'r2', stato: 'da_vedere', titolo: 'Materiali per il parquet di Luca Bianchi', perche: 'Posa prefinito 40 m², rovere naturale (dalle tue note del sopralluogo).', fornitore: 'Ferramenta Bertolin', voci: [['Prefinito rovere naturale 14 mm', '44 m² (40 + 10% sfrido)'], ['Tappetino fonoassorbente', '40 m²'], ['Profili di raccordo', '3']] }
 		],
@@ -834,10 +860,10 @@ function datiIniziali() {
 /* ===================== STATO ===================== */
 let D;
 function carica() {
-	try { const s = localStorage.getItem('am-prototipo-b01-v6'); if (s) { D = JSON.parse(s); return; } } catch {}
+	try { const s = localStorage.getItem('am-prototipo-b01-v7'); if (s) { D = JSON.parse(s); return; } } catch {}
 	D = datiIniziali();
 }
-function salva() { try { localStorage.setItem('am-prototipo-b01-v6', JSON.stringify(D)); } catch {} }
+function salva() { try { localStorage.setItem('am-prototipo-b01-v7', JSON.stringify(D)); } catch {} }
 function azzera() { const u = D?.utente ?? null; D = datiIniziali(); D.utente = u; salva(); ritorno = []; vai(u ? 'oggi' : 'login'); toast('Dati di prova ripristinati.'); }
 const nuovoId = (p) => p + (++D.contatoreId);
 const pratica = (id) => D.pratiche.find((p) => p.id === id);
@@ -1003,12 +1029,24 @@ const tagPrev = (v) => `<span class="tag ${v.stato === 'accettata' ? 'ok' : v.st
 /* ===================== ROUTER ===================== */
 let storicoAperto = null, vista = 'oggi', param = null, filtroPratiche = 'da_gestire', cercaTesto = '', agendaVista = 'giorno', agendaGiorno = OGGI, ritorno = [];
 const SEZIONI = [['oggi', 'Oggi'], ['agenda', 'Agenda'], ['pratiche', 'Pratiche'], ['clienti', 'Clienti'], ['altro', 'Altro']];
+// Schermate solo per Fabri: prezzi, preventivi, clienti, impostazioni, Erica, avvisi.
+// Il controllo vale per ogni strada: menu, indirizzo scritto a mano, ricarica, indietro/avanti (guardia() in vai() e in render()).
+const SOLO_FABRI = ['p', 'prev', 'pdf', 'pratiche', 'clienti', 'cliente', 'impostazioni', 'sito', 'erica', 'tutteOggi', 'avvisi', 'sistema'];
+function guardia(v, p) {
+	if (!D.utente) return ['login', null];
+	if (operatore()) {
+		if (v === 'p' && p && mieiLavori().some((x) => x.id === p)) return ['lavoro', p];
+		if (SOLO_FABRI.includes(v)) return ['oggi', null];
+		if (v === 'lavoro' && !mieiLavori().some((x) => x.id === p)) return ['lavori', null];
+	} else if (v === 'lavoro') return [p ? 'p' : 'pratiche', p];
+	else if (v === 'lavori') return ['pratiche', null];
+	return [v, p];
+}
 function vai(v, p = null, { indietro = false } = {}) {
 	chiudiTendina(true); chiudiVisore();
 	if (!indietro && (vista !== v || param !== p)) ritorno.push([vista, param]);
 	if (ritorno.length > 20) ritorno.shift();
-	if (operatore() && ['p', 'prev', 'pdf', 'pratiche', 'clienti', 'cliente', 'impostazioni', 'sito', 'erica', 'tutteOggi', 'avvisi'].includes(v)) { if (v === 'p' && p) v = 'lavoro'; else { v = 'oggi'; p = null; } }
-	if (!D.utente) { v = 'login'; p = null; }
+	[v, p] = guardia(v, p);
 	if (sezioni().some(([k]) => k === v)) { ritorno = []; cercaTesto = ''; }
 	vista = v; param = p;
 	try { history.replaceState(null, '', '#' + v + (p ? '-' + p : '')); } catch {}
@@ -1024,6 +1062,7 @@ function render() {
 	const barraEl = document.querySelector('.barra');
 	if (!D.utente) { barraEl.hidden = true; document.getElementById('erica-fab').innerHTML = ''; app.innerHTML = `<div class="schermo">${login()}</div>`; return; }
 	barraEl.hidden = false;
+	{ const [gv, gp] = guardia(vista, param); if (gv !== vista || gp !== param) { vista = gv; param = gp; try { history.replaceState(null, '', '#' + vista + (param ? '-' + param : '')); } catch {} } }
 	document.querySelector('.barra-destra').innerHTML = `${avatar(D.utente, operatore())}<span class="et-nome">${nomeOp(D.utente)}</span>`;
 	const r = { oggi: operatore() ? oggiOperatore : oggi, agenda, pratiche, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: operatore() ? impegnoOp : impegno, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti, lavori, lavoro, materiali, erica, login: operatore() ? oggiOperatore : oggi }[vista] ?? (operatore() ? oggiOperatore : oggi);
 	app.innerHTML = `<div class="schermo" key="${vista}-${param}">${r(param)}</div>`;
@@ -1103,7 +1142,7 @@ function pratiche() {
 	const corrisponde = (r) => [r.nome, r.codice, r.comune, r.servizio].some((x) => x.toLowerCase().includes(t)) || r.tel.replace(/\D/g, '').includes(t.replace(/\D/g, '') || '§');
 	const lista = D.pratiche.filter(t ? corrisponde : f[2]).sort((a, b) => b.ricevuta.localeCompare(a.ricevuta));
 	const etichettaPrev = (p) => { const pv = prevCorrente(p.id); return pv ? `<span class="tag ${pv.stato === 'accettata' ? 'ok' : pv.stato === 'pronta' ? 'att' : pv.stato === 'rifiutata' ? 'err' : ''}">${NOMI_PREV[pv.stato]}</span>` : ''; };
-	const pagina = testa('Pratiche', `${D.pratiche.filter((p) => !p.archiviata && !chiusa(p)).length} aperte`, `<button type="button" class="btn piccolo linea proposta" onclick="apriAMano()">${I.piu} A mano <span class="tag prop">da realizzare</span></button>`)
+	const pagina = testa('Pratiche', `${D.pratiche.filter((p) => !p.archiviata && !chiusa(p)).length} aperte`, `<button type="button" class="btn piccolo linea proposta" onclick="apriAMano()">${I.piu} A mano</button>`)
 		+ `<input id="cerca" class="cerca" type="search" placeholder="Cerca nome, codice, comune, telefono" value="${esc(cercaTesto)}" oninput="cercaTesto=this.value;render();const c=document.getElementById('cerca');c.focus();c.setSelectionRange(c.value.length,c.value.length)">`
 		+ (t ? `<p class="nota" style="margin-bottom:10px">Risultati in tutte le pratiche: ${lista.length}. <button type="button" class="link" onclick="cercaTesto='';render()">Svuota</button></p>` : `<div class="chips">${FILTRI.map(([k, n, fn]) => `<button type="button" class="${k === filtroPratiche ? 'attivo' : ''}" onclick="filtroPratiche='${k}';render()">${n} <span>${D.pratiche.filter(fn).length}</span></button>`).join('')}</div>`)
 		+ `<!--LISTA-->`;
@@ -1140,10 +1179,9 @@ function mediaTesta(p, pill) {
 }
 const NOMI_APP_T = { proposto: 'Da confermare', confermato: 'Confermato', svolto: 'Svolto', annullato: 'Annullato' };
 function testataImpegno(a, p, op) {
-	const quando = `${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)}, ${a.inizio}–${a.fine} · ${durata(a)}`;
-	const chi = op ? (a.chi.filter((c) => c !== D.utente).map(nomeOp).join(', ') || 'Da solo') : a.chi.map(nomeOp).join(', ');
-	const lista = [[I.orologio, 'Quando', quando], [I.luogo, 'Dove', a.luogo], [I.clienti, op ? 'Con te' : 'Chi va', chi], ...(p ? [[I.tel, 'Cliente', `${p.nome} · ${p.tel}`], [I.pratiche, op ? 'Da fare' : 'Lavoro', p.dettagli]] : []), ...(op && a.note ? [[I.avviso, 'Nota di Fabri', a.note]] : [])];
-	return `<div class="pr-testa"><div class="pr-capo"><h1 class="pr-titolo">${esc(p ? p.nome : a.titolo)}</h1><p class="pr-intro">${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}${a.deroga ? ' · sovrapposizione accettata' : ''}</p>${buoneHtml([...(a.stato === 'svolto' ? ['Svolto'] : a.stato === 'confermato' ? ['Confermato col cliente'] : []), ...(p ? buoneNotizie(p) : [])])}
+	// quando, chi, telefono e stato sono nel riquadro: qui solo dove si va e cosa si fa
+	const lista = [[I.luogo, 'Dove', a.luogo], ...(p ? [[I.pratiche, op ? 'Da fare' : 'Lavoro', p.dettagli]] : []), ...(p?.messaggio ? [[I.mail, 'Il cliente ha scritto', `«${p.messaggio}»`]] : []), ...(op && a.note ? [[I.avviso, 'Nota di Fabri', a.note]] : [])];
+	return `<div class="pr-testa imp-testa"><div class="pr-capo"><h1 class="pr-titolo">${esc(p ? p.nome : a.titolo)}</h1><p class="pr-intro">${NOMI_TIPO[a.tipo]}${p ? ', ' + lavoroBreve(p) : ''}${a.deroga ? ' · sovrapposizione accettata' : ''}</p>${buoneHtml([...(a.stato === 'svolto' ? ['Svolto'] : a.stato === 'confermato' ? ['Confermato col cliente'] : []), ...(p ? buoneNotizie(p) : [])])}
 		<ul class="pr-lista">${lista.map(([ico, t, x]) => `<li>${ico}<span><strong>${t}</strong><small>${esc(x)}</small></span></li>`).join('')}</ul></div>${mediaTesta(p, `${I[ICONA_TIPO[a.tipo]] ?? ''}${NOMI_APP_T[a.stato] ?? a.stato}`)}</div>`;
 }
 // Verde = buona notizia (come «+ 38 € di credito» di Airbnb): solo fatti veri della pratica
@@ -1229,25 +1267,38 @@ function agenda() {
 	const strip = `<div class="giorni-strip">${giorni.map((g) => { const n = del(g).length, dom = d(g).getUTCDay() === 0; return `<button type="button" class="${g === agendaGiorno ? 'attivo' : ''} ${g === OGGI ? 'oggi-g' : ''} ${dom ? 'festivo' : ''}" onclick="agendaGiorno='${g}';render()" aria-label="${giornoLungo(g)}">${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b><i class="${n ? '' : 'vuoto'}"></i></button>`; }).join('')}</div>`;
 	const listaGiorno = () => { const l = del(agendaGiorno); return `<section class="riquadro lista-giorno-largo"><h2>${giornoLungo(agendaGiorno).charAt(0).toUpperCase() + giornoLungo(agendaGiorno).slice(1)}${agendaGiorno === OGGI ? ' <span class="tag pieno">oggi</span>' : ''} <span class="conta">${l.length ? l.length + (l.length === 1 ? ' impegno' : ' impegni') : ''}</span></h2>${l.length ? `<ul class="lista">${l.map((a) => { const [n, t] = nomeDi(a); return `<li><button type="button" class="impegno-r" onclick="vai('imp','${a.id}')"><span class="quando num"><b>${a.inizio}</b><span>${a.fine}</span></span><span class="blocco ${classe(a)}"><b>${n}</b><span>${t} · ${a.chi.map(nomeOp).join(', ')}</span><span class="durata">${durata(a)}${a.stato === 'proposto' ? ' · da confermare' : a.stato === 'svolto' ? ' · svolto' : ''}</span></span><span class="freccia">${I.freccia}</span></button></li>`; }).join('')}</ul>` : `<p class="giorno-libero">Giornata libera.</p>`}</section>`; };
 	const settimana = `<div class="settimana">${giorni.map((g) => { const l = del(g), dom = d(g).getUTCDay() === 0; return `<div class="colonna ${g === OGGI ? 'oggi-c' : ''} ${dom ? 'festivo' : ''} ${g === agendaGiorno ? 'scelta' : ''}"><h3 onclick="agendaGiorno='${g}';render()" title="Scegli ${giornoLungo(g)}">${GIORNI_B[d(g).getUTCDay()]}<b>${d(g).getUTCDate()}</b></h3>${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<button type="button" class="evento ${classe(a)}" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}–${a.fine}</b>${n}<span>${t}</span><span>${a.chi.map(nomeOp).join(', ')}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></button>`; }).join('') : '<p class="libero">Libero</p>'}</div>`; }).join('')}</div>`;
-	return testa('Agenda', '', `<button type="button" class="btn piccolo linea proposta" onclick="apriNuovoApp(null,null,'${agendaGiorno}')">${I.piu} Nuovo <span class="tag prop">da realizzare</span></button>`)
-		+ `<div class="agenda-testa"><button type="button" class="tondo" aria-label="Settimana prima" onclick="_sposta(-1)">${I.indietro}</button><span class="titolo">${titolo.charAt(0).toUpperCase() + titolo.slice(1)}</span><button type="button" class="tondo" aria-label="Settimana dopo" onclick="_sposta(1)">${I.freccia}</button>${lun !== lunediDi(OGGI) || agendaGiorno !== OGGI ? `<button type="button" class="btn piccolo tinta" onclick="agendaGiorno='${OGGI}';render()">Oggi</button>` : ''}</div>`
-		+ conLato(strip + listaGiorno() + settimana
-		+ `<p class="nota" style="margin-top:10px">Un appuntamento nuovo si crea dalla pratica. «Nuovo» da qui: da realizzare.</p>`, latoAgenda(del(agendaGiorno), nomeDi), 'Giorno scelto', 'lato-agenda lato-dopo');
+	return testa('Agenda', '', `<button type="button" class="btn piccolo linea proposta" onclick="apriNuovoApp(null,null,'${agendaGiorno}')">${I.piu} Nuovo</button>`)
+		+ `<div class="agenda-testa"><button type="button" class="tondo" aria-label="Settimana prima" onclick="_sposta(-1)">${I.indietro}</button><span class="titolo">${titolo.charAt(0).toUpperCase() + titolo.slice(1)}</span><button type="button" class="tondo" aria-label="Settimana dopo" onclick="_sposta(1)">${I.freccia}</button>${lun !== lunediDi(OGGI) || agendaGiorno !== OGGI ? `<button type="button" class="btn piccolo tinta" onclick="agendaGiorno='${OGGI}';render()">Oggi</button>` : ''}${agendaLato ? '' : `<button type="button" class="btn piccolo linea mostra-lato" onclick="giraAgendaLato()">Riepilogo del giorno</button>`}</div>`
+		+ (agendaLato ? conLato(strip + listaGiorno() + settimana, latoAgenda(del(agendaGiorno), nomeDi), 'Giorno scelto', 'lato-agenda lato-dopo') : strip + listaGiorno() + settimana);
 }
+// Fasce libere nella giornata di lavoro (8–18), almeno mezz'ora. Le sovrapposizioni restano controllate da salvaSposta / nuovo appuntamento.
+const GIORNATA = ['08:00', '18:00'];
+const aMin = (h) => { const [a, b] = h.split(':').map(Number); return a * 60 + b; };
+function fasceLibere(l, op) {
+	const occ = l.filter((a) => a.chi.includes(op)).map((a) => [a.inizio, a.fine]).sort((x, y) => x[0].localeCompare(y[0]));
+	let t = GIORNATA[0]; const r = [];
+	for (const [i, f] of occ) { if (aMin(i) - aMin(t) >= 30) r.push([t, i]); if (f > t) t = f; }
+	if (aMin(GIORNATA[1]) - aMin(t) >= 30) r.push([t, GIORNATA[1]]);
+	return r;
+}
+const hm = (m) => `${Math.floor(m / 60)} h${m % 60 ? ' ' + (m % 60) : ''}`;
+let agendaLato = (() => { try { return localStorage.getItem('am-agenda-lato') !== 'chiuso'; } catch { return true; } })();
+function giraAgendaLato() { agendaLato = !agendaLato; try { localStorage.setItem('am-agenda-lato', agendaLato ? 'aperto' : 'chiuso'); } catch {} render(); }
 function latoAgenda(l, nomeDi) {
 	const g = agendaGiorno, occupati = new Set(l.flatMap((a) => a.chi));
 	const liberi = OPERATORI.filter((o) => !occupati.has(o.id)).map((o) => o.nome);
-	const minuti = l.reduce((t, a) => { const [h1, m1] = a.inizio.split(':').map(Number), [h2, m2] = a.fine.split(':').map(Number); return t + (h2 * 60 + m2) - (h1 * 60 + m1); }, 0);
+	const minuti = l.reduce((t, a) => t + minutiApp(a), 0), oreSquadra = l.reduce((t, a) => t + minutiApp(a) * a.chi.length, 0);
+	const fasce = OPERATORI.filter((o) => occupati.has(o.id)).map((o) => [o.nome, fasceLibere(l, o.id)]);
 	const da = l.filter((a) => a.stato === 'proposto').length;
 	return latoCard({
 		grande: `<strong>${giornoBreve(g).charAt(0).toUpperCase() + giornoBreve(g).slice(1)}</strong>`,
 		piccolo: g === OGGI ? 'oggi' : '',
-		sotto: l.length ? `${l.length} ${l.length === 1 ? 'impegno' : 'impegni'} · ${Math.floor(minuti / 60)} h${minuti % 60 ? ' ' + (minuti % 60) : ''} occupate${da ? ` · ${da} da confermare` : ''}` : 'Giornata libera.',
-		celle: [{ et: 'Primo', val: l[0] ? l[0].inizio : '—' }, { et: 'Liberi', val: liberi.length ? liberi.join(', ') : 'Nessuno' }],
-		dopoCelle: `<ul class="lato-lista lista-giorno-lato">${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<li><button type="button" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}</b><span><b>${n}</b><span>${t}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></span></button></li>`; }).join('') : '<li class="vuoto-l">Niente in agenda.</li>'}</ul>`,
+		sotto: l.length ? `${l.length} ${l.length === 1 ? 'impegno' : 'impegni'}${da ? ` · ${da} da confermare` : ''}` : 'Giornata libera.',
+		celle: [{ et: 'Appuntamenti', val: l.length ? hm(minuti) : '—' }, { et: 'Ore della squadra', val: l.length ? hm(oreSquadra) : '—' }, { et: 'Liberi tutto il giorno', val: liberi.length ? liberi.join(', ') : 'Nessuno', intera: true }],
+		dopoCelle: (fasce.length ? `<div class="fasce"><span class="pr-et">Fasce libere (8–18)</span>${fasce.map(([n, f]) => `<p><b>${n}</b> ${f.length ? f.map(([i, e]) => `<span class="num">${i}–${e}</span>`).join(', ') : '<span class="nota">pieno</span>'}</p>`).join('')}</div>` : '') + `<ul class="lato-lista lista-giorno-lato">${l.length ? l.map((a) => { const [n, t] = nomeDi(a); return `<li><button type="button" onclick="vai('imp','${a.id}')"><b class="num">${a.inizio}</b><span><b>${n}</b><span>${t}${a.stato === 'proposto' ? ' · da confermare' : ''}</span></span></button></li>`; }).join('') : '<li class="vuoto-l">Niente in agenda.</li>'}</ul>`,
 		azione: `<button type="button" class="btn pieno pr-azione" onclick="apriNuovoApp(null,null,'${g}')">${I.piu} Nuovo appuntamento</button>`,
 		blocco: notaLato('Nota del giorno', D.noteGiorno?.[g], `salvaNotaGiorno('${g}',this.value)`, 'es. furgone dal meccanico fino alle 10'),
-		link: g !== OGGI ? [linkLato(I.agenda, 'Torna a oggi', `agendaGiorno='${OGGI}';render()`)] : []
+		link: [...(g !== OGGI ? [linkLato(I.agenda, 'Torna a oggi', `agendaGiorno='${OGGI}';render()`)] : []), linkLato(I.chiudi, 'Nascondi il riepilogo', 'giraAgendaLato()')]
 	});
 }
 
@@ -1256,20 +1307,23 @@ function impegno(id) {
 	if (!a) return bottoneIndietro() + testa('Impegno non trovato');
 	const p = a.praticaId ? pratica(a.praticaId) : null;
 	const cop = p ? fotoDi(p)[0] : null;
-	const dett = `<dl class="coppia imp-dett"><dt>Quando</dt><dd><b>${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)}</b><br><span class="num">${a.inizio}–${a.fine}</span> · ${durata(a)}</dd><dt>Dove</dt><dd>${esc(a.luogo)}</dd><dt>Chi va</dt><dd>${a.chi.map(nomeOp).join(', ')}</dd>${p ? `<dt>Cliente</dt><dd>${esc(p.nome)} · <a class="num" href="tel:${p.tel.replace(/\s/g, '')}" style="text-decoration:none">${p.tel}</a></dd><dt>Lavoro</dt><dd>${esc(p.dettagli)}</dd>` : ''}</dl>`;
+	const dett = `<dl class="coppia imp-dett"><dt>Dove</dt><dd>${esc(a.luogo)}</dd>${p ? `<dt>Lavoro</dt><dd>${esc(p.dettagli)}</dd>${p.messaggio ? `<dt>Ha scritto</dt><dd>«${esc(p.messaggio)}»</dd>` : ''}` : ''}</dl>`;
 	const altri = p ? appDi(p.id).filter((x) => x.id !== a.id) : [];
 	const sezioni = `<section class="sez imp-dett-sez"><h2>Dettagli</h2>${dett}</section>
 		${a.stato === 'annullato' && a.motivo ? `<section class="sez"><h2>Annullato</h2><p>${esc(a.motivo)}</p></section>` : ''}
+		${sezioneChiusura(a)}
 		<section class="sez"><h2>Cambia l'impegno</h2><p class="nota">Se il cliente chiede un altro giorno, o salta tutto.</p><div class="azioni">${aperte(a) ? `<button type="button" class="btn linea" onclick="apriSposta('${a.id}')">Sposta</button><button type="button" class="btn pericolo" onclick="apriAnnulla('${a.id}')">Annulla</button>` : ''}${p ? `<button type="button" class="btn linea" onclick="vai('p','${p.id}')">Apri la pratica</button>` : ''}</div></section>
 		${p ? `<section class="sez"><h2>Altri appuntamenti della pratica <span class="conta">${altri.length || ''}</span></h2>${altri.length ? `<ul class="lista">${altri.map((x) => `<li><button type="button" class="riga" onclick="vai('imp','${x.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(x.giorno)}<small>${x.inizio}–${x.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[x.tipo]}</b><span>${x.chi.map(nomeOp).join(', ')} · ${durata(x)}</span>${tagApp(x.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : '<p class="nota">Nessun altro appuntamento.</p>'}</section>` : ''}`;
 	return testataImpegno(a, p, false) + conLato(sezioni, latoImpegno(a, p, false), 'Da tenere a mente per questo impegno');
 }
 function latoImpegno(a, p, op) {
-	const principale = a.stato === 'proposto' && !op ? `<button type="button" class="btn pieno pr-azione" onclick="azioneApp('${a.id}','conferma')">Conferma</button>` : a.stato === 'confermato' ? `<button type="button" class="btn pieno pr-azione" onclick="azioneApp('${a.id}','svolto')">${op ? I.spunta + ' ' : ''}Segna svolto</button>` : `<p class="pr-solo">${a.stato === 'svolto' ? 'Già svolto' : a.stato === 'annullato' ? 'Annullato' : 'Da confermare con il cliente'}</p>`;
+	const principale = a.stato === 'proposto' && !op ? `<button type="button" class="btn pieno pr-azione" onclick="azioneApp('${a.id}','conferma')">Conferma</button>` : a.stato === 'confermato' ? `<button type="button" class="btn pieno pr-azione" onclick="apriChiusura('${a.id}')">${I.spunta} ${TIPI_CON_RESOCONTO.includes(a.tipo) ? 'Chiudi la giornata' : 'Segna svolto'}</button>`
+		: a.stato === 'svolto' ? `<p class="pr-condizione bene" style="margin-top:16px">Svolto${a.chiusura ? ` · ${nomeOp(a.chiusura.chi)}${a.chiusura.ore ? ' · ' + oreTesto(a.chiusura.ore) : ''}` : ''}</p><button type="button" class="btn linea pieno pr-azione" onclick="apriChiusura('${a.id}')">Correggi la chiusura</button><button type="button" class="pr-tel" onclick="riapriImpegno('${a.id}')">Non era svolto? Riapri</button>`
+		: `<p class="pr-solo">${a.stato === 'annullato' ? 'Annullato' : 'Da confermare con il cliente'}</p>`;
 	return latoCard({
 		grande: `<strong class="num">${a.inizio}–${a.fine}</strong>`,
 		piccolo: durata(a),
-		sotto: `${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)} · ${esc(a.luogo)}`,
+		sotto: `${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)}`,
 		celle: [
 			{ et: 'Stato', val: { proposto: 'Da confermare', confermato: 'Confermato', svolto: 'Svolto', annullato: 'Annullato' }[a.stato] ?? a.stato },
 			{ et: op ? 'Con te' : 'Chi va', val: (op ? a.chi.filter((c) => c !== D.utente) : a.chi).map(nomeOp).join(', ') || 'Da solo' },
@@ -1416,13 +1470,45 @@ function salvaFerie() {
 function creaPreventivo(praticaId, dallaStima) {
 	if (bloccoRete()) return;
 	const p = pratica(praticaId);
-	const righe = dallaStima ? righeDaStima(p) : [['', '1', 0, 0]];
-	const pv = { id: nuovoId('p'), praticaId, n: prevDi(praticaId).length + 1, numero: null, stato: 'bozza', righe, iva: 22 };
+	const ds = dallaStima ? righeDaStima(p) : null;
+	const pv = { id: nuovoId('p'), praticaId, n: prevDi(praticaId).length + 1, numero: null, stato: 'bozza', righe: ds ? ds.righe : [['', '1', 0, 0]], iva: ds ? ds.iva : (IVA_SERVIZIO[p.servizio] ?? 22), daStima: ds?.daStima ?? null };
 	D.preventivi.push(pv);
 	p.storico.push([adessoIso(), `Preventivo v${pv.n} in bozza${dallaStima ? ' (dalla stima)' : ''}`]);
 	salva(); vai('prev', pv.id);
 }
+// Aliquote del sito (src/lib/calcoli.js, «iva»), copiate in sola lettura: lavori sulla casa 10%, servizi 22%
+const IVA_SERVIZIO = { Ristrutturazioni: 10, Imbiancatura: 10, 'Risanamento umidità': 10, Parquet: 10, Falegnameria: 22, 'Montaggio mobili': 22, Traslochi: 22 };
+// La stima del sito è IVA inclusa: «Da 75 €» = 75 € con IVA; «1.100 – 1.350 €» = forchetta con IVA
+function totaleDaStima(p) {
+	if (!p.stima || /da fare|chiarire/i.test(p.stima)) return null;
+	const n = (p.stima.match(/\d[\d.]*(?:,\d+)?/g) ?? []).map((x) => parseFloat(x.replace(/\./g, '').replace(',', '.')));
+	if (!n.length) return null;
+	if (n.length === 1) return { tot: n[0], min: n[0], max: null, regola: 'il prezzo «da» della stima' };
+	return { tot: Math.round((n[0] + n[1]) / 2 / 10) * 10, min: n[0], max: n[1], regola: 'il centro della forchetta' };
+}
+// Voci dalla richiesta concreta (i dettagli scritti dal cliente sul sito)
+function vociRichiesta(p) {
+	const d = p.dettagli, m2 = (d.match(/(\d+)\s*m²/) ?? [])[1], parti = d.split('·').map((x) => x.trim());
+	if (p.servizio === 'Imbiancatura') return [['Preparazione e protezione degli ambienti', '1', 1], [`Tinteggiatura pareti, 2 mani${/esterni|facciata/i.test(d) ? ' (esterni)' : ''}`, m2 ? `${m2} m²` : '1', 6], ...(/soffitti sì/.test(d) ? [['Tinteggiatura soffitti', '1', 2]] : [])];
+	if (p.servizio === 'Parquet') return [[`Posa parquet ${/prefinito/.test(d) ? 'prefinito' : ''}`.trim(), m2 ? `${m2} m²` : '1', 5], ...(/materiale nostro/.test(d) ? [['Materiale: parquet prefinito', m2 ? `${m2} m²` : '1', 4]] : []), ['Tappetino e profili', '1', 1], ...(/con rimozione/.test(d) ? [['Rimozione del pavimento esistente', '1', 2]] : [])];
+	if (p.servizio === 'Montaggio mobili') {
+		if (/cucina/i.test(d)) return [[`${/smontare/i.test(d) ? 'Smontaggio e rimontaggio' : 'Montaggio'} ${parti.find((x) => /cucina/i.test(x)) ?? 'cucina'}`, '1', 1]];
+		const pezzi = parti.slice(1).map((x) => x.match(/^(\d+)\s+(.+)$/)).filter(Boolean);
+		return pezzi.length ? pezzi.map(([, n, cosa]) => [`Montaggio ${cosa}`, n, (/armadio/.test(cosa) ? 5 : /letto/.test(cosa) ? 2 : 0.6) * +n]) : [[`Montaggio mobili: ${d}`, '1', 1]];
+	}
+	if (p.servizio === 'Falegnameria' && /^Riparare/.test(d)) return [[`Riparazione ${parti[1] ?? ''}`.trim(), (d.match(/(\d+)\s*pezz/) ?? [])[1] ?? '1', 1]];
+	return [[`${p.servizio}: ${d}`, '1', 1]];
+}
 function righeDaStima(p) {
+	const t = totaleDaStima(p), iva = IVA_SERVIZIO[p.servizio] ?? 22, voci = vociRichiesta(p);
+	if (!t) return { righe: voci.map(([n, q]) => [n, q, 0, 0]), iva, daStima: null };
+	// imponibile = totale con IVA ÷ (1 + IVA), diviso fra le voci in centesimi; l'ultima prende il resto
+	const imp = Math.round((t.tot / (1 + iva / 100)) * 100), peso = voci.reduce((s, v) => s + v[2], 0);
+	let resto = imp;
+	const righe = voci.map(([n, q, w], i) => { const c = i === voci.length - 1 ? resto : Math.round((imp * w) / peso); resto -= c; const qn = parseFloat(String(q).replace(',', '.')) || 1; return [n, q, Math.round(c / qn) / 100, c / 100]; });
+	return { righe, iva, daStima: { stima: p.stima, ...t } };
+}
+function _vecchieRigheDaStima(p) {
 	const s = { Imbiancatura: [['Preparazione e protezione ambienti', '1', 120, 120], ['Tinteggiatura pareti, 2 mani', '50 m²', 14, 700], ['Tinteggiatura soffitti', '28 m²', 12, 336]], Parquet: [['Posa parquet prefinito rovere, flottante', '40 m²', 38, 1520], ['Materiale: prefinito rovere naturale 14 mm', '40 m²', 32, 1280], ['Tappetino e profili', '1', 110, 110]], 'Montaggio mobili': [['Montaggio armadio grande', '1', 220, 220], ['Montaggio letto', '1', 90, 90]], Falegnameria: [['Riparazione porta interna (regolazione e piallatura)', '1', 75, 75]] };
 	return (s[p.servizio] ?? [['Lavoro come da sopralluogo', '1', 0, 0]]).map((r) => [...r]);
 }
@@ -1450,12 +1536,12 @@ function editorPreventivo(id) {
 	const ris = `<aside class="pv-ris ${pvPasso === 3 ? 'su-tel' : ''}"><div class="pv-ris-in"><span class="pv-ris-label">Il tuo preventivo</span><p class="pv-ris-titolo">${esc(titoloLavoro(p))}</p><p class="pv-ris-sotto">${esc(p.nome)} · ${esc(p.indirizzoLavoro)}</p>
 		<ul class="pv-ris-voci">${pv.righe.map((r) => `<li><span>${esc(r[0]) || '<em>voce senza descrizione</em>'}${r[1] ? ` <small>${esc(r[1])}</small>` : ''}</span><b class="num">${euro(r[3])}</b></li>`).join('')}</ul>
 		<div class="pv-ris-tot num"><span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span></div>
-		<p class="pv-ris-cifra num"><span>Totale</span><b>${euro(t.tot)}</b></p>
+		<p class="pv-ris-cifra num"><span>Totale</span><b>${euro(t.tot)}</b></p>${notaStima(pv, t)}
 		${bozza ? `<ul class="passi-pdf" id="passi-pdf" hidden><li>Numero assegnato</li><li>PDF creato</li><li>PDF controllato</li></ul><button type="button" class="btn pieno" id="btn-genera" onclick="generaPdf('${id}')">Genera PDF</button><p class="pv-ris-tel">Il PDF non parte da solo: lo mandi tu (WhatsApp o email), poi «Segna inviato».</p>`
 		: `<div class="azioni" style="margin-top:4px"><button type="button" class="btn linea pieno" onclick="vai('pdf','${id}')">Vedi il PDF</button>${pv.stato === 'pronta' ? `<button type="button" class="btn pieno" onclick="apriRegistra('${id}','inviata')">Segna inviato</button>` : ''}</div><p class="pv-ris-tel">${NOMI_PREV[pv.stato]}${pv.generato ? ' · generato ' + quando(pv.generato) : ''}</p>`}</div></aside>`;
 	if (!bozza) return bottoneIndietro('Pratica') + scelto + `<div class="pv-griglia"><div class="pv-passi"><section class="pv-passo aperto"><div class="pv-passo-testa"><span class="pv-num">${I.spunta}</span><span class="pv-passo-titolo">Voci del preventivo</span></div><div class="pv-passo-corpo">${pv.righe.map((r) => `<div class="voce sola-lettura"><span>${esc(r[0])}</span><span class="q num">${esc(r[1])}</span><span class="num">${euro(r[3])}</span></div>`).join('')}</div></section></div>${ris.replace('su-tel', '')}</div>`;
 	const corpo = [
-		`<p class="pv-aiuto">Una riga per ogni lavoro o materiale. L'importo è senza IVA.</p><div class="intest-voci"><span>Descrizione</span><span>Quantità</span><span>Importo</span><span></span></div>${pv.righe.map((r, i) => `<div class="voce"><input class="campo" value="${esc(r[0])}" placeholder="Descrizione" aria-label="Descrizione voce ${i + 1}" onchange="pv_riga('${id}',${i},0,this.value)"><input class="campo num" value="${esc(r[1])}" placeholder="Quantità" aria-label="Quantità" onchange="pv_riga('${id}',${i},1,this.value)"><span class="pv-importo"><input class="campo num" value="${r[3]}" inputmode="decimal" placeholder="Importo" aria-label="Importo in euro" onchange="pv_riga('${id}',${i},3,this.value)"><span>€</span></span><button type="button" class="togli" aria-label="Togli la voce ${i + 1}" title="Togli questa voce" onclick="pv_togli('${id}',${i})">${I.cestino}</button></div>`).join('')}<button type="button" class="pv-aggiungi" onclick="pv_aggiungi('${id}')">${I.piu} Aggiungi una voce</button>`,
+		`${pv.daStima ? `<p class="pv-stima-nota">Voci create dalla richiesta del cliente. Totale preso da ${pv.daStima.regola} (${esc(pv.daStima.stima)}, IVA inclusa): imponibile ${euro(t.imp)} + IVA ${pv.iva}%. Se cambi un importo, sotto vedi di quanto ti sposti dalla stima.</p>` : ''}<p class="pv-aiuto">Una riga per ogni lavoro o materiale. L'importo è senza IVA.</p><div class="intest-voci"><span>Descrizione</span><span>Quantità</span><span>Importo</span><span></span></div>${pv.righe.map((r, i) => `<div class="voce"><input class="campo" value="${esc(r[0])}" placeholder="Descrizione" aria-label="Descrizione voce ${i + 1}" onchange="pv_riga('${id}',${i},0,this.value)"><input class="campo num" value="${esc(r[1])}" placeholder="Quantità" aria-label="Quantità" onchange="pv_riga('${id}',${i},1,this.value)"><span class="pv-importo"><input class="campo num" value="${r[3]}" inputmode="decimal" placeholder="Importo" aria-label="Importo in euro" onchange="pv_riga('${id}',${i},3,this.value)"><span>€</span></span><button type="button" class="togli" aria-label="Togli la voce ${i + 1}" title="Togli questa voce" onclick="pv_togli('${id}',${i})">${I.cestino}</button></div>`).join('')}<button type="button" class="pv-aggiungi" onclick="pv_aggiungi('${id}')">${I.piu} Aggiungi una voce</button>`,
 		`<p class="pv-aiuto">Scegli l'aliquota per questo cliente.</p><div class="pv-carte">${[[10, 'casa', 'Lavori sulla casa', 'Ristrutturazioni, imbiancatura, umidità, parquet'], [22, 'martello', 'Servizi', 'Falegnameria, montaggio mobili, traslochi']].map(([v, ico, n, x]) => `<label class="pv-carta ${pv.iva === v ? 'scelta' : ''}"><input type="radio" name="pv-iva" value="${v}" ${pv.iva === v ? 'checked' : ''} onchange="pv_iva('${id}',${v})">${I[ico]}<b>IVA ${v}% · ${n}</b><small>${x}</small><span class="pv-segno">${I.spunta}</span></label>`).join('')}</div>`,
 		`<p class="pv-aiuto">Queste condizioni vanno su ogni PDF. Si cambiano in Altro → Impostazioni dei preventivi.</p><dl class="coppia"><dt>Validità</dt><dd>${st.validita} giorni</dd><dt>Acconto</dt><dd>${st.acconto}% all'accettazione, saldo a fine lavori</dd><dt>Esclusioni</dt><dd>${esc(st.esclusioni)}</dd><dt>Tempi</dt><dd>${esc(st.tempi)}</dd></dl>`
 	];
@@ -1464,6 +1550,13 @@ function editorPreventivo(id) {
 	const foglioTesta = `<div class="pv-foglio-barra"><span></span><span class="pv-foglio-titolo">${bozza ? `Bozza v${pv.n}` : pv.numero} · ${esc(p.nome)}</span><button type="button" class="pv-foglio-chiudi" aria-label="Chiudi" onclick="torna()">${I.chiudi}</button></div>`;
 	const fondo = `<div class="pv-fondo"><div class="pv-strada">${[1, 2, 3].map((n) => `<i class="${n <= pvPasso ? 'si' : ''}"></i>`).join('')}</div><p class="pv-fondo-nota"><b>Passo ${pvPasso} di 3</b><span>${pvPasso < 3 ? 'Poi: ' + PASSI_PV[pvPasso][1] : 'Ultimo passo'}</span></p><div class="pv-fondo-barra"><span class="pv-fondo-stima num"><small>Totale con IVA</small><b>${euro(t.tot)}</b></span>${pvPasso > 1 ? `<button type="button" class="pv-fondo-dietro" aria-label="Passo prima" onclick="pvVai(${pvPasso - 1})">${I.indietro}</button>` : ''}${pvPasso < 3 ? `<button type="button" class="btn" onclick="pvVai(${pvPasso + 1})">Avanti</button>` : `<button type="button" class="btn" id="btn-genera-2" onclick="generaPdf('${id}')">Genera PDF</button>`}</div></div>`;
 	return `<div class="pv-pagina">${foglioTesta}<div class="pv-solo-largo">${bottoneIndietro('Pratica')}</div>${scelto}<div class="pv-griglia"><div class="pv-passi">${[1, 2, 3].map(passo).join('')}</div>${ris}</div>${fondo}</div>`;
+}
+// Confronto esplicito con la stima vista dal cliente (IVA inclusa): uguale, dentro la forchetta, o quanto cambia
+function notaStima(pv, t) {
+	const s = pv.daStima; if (!s) return '';
+	const diff = Math.round((t.tot - s.tot) * 100) / 100, dentro = s.max ? t.tot >= s.min - 0.5 && t.tot <= s.max + 0.5 : Math.abs(diff) < 1;
+	const cambio = Math.abs(diff) < 1 ? 'uguale alla stima' : `${diff > 0 ? '+' : '−'}${euro(Math.abs(diff))} rispetto alla stima${s.max ? (dentro ? ', dentro la forchetta' : ', <b>fuori dalla forchetta</b>') : ''}`;
+	return `<p class="pv-stima-nota ${Math.abs(diff) >= 1 && !dentro ? 'fuori' : ''}">Stima vista dal cliente: <b>${esc(s.stima)}</b> IVA inclusa. Preventivo: <b class="num">${euro(t.tot)}</b> IVA inclusa, ${cambio}.</p>`;
 }
 function pvVai(n) { pvPasso = n; render(); }
 function pv_riga(id, i, k, v) { const pv = D.preventivi.find((x) => x.id === id); if (k === 3) { const n = parseFloat(String(v).replace(',', '.')) || 0; pv.righe[i][3] = Math.round(n * 100) / 100; } else pv.righe[i][k] = v; salva(); render(); }
@@ -1574,8 +1667,66 @@ function azioneApp(id, cosa) {
 	if (bloccoRete()) return;
 	const a = D.appuntamenti.find((x) => x.id === id), p = a.praticaId ? pratica(a.praticaId) : null;
 	if (cosa === 'conferma') { a.stato = 'confermato'; p?.storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} confermato (${quando(a.giorno)} ore ${a.inizio})`]); toast('Confermato.'); }
-	if (cosa === 'svolto') { a.stato = 'svolto'; p?.storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} segnato svolto${operatore() ? ' da ' + io().nome : ''}`]); if (operatore()) { D.avvisi.unshift({ id: nuovoId('v'), quando: adessoIso(), titolo: `${io().nome}: segnato svolto`, testo: `${NOMI_TIPO[a.tipo]} · ${p ? p.nome : a.titolo}`, praticaId: a.praticaId, letto: false }); toast('Segnato svolto. Fabri lo vede negli avvisi.'); } else toast('Segnato svolto. Lo stato della pratica resta a te.'); }
+	if (cosa === 'svolto') return apriChiusura(id); // la chiusura passa sempre dal resoconto (apriChiusura)
 	salva(); render();
+}
+/* Chiusura di un impegno: giornata di lavoro e inizio lavori con resoconto breve (ore, fatto, da finire, foto);
+   sopralluogo, consegna e altro restano semplici. Si può correggere o riaprire; ogni passo va nel registro (chi e quando).
+   Impegno svolto ≠ pratica conclusa: la pratica la chiude Fabri. */
+const TIPI_CON_RESOCONTO = ['giornata_lavoro', 'inizio_lavori'];
+const minutiApp = (a) => { const [h1, m1] = a.inizio.split(':').map(Number), [h2, m2] = a.fine.split(':').map(Number); return h2 * 60 + m2 - (h1 * 60 + m1); };
+const oreTesto = (n) => String(Math.round(n * 10) / 10).replace('.', ',') + ' h';
+function apriChiusura(id) {
+	const a = D.appuntamenti.find((x) => x.id === id), p = a.praticaId ? pratica(a.praticaId) : null, lungo = TIPI_CON_RESOCONTO.includes(a.tipo), c = a.chiusura ?? {};
+	const foto = p ? Object.keys(FOTO).filter((n) => !fotoDi(p).includes(n) || n === c.foto).slice(0, 6) : [];
+	apriTendina(`<p class="nota">${NOMI_TIPO[a.tipo]} · ${giornoBreve(a.giorno)} ${a.inizio}–${a.fine}${p ? ' · ' + esc(p.nome) : ''}</p>
+	${lungo ? `<div class="campi-box"><label>Ore effettive<input name="ch-ore" inputmode="decimal" value="${String(c.ore ?? Math.round((minutiApp(a) / 60) * 2) / 2).replace('.', ',')}"></label><label>Previste<input value="${durata(a)}" disabled></label></div>
+	<label class="campo">Cosa è stato fatto<textarea class="campo" name="ch-fatto" rows="2" placeholder="es. posato il pavimento del bagno">${esc(c.fatto ?? '')}</textarea></label>
+	<label class="campo">Cosa resta da finire (facoltativo)<textarea class="campo" name="ch-resta" rows="2" placeholder="es. stuccatura domani mattina">${esc(c.resta ?? '')}</textarea></label>
+	${foto.length ? `<label class="campo">Una foto (facoltativa)</label><div class="ch-foto"><label><input type="radio" name="ch-foto" value="" ${c.foto ? '' : 'checked'}><span>Nessuna</span></label>${foto.map((n) => `<label><input type="radio" name="ch-foto" value="${n}" ${c.foto === n ? 'checked' : ''}><img src="${mini(n)}" alt="${esc(FOTO[n][0])}"></label>`).join('')}</div>` : ''}`
+	: `<label class="campo">Due parole (facoltative)<textarea class="campo" name="ch-fatto" rows="2" placeholder="es. misure prese, il cliente vuole il rovere">${esc(c.fatto ?? '')}</textarea></label>`}
+	<p class="nota" style="margin-top:10px">Segni svolto solo questo impegno. ${p ? `La pratica resta «${NOMI_STATO[p.stato].toLowerCase()}»: la chiude Fabri quando il lavoro è finito.` : ''}</p>
+	<div id="ch-esito"></div><div class="azioni"><button type="button" class="btn pieno" onclick="salvaChiusura('${id}')">${a.stato === 'svolto' ? 'Salva la correzione' : 'Segna svolto'}</button><button type="button" class="btn linea pieno" onclick="chiudiTendina()">Annulla</button></div>`, a.stato === 'svolto' ? 'Correggi la chiusura' : lungo ? 'Chiudi la giornata' : 'Segna svolto');
+}
+function salvaChiusura(id) {
+	if (bloccoRete()) return;
+	const a = D.appuntamenti.find((x) => x.id === id), p = a.praticaId ? pratica(a.praticaId) : null, lungo = TIPI_CON_RESOCONTO.includes(a.tipo);
+	const fatto = (valore('ch-fatto') ?? '').trim();
+	let ore = null;
+	if (lungo) {
+		ore = parseFloat(String(valore('ch-ore') ?? '').replace(',', '.'));
+		if (!(ore > 0 && ore <= 16)) return esito('ch-esito', 'Scrivi le ore effettive, per esempio 7,5.');
+		if (!fatto) return esito('ch-esito', 'Scrivi in due parole cosa è stato fatto.');
+	}
+	const resta = lungo ? (valore('ch-resta') ?? '').trim() : '';
+	const foto = lungo ? document.querySelector('[name="ch-foto"]:checked')?.value || null : null;
+	const correzione = a.stato === 'svolto', chi = D.utente;
+	if (foto && p && !(p.fotoCantiere ?? []).some((x) => x.nome === foto)) (p.fotoCantiere ??= []).push({ nome: foto, chi, quando: adessoIso() });
+	a.stato = 'svolto'; a.chiusura = { chi, quando: adessoIso(), ore, fatto, resta, foto };
+	(a.registro ??= []).push([adessoIso(), chi, correzione ? 'Chiusura corretta' : 'Segnato svolto']);
+	const riass = [ore ? oreTesto(ore) : null, fatto || null, resta ? 'resta: ' + resta : null].filter(Boolean).join(' · ');
+	p?.storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} ${correzione ? '— chiusura corretta' : 'segnato svolto'} (${nomeOp(chi)})${riass ? ': ' + riass : ''}`]);
+	if (operatore()) D.avvisi.unshift({ id: nuovoId('v'), quando: adessoIso(), titolo: `${io().nome}: ${correzione ? 'chiusura corretta' : 'segnato svolto'}`, testo: `${NOMI_TIPO[a.tipo]} · ${p ? p.nome : a.titolo}${riass ? ' · ' + riass : ''}`, praticaId: a.praticaId, letto: false });
+	salva(); chiudiTendina(); render();
+	toast(correzione ? 'Chiusura corretta.' : operatore() ? 'Segnato svolto. Fabri lo vede negli avvisi.' : 'Segnato svolto. La pratica resta aperta: la chiudi tu.');
+}
+function riapriImpegno(id) {
+	const a = D.appuntamenti.find((x) => x.id === id);
+	apriConferma('Non era svolto?', `Torna «confermato». Il resoconto non vale più, ma resta nel registro.`, 'Riapri l\'impegno', () => {
+		if (bloccoRete()) return;
+		const p = a.praticaId ? pratica(a.praticaId) : null;
+		a.stato = 'confermato'; a.chiusura = null; (a.registro ??= []).push([adessoIso(), D.utente, 'Riaperto: non era svolto']);
+		p?.storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} riaperto: non era svolto (${nomeOp(D.utente)})`]);
+		if (operatore()) D.avvisi.unshift({ id: nuovoId('v'), quando: adessoIso(), titolo: `${io().nome}: impegno riaperto`, testo: `${NOMI_TIPO[a.tipo]} · ${p ? p.nome : a.titolo}`, praticaId: a.praticaId, letto: false });
+		salva(); chiudiTendina(); render(); toast('Impegno riaperto.');
+	});
+}
+// Resoconto e registro nella pagina dell'impegno
+function sezioneChiusura(a) {
+	if (!a.chiusura && !a.registro?.length) return '';
+	const c = a.chiusura;
+	return `<section class="sez"><h2>${c ? 'Resoconto' : 'Registro'}</h2>${c ? `<dl class="coppia"><dt>Chiuso da</dt><dd>${nomeOp(c.chi)} · ${quando(c.quando)}</dd>${c.ore ? `<dt>Ore effettive</dt><dd>${oreTesto(c.ore)} <span class="nota">(previste ${durata(a)})</span></dd>` : ''}${c.fatto ? `<dt>${TIPI_CON_RESOCONTO.includes(a.tipo) ? 'Fatto' : 'Note'}</dt><dd>${esc(c.fatto)}</dd>` : ''}${c.resta ? `<dt>Da finire</dt><dd>${esc(c.resta)}</dd>` : ''}${c.foto ? `<dt>Foto</dt><dd><img class="mini" src="${mini(c.foto)}" alt="" width="52" height="52"></dd>` : ''}</dl>` : ''}
+		${a.registro?.length ? `<ul class="storico" style="margin-top:12px">${[...a.registro].reverse().map(([q, chi, t]) => `<li><span class="q num">${quando(q)}</span><span>${esc(t)} · ${nomeOp(chi)}</span></li>`).join('')}</ul>` : ''}</section>`;
 }
 function apriSposta(id) {
 	const a = D.appuntamenti.find((x) => x.id === id);
@@ -1780,7 +1931,7 @@ function statoMateriale(id, st) {
 	if (operatore()) { m.chi = m.chi ?? D.utente; D.avvisi.unshift({ id: nuovoId('v'), quando: adessoIso(), titolo: `${io().nome}: ${NOMI_MAT[st].toLowerCase()}`, testo: `${m.nome} · ${titoloLavoro(pratica(m.praticaId))}`, praticaId: m.praticaId, letto: false }); }
 	salva(); render(); toast(`${m.nome}: ${NOMI_MAT[st].toLowerCase()}.`);
 }
-const rigaMat = (m, conPratica = false, conStato = true) => { const p = pratica(m.praticaId); const prossimo = m.stato === 'da_comprare' ? ['preso', 'Preso'] : m.stato === 'preso' ? ['in_cantiere', 'In cantiere'] : null; return `<li class="mat"><button type="button" class="mat-testo" onclick="apriMateriale('${m.id}')"><b>${esc(m.nome)}</b><span>${esc(m.qta)}${conPratica && p ? ' · ' + esc(titoloLavoro(p)) : ''}${m.chi ? ' · ritira ' + nomeOp(m.chi) : ''}${conStato && m.fornitore && m.stato === 'da_comprare' ? ' · ' + esc(m.fornitore) : ''}</span>${conStato ? tagMat(m.stato) : ''}</button>${prossimo ? `<button type="button" class="btn piccolo linea" onclick="statoMateriale('${m.id}','${prossimo[0]}')">${I.spunta}${prossimo[1]}</button>` : ''}</li>`; };
+const rigaMat = (m, conPratica = false, conStato = true) => { const p = pratica(m.praticaId); const prossimo = m.stato === 'da_comprare' ? ['preso', 'Preso'] : m.stato === 'preso' ? ['in_cantiere', 'In cantiere'] : null; return `<li class="mat"><button type="button" class="mat-testo" onclick="apriMateriale('${m.id}')"><b>${esc(m.nome)}</b><span>${esc(m.qta)}${conPratica && p ? ' · ' + esc(titoloLavoro(p)) : ''}${m.chi ? ' · ritira ' + (m.chi === D.utente ? 'tu' : nomeOp(m.chi)) : ''}${conStato && m.fornitore && m.stato === 'da_comprare' ? ' · ' + esc(m.fornitore) : ''}</span>${conStato ? tagMat(m.stato) : ''}${!m.chi && m.stato !== 'in_cantiere' ? '<span class="tag att">Manca chi ritira</span>' : ''}</button>${prossimo ? `<button type="button" class="btn piccolo linea" onclick="statoMateriale('${m.id}','${prossimo[0]}')">${I.spunta}${prossimo[1]}</button>` : ''}</li>`; };
 function materiali() {
 	const tutte = operatore() ? D.materiali.filter((m) => m.chi === D.utente || mieiLavori().some((p) => p.id === m.praticaId)) : D.materiali.filter((m) => !chiusa(pratica(m.praticaId)));
 	const gruppi = [['da_comprare', 'Da comprare', 'Lista per la ferramenta: raggruppata per negozio.'], ['preso', 'Da portare in cantiere', 'Preso, non ancora in cantiere.'], ['in_cantiere', 'Già in cantiere', '']];
@@ -1800,14 +1951,17 @@ function oggiOperatore() {
 		: `<section class="prossimo"><div class="testo-p"><small>Oggi</small><b style="margin-top:0">Nessun impegno per te</b><span class="dett">Se Fabri ti assegna qualcosa lo vedi qui.</span></div></section>`;
 	const riga = (a) => { const p = a.praticaId ? pratica(a.praticaId) : null; return `<li><button type="button" class="riga" onclick="vai('imp','${a.id}')"><span class="ora num">${a.inizio}<small>${durata(a)}</small></span><span class="cosa"><b>${esc(p ? p.nome : a.titolo)}</b><span>${NOMI_TIPO[a.tipo]} · ${esc(a.luogo)}</span>${a.stato === 'proposto' ? '<span class="tag att">Da confermare</span>' : ''}</span><span class="freccia">${I.freccia}</span></button></li>`; };
 	const oggiPids = new Set(mie.concat(domani).map((a) => a.praticaId).filter(Boolean));
-	const portare = D.materiali.filter((m) => oggiPids.has(m.praticaId) && m.stato !== 'in_cantiere');
+	// «Devi ritirare tu»: solo i materiali dove l'incaricato sei tu. «Materiali del cantiere»: gli altri dei tuoi lavori di oggi e domani.
+	const tuoi = D.materiali.filter((m) => m.chi === D.utente && m.stato !== 'in_cantiere');
+	const cantiere = D.materiali.filter((m) => oggiPids.has(m.praticaId) && m.stato !== 'in_cantiere' && m.chi !== D.utente);
 	return testa('Oggi', `${giornoLungo(OGGI).charAt(0).toUpperCase() + giornoLungo(OGGI).slice(1)} · ${io().nome}`, tastoCerca(), true)
 		+ conLato(`<div>${hero}${mie.filter((a) => a !== prossimo).length ? `<section class="riquadro"><h2>Poi oggi <span class="conta">${mie.length - 1}</span></h2><ul class="lista">${mie.filter((a) => a !== prossimo).map(riga).join('')}</ul></section>` : ''}</div>
-		<div><section class="riquadro"><h2>Da portare <span class="conta">${portare.length || ''}</span></h2>${portare.length ? `<ul class="lista">${portare.map((m) => rigaMat(m, true)).join('')}</ul>` : '<p class="vuoto">Niente da ritirare per oggi e domani.</p>'}</section>
+		<div><section class="riquadro"><h2>Devi ritirare tu <span class="conta">${tuoi.length || ''}</span></h2>${tuoi.length ? `<ul class="lista">${tuoi.map((m) => rigaMat(m, true)).join('')}</ul>` : '<p class="vuoto">Niente da ritirare per te.</p>'}</section>
+		${cantiere.length ? `<section class="riquadro"><h2>Materiali del cantiere <span class="conta">${cantiere.length}</span></h2><p class="nota" style="margin-bottom:6px">Li ritira un altro, oppure manca ancora chi li ritira: avvisa Fabri se servono.</p><ul class="lista">${cantiere.map((m) => rigaMat(m, true)).join('')}</ul></section>` : ''}
 		<section class="riquadro"><h2>Domani <span class="conta">${domani.length || ''}</span></h2>${domani.length ? `<ul class="lista">${domani.map(riga).join('')}</ul>` : '<p class="vuoto">Niente in agenda per te.</p>'}</section></div>`, latoCard({
 		grande: `Oggi <strong class="num">${mie.length}</strong> ${mie.length === 1 ? 'impegno' : 'impegni'}`,
 		sotto: prossimo ? `Prossimo alle ${prossimo.inizio}: ${esc(prossimo.luogo)}` : 'Niente in agenda per te oggi.',
-		celle: [{ et: 'Da portare', val: `${portare.length}` }, { et: 'Domani', val: `${domani.length} ${domani.length === 1 ? 'impegno' : 'impegni'}` }, ...(pp ? [{ et: `Telefono · ${esc(pp.nome)}`, val: `<span class="num">${pp.tel}</span>`, href: `tel:${pp.tel.replace(/\s/g, '')}`, intera: true }] : [])],
+		celle: [{ et: 'Ritiri tuoi', val: `${tuoi.length}` }, { et: 'Domani', val: `${domani.length} ${domani.length === 1 ? 'impegno' : 'impegni'}` }, ...(pp ? [{ et: `Telefono · ${esc(pp.nome)}`, val: `<span class="num">${pp.tel}</span>`, href: `tel:${pp.tel.replace(/\s/g, '')}`, intera: true }] : [])],
 		azione: prossimo ? `<a class="btn pieno pr-azione" href="${linkMappe(prossimo.luogo)}" target="_blank" rel="noopener">${I.mappa} Portami al prossimo</a>` : '',
 		blocco: prossimo?.note ? `<div class="lato-note"><span class="pr-et">Nota di Fabri</span><p class="pr-condizione">${esc(prossimo.note)}</p></div>` : '',
 		link: pp ? [linkLato(I.avviso, 'Avvisa Fabri di un problema', `apriSegnala('${pp.id}','${prossimo.id}')`)] : []
@@ -1851,7 +2005,8 @@ function impegnoOp(id) {
 	const a = D.appuntamenti.find((x) => x.id === id);
 	if (!a || !vedoApp(a)) return bottoneIndietro() + testa('Impegno non disponibile');
 	const p = a.praticaId ? pratica(a.praticaId) : null, cop = p ? fotoDi(p)[0] : null;
-	const sezioni = `<section class="sez imp-dett-sez"><h2>Dettagli</h2><dl class="coppia imp-dett"><dt>Quando</dt><dd><b>${giornoLungo(a.giorno).charAt(0).toUpperCase() + giornoLungo(a.giorno).slice(1)}</b><br><span class="num">${a.inizio}–${a.fine}</span> · ${durata(a)}</dd><dt>Dove</dt><dd>${esc(a.luogo)}</dd><dt>Con te</dt><dd>${a.chi.filter((c) => c !== D.utente).map(nomeOp).join(', ') || 'Da solo'}</dd>${p ? `<dt>Cliente</dt><dd>${esc(p.nome)} · <a class="num" href="tel:${p.tel.replace(/\s/g, '')}" style="text-decoration:none">${p.tel}</a></dd><dt>Da fare</dt><dd>${esc(p.dettagli)}</dd>` : ''}${a.note ? `<dt>Nota di Fabri</dt><dd><b>${esc(a.note)}</b></dd>` : ''}</dl></section>
+	const sezioni = `<section class="sez imp-dett-sez"><h2>Dettagli</h2><dl class="coppia imp-dett"><dt>Dove</dt><dd>${esc(a.luogo)}</dd>${p ? `<dt>Da fare</dt><dd>${esc(p.dettagli)}</dd>` : ''}${a.note ? `<dt>Nota di Fabri</dt><dd><b>${esc(a.note)}</b></dd>` : ''}</dl></section>
+		${sezioneChiusura(a)}
 		${a.stato === 'proposto' ? '<section class="sez"><p class="nota">Ancora da confermare: lo conferma Fabri col cliente.</p></section>' : ''}
 		${p ? `<section class="sez"><h2>Dal cantiere</h2><div class="azioni" style="margin-top:4px"><button type="button" class="btn piccolo linea" onclick="apriFotoCantiere('${p.id}')">${I.foto} Aggiungi una foto</button><button type="button" class="btn piccolo linea" onclick="apriSegnala('${p.id}','${a.id}')">${I.avviso} Segnala a Fabri</button><button type="button" class="btn piccolo linea" onclick="vai('lavoro','${p.id}')">Apri il lavoro</button></div><p class="nota" style="margin-top:10px">Quello che mandi da qui lo vede solo Fabri, nell'app.</p></section>` : ''}`;
 	return testataImpegno(a, p, true) + conLato(sezioni, latoImpegno(a, p, true), 'Da tenere a mente per questo impegno');
@@ -1905,12 +2060,14 @@ function apriProposta(id) {
 	const e = D.erica.find((x) => x.id === id), p = e.praticaId ? pratica(e.praticaId) : null;
 	const corpo = e.tipo === 'materiali'
 		? `<ul class="lista">${e.voci.map(([n, q]) => `<li><div class="riga" style="grid-template-columns:1fr auto"><span class="cosa"><b>${esc(n)}</b></span><span class="num">${esc(q)}</span></div></li>`).join('')}</ul><p class="nota">Quantità indicative: controllale prima di comprare.</p>`
-		: `<textarea class="campo testo-proposta" id="er-testo" rows="7">${esc(e.testo)}</textarea>${e.tipo !== 'riassunto' ? '<p class="nota" style="margin-top:6px">Puoi cambiarlo. Da qui non parte niente: lo copi e lo mandi tu (WhatsApp o email).</p>' : ''}`;
+		: `<textarea class="campo testo-proposta" id="er-testo" rows="7" oninput="testoProposta('${e.id}',this.value)">${esc(e.testo)}</textarea>${e.tipo !== 'riassunto' ? '<p class="nota" style="margin-top:6px">Puoi cambiarlo. Da qui non parte niente: lo copi e lo mandi tu (WhatsApp o email).</p>' : ''}`;
 	const azioni = e.stato !== 'da_vedere' ? `<button type="button" class="btn linea pieno" onclick="chiudiTendina()">Chiudi</button>`
 		: e.tipo === 'materiali' ? `<button type="button" class="btn pieno" onclick="approvaMateriali('${id}')">Aggiungi ai materiali</button><button type="button" class="btn linea pieno" onclick="esitoProposta('${id}','scartata')">Scarta</button>`
 		: `<button type="button" class="btn pieno" onclick="copiaProposta('${id}')">Copia il testo</button><button type="button" class="btn linea pieno" onclick="esitoProposta('${id}','fatta')">Segna come fatto</button><button type="button" class="btn pericolo pieno" onclick="esitoProposta('${id}','scartata')">Scarta</button>`;
 	apriTendina(`<p class="nota">${TIPI_ERICA[e.tipo]}${p ? ` · <button type="button" class="link" onclick="vai('p','${p.id}')">${esc(titoloLavoro(p))}</button>` : ''}</p>${e.perche ? `<p class="perche">${ericaAvatar()}<span>${esc(e.perche)}</span></p>` : ''}${corpo}<div class="azioni">${azioni}</div>`, esc(e.titolo));
 }
+// la proposta resta modificabile: quello che scrivi si salva subito, prima di copiarla
+function testoProposta(id, v) { const e = D.erica.find((x) => x.id === id); if (e && e.stato === 'da_vedere') { e.testo = v; salva(); } }
 function copiaProposta(id) {
 	const e = D.erica.find((x) => x.id === id), t = document.getElementById('er-testo')?.value ?? e.testo;
 	e.testo = t; salva();
@@ -1938,12 +2095,14 @@ function preparaErica(id, tipo) {
 	const p = pratica(id), nome = p.nome.split(' ')[0], pv = prevCorrente(id), prossimo = appDi(id).find((a) => aperte(a) && a.giorno >= OGGI);
 	let e;
 	if (tipo === 'messaggio') {
-		const testo = prossimo
+		const testo = prossimo?.stato === 'proposto'
+			? `Buongiorno ${nome}, sono Fabri di ArtigianaMente. Le proponiamo ${NOMI_TIPO[prossimo.tipo].toLowerCase()} ${prossimo.giorno === OGGI ? 'oggi' : giornoLungo(prossimo.giorno)} alle ${prossimo.inizio} in ${prossimo.luogo}: verrebbe ${prossimo.chi.map(nomeOp).join(' e ')}. Le va bene? Se preferisce un altro orario me lo scriva qui. Grazie!`
+			: prossimo
 			? `Buongiorno ${nome}, sono Fabri di ArtigianaMente. Le confermo ${NOMI_TIPO[prossimo.tipo].toLowerCase()} ${prossimo.giorno === OGGI ? 'oggi' : giornoLungo(prossimo.giorno)} alle ${prossimo.inizio} in ${prossimo.luogo}. Viene ${prossimo.chi.map(nomeOp).join(' e ')}. Per qualsiasi cosa mi scriva qui. Grazie!`
 			: pv?.stato === 'pronta' ? `Buongiorno ${nome}, sono Fabri di ArtigianaMente. Le mando il preventivo ${pv.numero} per ${p.servizio.toLowerCase()}: lo trova in allegato. Se vuole cambiare qualcosa ne parliamo volentieri.`
 			: pv?.stato === 'inviata' ? `Buongiorno ${nome}, le scrivo per il preventivo ${pv.numero} che le abbiamo mandato ${quando(pv.inviato)}. Se ha domande o vuole cambiare qualcosa sono a disposizione. Fabri, ArtigianaMente`
 			: `Buongiorno ${nome}, sono Fabri di ArtigianaMente. Grazie per la richiesta per ${p.servizio.toLowerCase()} a ${p.comune}. Quando le va bene un sopralluogo? Di solito passiamo in mattinata o nel primo pomeriggio.`;
-		e = { tipo: 'messaggio', titolo: `Messaggio per ${p.nome}`, testo, perche: prossimo ? `C'è ${NOMI_TIPO[prossimo.tipo].toLowerCase()} ${prossimo.stato === 'proposto' ? 'proposto' : 'fissato'} ${giornoBreve(prossimo.giorno)}.` : pv ? `Preventivo ${NOMI_PREV[pv.stato].toLowerCase()}.` : 'Richiesta senza appuntamento.' };
+		e = { tipo: 'messaggio', titolo: prossimo?.stato === 'proposto' ? `Chiedi a ${p.nome} di confermare` : prossimo ? `Conferma a ${p.nome}` : `Messaggio per ${p.nome}`, testo, perche: prossimo ? `C'è ${NOMI_TIPO[prossimo.tipo].toLowerCase()} ${prossimo.stato === 'proposto' ? 'proposto' : 'fissato'} ${giornoBreve(prossimo.giorno)}.` : pv ? `Preventivo ${NOMI_PREV[pv.stato].toLowerCase()}.` : 'Richiesta senza appuntamento.' };
 	} else if (tipo === 'materiali') {
 		e = { tipo: 'materiali', titolo: `Materiali per ${titoloLavoro(p).toLowerCase()}`, voci: (MAT_SERVIZIO[p.servizio] ?? [['Materiale da definire', '—']]).map((x) => [...x]), fornitore: 'Ferramenta Bertolin', perche: `Lista tipica per ${p.servizio.toLowerCase()}, da «${p.dettagli}».` };
 	} else {
@@ -1968,7 +2127,7 @@ function chiediErica(q) {
 		OPERATORI.forEach((o) => { const occ = delGiorno(g).filter((a) => a.chi.includes(o.id)); r.push(occ.length ? `• ${o.nome}: occupato ${occ.map((a) => `${a.inizio}–${a.fine}`).join(', ')}` : `• ${o.nome}: libero tutto il giorno`); });
 	} else if (/domani/.test(t)) { const l = delGiorno(piuGiorni(OGGI, 1)); r.push(l.length ? `Domani (${giornoBreve(piuGiorni(OGGI, 1))}):\n${elenco(l)}` : 'Domani non c\'è niente in agenda.'); }
 	else if (/oggi|giornata/.test(t)) { const l = delGiorno(OGGI); r.push(l.length ? `Oggi:\n${elenco(l)}` : 'Oggi non c\'è niente in agenda.'); }
-	else if (/compr|material|ferrament/.test(t)) { const l = D.materiali.filter((m) => m.stato === 'da_comprare'); r.push(l.length ? `Da comprare (${l.length}):\n${l.map((m) => `• ${m.nome}, ${m.qta} · ${titoloLavoro(pratica(m.praticaId))}${m.chi ? ' · ritira ' + nomeOp(m.chi) : ''}`).join('\n')}` : 'Non manca niente da comprare.'); }
+	else if (/compr|material|ferrament/.test(t)) { const l = D.materiali.filter((m) => m.stato === 'da_comprare'); r.push(l.length ? `Da comprare (${l.length}):\n${l.map((m) => `• ${m.nome}, ${m.qta} · ${titoloLavoro(pratica(m.praticaId))}${m.chi ? ' · ritira ' + (m.chi === D.utente ? 'tu' : nomeOp(m.chi)) : ''}`).join('\n')}` : 'Non manca niente da comprare.'); }
 	else if (/preventiv|rispost|attesa/.test(t)) { const l = inAttesa(); r.push(l.length ? `Senza risposta:\n${l.map((x) => `• ${x.p.nome}, ${x.pv.numero}: ${giorniDa(x.pv.inviato)} giorni`).join('\n')}\nSe vuoi ti preparo un sollecito: apri la pratica e chiedi a me.` : 'Nessun preventivo in attesa.'); }
 	else if (/da fare|urgent|cosa devo/.test(t)) { const l = daFare(); r.push(l.length ? l.slice(0, 5).map((x) => `• ${x.cosa}: ${x.p.nome}${x.attesa ? ' (' + x.attesa + ')' : ''}`).join('\n') : 'Niente in sospeso.'); }
 	else r.push('Nel prototipo so rispondere su: oggi, domani, chi è libero un certo giorno, cosa manca da comprare, preventivi senza risposta, cosa c\'è da fare.');
@@ -2003,5 +2162,9 @@ const h = location.hash.slice(1);
 if (h) { const [v, ...rest] = h.split('-'); vista = v; param = rest.length ? rest.join('-') : null; }
 if (!D.utente) vista = 'login';
 render();
+// indietro/avanti del browser o indirizzo cambiato a mano: passa sempre dalla stessa guardia
+const daIndirizzo = () => { const [v, ...r] = location.hash.slice(1).split('-'); const p = r.length ? r.join('-') : null; if (v && (v !== vista || p !== param)) vai(v, p, { indietro: true }); };
+addEventListener('hashchange', daIndirizzo);
+addEventListener('popstate', daIndirizzo);
 </script>
 </body></html>
