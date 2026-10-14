@@ -642,7 +642,7 @@ svg.nav-i .buco-l { stroke: #fff; }
 	.barra .marchio-barra { display: block; flex: none; height: 24px; margin: 11px 0 0 24px; font-size: 0; letter-spacing: 0; line-height: 24px; }
 	.barra .marchio-barra::before { content: 'A'; display: inline-grid; place-items: center; width: 22px; height: 22px; border: 2px solid var(--nero); border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0; margin-left: 1px; }
 	.barra nav { display: flex; flex-direction: column; gap: 8px; flex: 1; max-width: none; margin: 0; }
-	.barra nav > button:first-child { margin-top: max(16px, calc(50vh - 343px)); }
+	.barra nav > button:first-child { margin-top: max(16px, calc(50vh - 371px)); }
 	.barra nav button { display: flex; align-items: center; justify-content: flex-start; gap: 16px; height: 48px; min-height: 0; width: 214px; margin: 0 0 0 12px; padding: 0 12px; color: var(--nero); border-radius: 8px; transition: background-color 160ms ease; font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-testo); }
 	.barra nav button svg, .barra nav button svg.nav-i { width: 24px; height: 24px; }
 	.barra nav button .avatar { width: 22px; height: 22px; font-size: 11px; }
@@ -1079,6 +1079,84 @@ body.con-pop .erica-fab { visibility: hidden; }
 .pdf table.righe thead th { text-align: left; font-size: var(--t-mini); color: var(--grigio); font-weight: var(--w-etichetta); padding-bottom: 4px; }
 .pdf table.righe tr.cat td { padding-top: 12px; font-weight: var(--w-nome); border-bottom: 1px solid var(--linea); }
 @media (max-width: 743px) { .voce.v2 { grid-template-columns: 1fr 1fr 32px; grid-template-areas: "d d x" "q u ." "p i ."; gap: 8px; } }
+
+/* conti del lavoro e Andamento: blu = entra, arancio = esce (coppia controllata per daltonismo), tratteggio = previsto */
+:root { --c-entra: #2f6fd0; --c-esce: #c8641e; }
+.sez-sotto { margin: 20px 0 6px; font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-titolo); display: flex; align-items: baseline; gap: 10px; }
+.sez-sotto .link { font-size: var(--t-piccolo); font-weight: var(--w-testo); }
+.conti-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--linea); border-radius: 12px; overflow: hidden; margin-top: 8px; }
+.conto { display: grid; gap: 2px; padding: 10px 12px; border: 0; border-right: 1px solid var(--linea); background: var(--bianco); text-align: left; font: inherit; color: var(--nero); cursor: pointer; min-width: 0; }
+.conto:last-child { border-right: 0; }
+.conto:hover { background: #f7f7f7; }
+.conto small { font-size: var(--t-etichetta); line-height: var(--lh-etichetta, 14px); font-weight: var(--w-etichetta); text-transform: uppercase; letter-spacing: 0.04em; color: var(--nero); }
+.conto b { font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-nome); }
+.conto span { font-size: var(--t-mini); line-height: var(--lh-mini); color: var(--grigio); }
+.conti-ris { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--chiaro); font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); }
+.conti-ris b { font-size: var(--t-nome); font-weight: var(--w-titolo); }
+.conti-ris.neg b { color: var(--err); }
+.conti-ris.incompleto { background: #fff4e5; color: #6b3c00; }
+.conti-ris span { color: var(--grigio); } .conti-ris.incompleto span { color: #6b3c00; }
+.manca { color: #8a4b00; font-weight: var(--w-nome); }
+.dati-inc { margin: 12px 0; padding: 12px 14px; border-radius: 10px; background: #fff4e5; color: #6b3c00; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); }
+.dati-inc ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.dati-inc .link { color: #6b3c00; text-align: left; }
+.fin-tot { margin-top: 20px; padding-top: 8px; border-top: 1px solid var(--linea); }
+.and-sez h2 { margin-bottom: 8px; }
+.and-sez + .and-sez { margin-top: var(--sp-sezione); }
+.leg { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 12px; font-size: var(--t-mini); line-height: var(--lh-mini); color: var(--grigio); }
+.leg span { display: inline-flex; align-items: center; gap: 6px; }
+.leg i { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+i.inc.eff, .cg-su i.inc.eff { background: var(--c-entra); }
+i.inc.prev, .cg-su i.inc.prev { background: repeating-linear-gradient(135deg, var(--c-entra) 0 2px, #e3ecfa 2px 5px); box-shadow: inset 0 0 0 1px var(--c-entra); }
+i.pag.eff { background: var(--c-esce); }
+i.pag.prev { background: repeating-linear-gradient(45deg, var(--c-esce) 0 2px, #f8e6d9 2px 5px); box-shadow: inset 0 0 0 1px var(--c-esce); }
+.cassa-grafico { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
+.cg-mese { display: grid; grid-template-rows: 18px 110px 90px 18px auto auto; justify-items: center; gap: 0; padding: 8px 4px; border: 0; border-radius: 12px; background: none; font: inherit; color: var(--nero); cursor: pointer; }
+.cg-mese:hover { background: #f7f7f7; }
+.cg-mese.ora { background: var(--chiaro); }
+.cg-su { display: flex; flex-direction: column-reverse; justify-content: flex-start; width: 44%; height: 100%; border-bottom: 1px solid var(--nero); gap: 2px; }
+.cg-giu { display: flex; flex-direction: column; width: 44%; height: 100%; gap: 2px; padding-top: 2px; }
+.cg-su i { display: block; width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; }
+.cg-giu i { display: block; width: 100%; border-radius: 0 0 4px 4px; min-height: 2px; }
+.cg-v { font-size: var(--t-mini); line-height: 18px; color: var(--grigio); white-space: nowrap; }
+.cg-nome { margin-top: 6px; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); font-weight: var(--w-nome); text-align: center; }
+.cg-nome small { display: block; font-size: var(--t-mini); line-height: var(--lh-mini); font-weight: var(--w-testo); color: var(--grigio); }
+.cg-netto { font-size: var(--t-mini); line-height: var(--lh-mini); color: var(--grigio); }
+.cg-netto.neg { color: var(--err); }
+b.entra { color: var(--c-entra); } b.esce { color: var(--c-esce); }
+.lv { padding: 16px 0; border-bottom: 1px solid var(--linea); }
+.lv:last-of-type { border-bottom: 0; }
+.lv-nome { display: grid; gap: 2px; padding: 0; border: 0; background: none; font: inherit; text-align: left; color: var(--nero); cursor: pointer; margin-bottom: 8px; }
+.lv-nome b { font-size: var(--t-nome); line-height: var(--lh-nome); font-weight: var(--w-nome); } .lv-nome:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.lv-nome span { font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); color: var(--grigio); }
+.lv-barra { position: relative; height: 14px; margin: 4px 0 2px; }
+.lv-prezzo { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #ececec; box-shadow: inset 0 0 0 1px #c9c9c9; }
+.lv-barra i { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; }
+.lv-barra i.reg { left: 0; background: var(--c-esce); }
+.lv-barra i.da { background: repeating-linear-gradient(45deg, var(--c-esce) 0 2px, #f8e6d9 2px 5px); box-shadow: inset 0 0 0 1px var(--c-esce); }
+.lv-prev { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--nero); }
+.leg i.lv-l.prezzo { background: #ececec; box-shadow: inset 0 0 0 1px #c9c9c9; }
+.leg i.lv-l.previsti { width: 2px; height: 14px; background: var(--nero); border-radius: 0; }
+.and-filtri { margin-bottom: 8px; }
+.and-lavoro { display: grid; gap: 4px; max-width: 360px; margin-bottom: 8px; font-size: var(--t-piccolo); color: var(--grigio); }
+.ore-grafico { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.og-sett { display: grid; grid-template-rows: 150px auto auto; justify-items: center; padding: 8px 4px; border: 0; border-radius: 12px; background: none; font: inherit; color: var(--nero); cursor: pointer; }
+.og-sett:hover { background: #f7f7f7; } .og-sett.ora { background: var(--chiaro); }
+.og-barre { display: flex; align-items: flex-end; gap: 4px; height: 100%; width: 70%; border-bottom: 1px solid var(--nero); }
+.og-b { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; flex: 1; height: 100%; }
+.og-b i { display: block; width: 100%; border-radius: 4px 4px 0 0; min-height: 0; }
+.og-b i.prog, .leg i.og-l.prog { background: repeating-linear-gradient(135deg, #8a8a8a 0 2px, #ededed 2px 5px); box-shadow: inset 0 0 0 1px #8a8a8a; }
+.og-b i.reg, .leg i.og-l.reg { background: var(--c-entra); }
+.og-v { font-size: var(--t-mini); line-height: 16px; color: var(--grigio); white-space: nowrap; }
+.og-nota { font-size: var(--t-mini); line-height: var(--lh-mini); color: var(--grigio); min-height: 17px; }
+@media (max-width: 743px) {
+	.conti-4 { grid-template-columns: 1fr 1fr; }
+	.conto:nth-child(2) { border-right: 0; } .conto:nth-child(-n+2) { border-bottom: 1px solid var(--linea); }
+	.cg-mese { grid-template-rows: 16px 90px 70px 16px auto auto; padding: 6px 0; }
+	.cg-v { font-size: 11px; }
+	.og-sett { grid-template-rows: 120px auto auto; padding: 6px 0; }
+	.og-v { font-size: 10px; }
+}
 </style>
 
 <div class="proto" title="Prototipo: dati fittizi, nessun invio, niente va sul server"><b>PROTOTIPO</b> · dati finti, nessun invio</div>
@@ -1145,7 +1223,7 @@ function datiIniziali() {
 			{ id: 'a2', praticaId: 'r7', tipo: 'giornata_lavoro', giorno: '2026-10-13', inizio: '10:30', fine: '17:00', chi: ['fabri', 'marco'], stato: 'confermato', luogo: 'Via Equilio 3, Jesolo' },
 			{ id: 'a3', praticaId: 'r8', tipo: 'sopralluogo', giorno: '2026-10-13', inizio: '15:00', fine: '15:45', chi: ['davide'], stato: 'proposto', luogo: 'Via Treportina 44, Treporti' },
 			{ id: 'a4', praticaId: null, tipo: 'altro', giorno: '2026-10-13', inizio: '17:30', fine: '18:00', chi: ['davide'], stato: 'confermato', luogo: 'Ferramenta Bertolin, Jesolo', titolo: 'Ritiro materiali' },
-			{ id: 'a5', praticaId: 'r7', tipo: 'giornata_lavoro', giorno: '2026-10-12', inizio: '07:30', fine: '17:00', chi: ['fabri', 'marco'], stato: 'svolto', luogo: 'Via Equilio 3, Jesolo' },
+			{ id: 'a5', praticaId: 'r7', tipo: 'giornata_lavoro', giorno: '2026-10-12', inizio: '07:30', fine: '17:00', chi: ['fabri', 'marco'], stato: 'svolto', luogo: 'Via Equilio 3, Jesolo', chiusura: { chi: 'marco', quando: '2026-10-12T17:10', ore: 16.5, orePer: { fabri: 8.5, marco: 8 }, fatto: 'demolito il vecchio rivestimento, tracce per gli scarichi', resta: 'massetto', foto: null } },
 			{ id: 'a6', praticaId: 'r7', tipo: 'giornata_lavoro', giorno: '2026-10-14', inizio: '08:00', fine: '17:00', chi: ['marco', 'davide'], stato: 'confermato', luogo: 'Via Equilio 3, Jesolo' },
 			{ id: 'a7', praticaId: 'r7', tipo: 'giornata_lavoro', giorno: '2026-10-15', inizio: '08:00', fine: '17:00', chi: ['fabri', 'marco'], stato: 'confermato', luogo: 'Via Equilio 3, Jesolo' },
 			{ id: 'a8', praticaId: 'r5', tipo: 'inizio_lavori', giorno: '2026-10-16', inizio: '07:30', fine: '16:00', chi: ['marco', 'davide'], stato: 'confermato', luogo: 'Via Fausta 240, Cavallino-Treporti' },
@@ -1172,20 +1250,38 @@ function datiIniziali() {
 		],
 		utente: null,
 		materiali: [
-			{ id: 'm1', praticaId: 'r7', nome: 'Gres 60×60 grigio', qta: '7 m²', stato: 'in_cantiere', chi: 'marco', fornitore: 'Ceramiche Jesolo' },
-			{ id: 'm2', praticaId: 'r7', nome: 'Colla C2TE per gres', qta: '6 sacchi', stato: 'preso', chi: 'marco', fornitore: 'Ferramenta Bertolin' },
-			{ id: 'm3', praticaId: 'r7', nome: 'Silicone sanitario bianco', qta: '4 cartucce', stato: 'da_comprare', chi: 'davide', fornitore: 'Ferramenta Bertolin' },
+			{ id: 'm1', praticaId: 'r7', nome: 'Gres 60×60 grigio', qta: '7 m²', stato: 'in_cantiere', costo: 238, data: '2026-10-09', chi: 'marco', fornitore: 'Ceramiche Jesolo' },
+			{ id: 'm2', praticaId: 'r7', nome: 'Colla C2TE per gres', qta: '6 sacchi', stato: 'preso', costo: 54, data: '2026-10-11', chi: 'marco', fornitore: 'Ferramenta Bertolin' },
+			{ id: 'm3', praticaId: 'r7', nome: 'Silicone sanitario bianco', qta: '4 cartucce', stato: 'da_comprare', costo: 28, chi: 'davide', fornitore: 'Ferramenta Bertolin' },
 			{ id: 'm4', praticaId: 'r7', nome: 'Profili angolari inox', qta: '5 da 2,5 m', stato: 'da_comprare', chi: null, fornitore: 'Ceramiche Jesolo' },
-			{ id: 'm5', praticaId: 'r5', nome: 'Scatoloni', qta: '40', stato: 'preso', chi: 'marco', fornitore: 'Ferramenta Bertolin' },
-			{ id: 'm6', praticaId: 'r5', nome: 'Nastro e pluriball', qta: '1 kit', stato: 'da_comprare', chi: 'davide', fornitore: 'Ferramenta Bertolin' },
+			{ id: 'm5', praticaId: 'r5', nome: 'Scatoloni', qta: '40', stato: 'preso', costo: 48, data: '2026-10-08', chi: 'marco', fornitore: 'Ferramenta Bertolin' },
+			{ id: 'm6', praticaId: 'r5', nome: 'Nastro e pluriball', qta: '1 kit', stato: 'da_comprare', costo: 22, chi: 'davide', fornitore: 'Ferramenta Bertolin' },
 			{ id: 'm7', praticaId: 'r6', nome: 'Cerniere a scomparsa', qta: '2', stato: 'da_comprare', chi: null, fornitore: 'Ferramenta Bertolin' }
 		],
+		// pagamenti del cliente: importi IVA inclusa; «prevista» = quando dovrebbe arrivare, «ricevuto» = quando è arrivato davvero
+		pagamenti: [
+			{ id: 'g1', praticaId: 'r7', tipo: 'acconto', importo: 2073.72, prevista: '2026-09-16', ricevuto: { data: '2026-09-18', importo: 2073.72 } },
+			{ id: 'g2', praticaId: 'r7', tipo: 'saldo', importo: 4838.68, prevista: '2026-10-20', ricevuto: null },
+			{ id: 'g3', praticaId: 'r5', tipo: 'acconto', importo: 552.66, prevista: '2026-09-29', ricevuto: { data: '2026-09-30', importo: 552.66 } },
+			{ id: 'g4', praticaId: 'r5', tipo: 'saldo', importo: 1289.54, prevista: '2026-10-16', ricevuto: null },
+			{ id: 'g5', praticaId: 'r4', tipo: 'acconto', importo: 142.74, prevista: '2026-10-12', ricevuto: null },
+			{ id: 'g6', praticaId: 'r4', tipo: 'saldo', importo: 333.06, prevista: null, ricevuto: null }
+		],
+		// altre spese dei lavori (oltre ai materiali della lista): importi senza IVA
+		spese: [
+			{ id: 's1', praticaId: 'r7', tipo: 'materiali', descr: 'Sanitari e rubinetteria', importo: 420, data: '2026-09-25', stato: 'pagata' },
+			{ id: 's2', praticaId: 'r7', tipo: 'smaltimento', descr: 'Smaltimento macerie in discarica', importo: 180, data: '2026-10-12', stato: 'pagata' },
+			{ id: 's3', praticaId: 'r7', tipo: 'esterni', descr: 'Idraulico per gli allacci', importo: 650, data: '2026-10-21', stato: 'prevista' },
+			{ id: 's4', praticaId: 'r5', tipo: 'noleggio', descr: 'Furgone grande, 1 giorno', importo: 120, data: '2026-10-16', stato: 'prevista' }
+		],
+		// costi previsti all'inizio del lavoro (senza IVA): ore × costo orario + materiali + altre spese
+		previsti: { r7: { ore: 64, materiali: 760, altro: 900 }, r5: { ore: 16, materiali: 70, altro: 120 } },
 		erica: [
 			{ id: 'e1', tipo: 'messaggio', praticaId: 'r8', stato: 'da_vedere', titolo: 'Chiedi a Chiara Moro di confermare il sopralluogo', perche: 'Il sopralluogo di oggi alle 15:00 è ancora «proposto»: va chiesto se le va bene.', testo: 'Buongiorno Chiara, sono Fabri di ArtigianaMente. Le proponiamo il sopralluogo per il parquet oggi alle 15:00 in Via Treportina 44: verrebbe il nostro Davide. Le va bene? Se preferisce un altro orario me lo scriva qui. Grazie!' },
 			{ id: 'e2', tipo: 'sollecito', praticaId: 'r11', stato: 'da_vedere', titolo: 'Sollecito gentile a Rita Gallo', perche: 'Preventivo P-2026-0008 inviato 11 giorni fa, nessuna risposta.', testo: 'Buongiorno Rita, le scrivo per il preventivo P-2026-0008 per la cucina che le abbiamo mandato il 2 ottobre. Se ha domande o vuole cambiare qualcosa sono a disposizione. Fabri, ArtigianaMente' },
 			{ id: 'e3', tipo: 'materiali', praticaId: 'r2', stato: 'da_vedere', titolo: 'Materiali per il parquet di Luca Bianchi', perche: 'Posa prefinito 40 m², rovere naturale (dalle tue note del sopralluogo).', fornitore: 'Ferramenta Bertolin', voci: [['Prefinito rovere naturale 14 mm', '44 m² (40 + 10% sfrido)'], ['Tappetino fonoassorbente', '40 m²'], ['Profili di raccordo', '3']] }
 		],
-		impostazioni: { intestazione: 'ArtigianaMente', sede: 'Cavallino-Treporti (VE)', telefono: '339 828 4863', piva: '', validita: 30, acconto: 30, tariffaOra: 35, consumoPerc: 5, esclusioni: 'Opere murarie non indicate, smaltimenti speciali.', tempi: 'Tempi da concordare dopo l\'accettazione.' },
+		impostazioni: { intestazione: 'ArtigianaMente', sede: 'Cavallino-Treporti (VE)', telefono: '339 828 4863', piva: '', validita: 30, acconto: 30, tariffaOra: 35, consumoPerc: 5, costoOra: 24, pausaMin: 60, esclusioni: 'Opere murarie non indicate, smaltimenti speciali.', tempi: 'Tempi da concordare dopo l\'accettazione.' },
 		sito: { ferieAttive: false, ferieDal: '2026-12-23', ferieAl: '2027-01-06', ferieTesto: 'Siamo in ferie: rispondiamo dal 7 gennaio.' },
 		prossimaRichiesta: 142,
 		senzaRete: false,
@@ -1197,10 +1293,10 @@ function datiIniziali() {
 /* ===================== STATO ===================== */
 let D;
 function carica() {
-	try { const s = localStorage.getItem('am-prototipo-b01-v7'); if (s) { D = JSON.parse(s); return; } } catch {}
+	try { const s = localStorage.getItem('am-prototipo-b01-v8'); if (s) { D = JSON.parse(s); return; } } catch {}
 	D = datiIniziali();
 }
-function salva() { try { localStorage.setItem('am-prototipo-b01-v7', JSON.stringify(D)); } catch {} }
+function salva() { try { localStorage.setItem('am-prototipo-b01-v8', JSON.stringify(D)); } catch {} }
 function azzera() { const u = D?.utente ?? null; D = datiIniziali(); D.utente = u; salva(); ritorno = []; vai(u ? 'oggi' : 'login'); toast('Dati di prova ripristinati.'); }
 const nuovoId = (p) => p + (++D.contatoreId);
 const pratica = (id) => D.pratiche.find((p) => p.id === id);
@@ -1377,10 +1473,10 @@ const tagPrev = (v) => `<span class="tag ${v.stato === 'accettata' ? 'ok' : v.st
 let filtroPrev = 'aperti';
 let storicoAperto = null, vista = 'oggi', param = null, filtroPratiche = 'da_gestire', cercaTesto = '', agendaVista = 'giorno', agendaGiorno = OGGI, ritorno = [];
 // Preventivi nella barra a sinistra (Gian 14/10: «mettimi i preventivi subito visibili»)
-const SEZIONI = [['oggi', 'Oggi'], ['agenda', 'Agenda'], ['pratiche', 'Pratiche'], ['preventivi', 'Preventivi'], ['clienti', 'Clienti'], ['altro', 'Altro']];
+const SEZIONI = [['oggi', 'Oggi'], ['agenda', 'Agenda'], ['pratiche', 'Pratiche'], ['preventivi', 'Preventivi'], ['andamento', 'Andamento'], ['clienti', 'Clienti'], ['altro', 'Altro']];
 // Schermate solo per Fabri: prezzi, preventivi, clienti, impostazioni, Erica, avvisi.
 // Il controllo vale per ogni strada: menu, indirizzo scritto a mano, ricarica, indietro/avanti (guardia() in vai() e in render()).
-const SOLO_FABRI = ['p', 'prev', 'pdf', 'pratiche', 'preventivi', 'clienti', 'cliente', 'impostazioni', 'sito', 'erica', 'tutteOggi', 'avvisi', 'sistema'];
+const SOLO_FABRI = ['p', 'prev', 'pdf', 'pratiche', 'preventivi', 'andamento', 'clienti', 'cliente', 'impostazioni', 'sito', 'erica', 'tutteOggi', 'avvisi', 'sistema'];
 function guardia(v, p) {
 	if (!D.utente) return ['login', null];
 	if (operatore()) {
@@ -1604,13 +1700,13 @@ function render() {
 	return dopoRender();
 }
 function vistaDi(v) {
-	return { oggi: operatore() ? oggiOperatore : oggi, agenda, pratiche, preventivi, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: operatore() ? impegnoOp : (id) => { const a = D.appuntamenti.find((x) => x.id === id); return a?.praticaId && pratica(a.praticaId) ? schedaPratica(a.praticaId, id) : impegno(id); }, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti, lavori, lavoro, materiali, erica, login: operatore() ? oggiOperatore : oggi }[v] ?? (operatore() ? oggiOperatore : oggi);
+	return { oggi: operatore() ? oggiOperatore : oggi, agenda, pratiche, preventivi, andamento, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: operatore() ? impegnoOp : (id) => { const a = D.appuntamenti.find((x) => x.id === id); return a?.praticaId && pratica(a.praticaId) ? schedaPratica(a.praticaId, id) : impegno(id); }, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti, lavori, lavoro, materiali, erica, login: operatore() ? oggiOperatore : oggi }[v] ?? (operatore() ? oggiOperatore : oggi);
 }
 function dopoRender() {
 	const app = document.getElementById('app');
 	const sezione = { p: 'pratiche', cliente: 'clienti', imp: 'agenda', prev: 'preventivi', pdf: 'preventivi', avvisi: 'altro', sistema: 'altro', impostazioni: 'altro', sito: 'altro', tutteOggi: 'oggi', crediti: 'altro', lavoro: 'lavori', erica: 'oggi', materiali: operatore() ? 'materiali' : 'altro', login: 'oggi' }[vista] ?? vista;
 	const nuove = D.avvisi.filter((a) => !a.letto).length;
-	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca">${navIcona('cerca', false)}<span class="et">Cerca</span></button><button type="button" class="solo-largo ${vista === 'altro' ? 'attiva' : ''}" onclick="vai('altro')" aria-label="Profilo">${avatar(D.utente, operatore())}<span class="et">Profilo</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" aria-label="${n}">${navIcona(k, sezione === k)}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
+	document.getElementById('barra').innerHTML = sezioni().map(([k, n]) => `${k === 'altro' ? `<button type="button" class="nav-cerca solo-largo" onclick="apriRicerca()" aria-label="Cerca">${navIcona('cerca', false)}<span class="et">Cerca</span></button><button type="button" class="solo-largo ${vista === 'altro' ? 'attiva' : ''}" onclick="vai('altro')" aria-label="Profilo">${avatar(D.utente, operatore())}<span class="et">Profilo</span></button>` : ''}<button type="button" class="${sezione === k ? 'attiva' : ''} ${k === 'altro' ? 'in-fondo' : ''} ${k === 'andamento' ? 'solo-largo' : ''}" onclick="vai('${k}')" aria-current="${sezione === k ? 'page' : 'false'}" aria-label="${n}">${navIcona(k, sezione === k)}<span class="et">${n}</span>${k === 'altro' && nuove && !operatore() ? `<span class="pallino">${nuove}</span>` : ''}</button>`).join('');
 	// Erica in basso a destra (solo Fabri, non dentro Erica)
 	const fab = document.getElementById('erica-fab'), dvF = ericaDaVedere();
 	const mostraFab = !operatore() && vista !== 'erica';
@@ -1757,6 +1853,129 @@ function salvaNuovoPreventivo() {
 	const daStima = document.querySelector('[name="np-da"]:checked')?.value === 'stima';
 	chiudiTendina(true); creaPreventivo(id, daStima);
 }
+/* ===================== ANDAMENTO (solo Fabri) =====================
+   Tre grafici, ogni numero si apre. Dove manca un dato si scrive «Dati incompleti», mai zero.
+   1 Incassi e pagamenti dei lavori: solo i movimenti dei cantieri (non tutta la cassa dell'azienda). Fatti e previsti separati, scadenze sotto.
+   2 Lavori: prezzo concordato, costi previsti, registrati, ancora da sostenere (risultato provvisorio finché il lavoro è aperto).
+   3 Ore della squadra: programmate (agenda) contro registrate (chiusura delle giornate). */
+let andChi = 'tutti', andLav = 'tutti';
+const IVA_USCITE = 22; // le spese si segnano senza IVA; in cassa esce anche l'IVA
+const conIva = (x) => Math.round(x * (100 + IVA_USCITE)) / 100;
+const MESI_B = MESI.map((m) => m.slice(0, 3).replace(/^./, (c) => c.toUpperCase()));
+const euroTondo = (n) => Math.round(n).toLocaleString('it-IT') + ' €';
+// tutti i movimenti dei lavori: + incassi (IVA inclusa), − pagamenti (costo + IVA)
+function movimentiLavori() {
+	const m = [], senzaData = [];
+	for (const g of D.pagamenti ?? []) {
+		const p = pratica(g.praticaId); if (!p) continue;
+		const cosa = `${NOMI_PAG[g.tipo]} · ${p.nome}`, click = `apriPagamento('${g.praticaId}','${g.id}')`;
+		if (g.ricevuto) m.push({ data: g.ricevuto.data, importo: g.ricevuto.importo, eff: true, entra: true, cosa, click, pid: p.id });
+		else if (g.prevista) m.push({ data: g.prevista, importo: g.importo, eff: false, entra: true, cosa, click, pid: p.id, ritardo: g.prevista < OGGI });
+		else senzaData.push({ cosa: `${cosa}: manca la data prevista`, click });
+	}
+	for (const x of D.materiali) {
+		if (!(x.costo > 0)) continue;
+		const p = pratica(x.praticaId), cosa = `${x.nome} · ${p?.nome ?? ''}`, click = `apriMateriale('${x.id}')`;
+		if (x.stato !== 'da_comprare') x.data ? m.push({ data: x.data, importo: conIva(x.costo), eff: true, entra: false, cosa, click, pid: x.praticaId }) : senzaData.push({ cosa: `${x.nome}: manca la data d'acquisto`, click });
+		else senzaData.push({ cosa: `${x.nome}: da comprare, senza data`, click, leggero: true });
+	}
+	for (const x of D.spese ?? []) {
+		const p = pratica(x.praticaId), cosa = `${x.descr} · ${p?.nome ?? ''}`, click = `apriSpesa('${x.praticaId}','${x.id}')`;
+		if (!x.data) { senzaData.push({ cosa: `${x.descr}: manca la data`, click }); continue; }
+		m.push({ data: x.data, importo: conIva(x.importo), eff: x.stato === 'pagata', entra: false, cosa, click, pid: x.praticaId, ritardo: x.stato !== 'pagata' && x.data < OGGI });
+	}
+	// quello che doveva già succedere e non è successo conta da oggi (in ritardo)
+	m.forEach((x) => { if (!x.eff && x.data < OGGI) x.quando = OGGI; else x.quando = x.data; });
+	return { m, senzaData };
+}
+function graficoCassa() {
+	const { m, senzaData } = movimentiLavori(), mese0 = meseDi(OGGI);
+	const mesi = [-1, 0, 1, 2].map((n) => meseDi(piuMesi(mese0 + '-01', n)));
+	const dati = mesi.map((k) => { const l = m.filter((x) => meseDi(x.quando) === k), t = (f) => somma(l.filter(f), (x) => x.importo); return { k, ie: t((x) => x.entra && x.eff), ip: t((x) => x.entra && !x.eff), pe: t((x) => !x.entra && x.eff), pp: t((x) => !x.entra && !x.eff) }; });
+	const max = Math.max(1, ...dati.map((x) => Math.max(x.ie + x.ip, x.pe + x.pp)));
+	const h = (v) => `${Math.round((v / max) * 1000) / 10}%`;
+	const col = (x) => { const [y, mm] = x.k.split('-').map(Number), netto = x.ie + x.ip - x.pe - x.pp, cur = x.k === mese0, fut = x.k > mese0;
+		return `<button type="button" class="cg-mese ${cur ? 'ora' : ''}" onclick="dettaglioMese('${x.k}')" aria-label="${MESI[mm - 1]}: incassi ${euroTondo(x.ie + x.ip)}, pagamenti ${euroTondo(x.pe + x.pp)}">
+			<span class="cg-v su num">${x.ie + x.ip ? euroTondo(x.ie + x.ip) : ''}</span>
+			<span class="cg-su">${x.ie ? `<i class="inc eff" style="height:${h(x.ie)}" title="Incassati ${euro(x.ie)}"></i>` : ''}${x.ip ? `<i class="inc prev" style="height:${h(x.ip)}" title="Da incassare ${euro(x.ip)}"></i>` : ''}</span>
+			<span class="cg-giu">${x.pe ? `<i class="pag eff" style="height:${h(x.pe)}" title="Pagati ${euro(x.pe)}"></i>` : ''}${x.pp ? `<i class="pag prev" style="height:${h(x.pp)}" title="Da pagare ${euro(x.pp)}"></i>` : ''}</span>
+			<span class="cg-v giu num">${x.pe + x.pp ? '−' + euroTondo(x.pe + x.pp) : ''}</span>
+			<span class="cg-nome">${MESI_B[mm - 1]}<small>${cur ? 'ora' : fut ? 'previsto' : 'fatto'}</small></span><span class="cg-netto num ${netto < 0 ? 'neg' : ''}">${netto ? (netto > 0 ? '+' : '−') + euroTondo(Math.abs(netto)) : '—'}</span></button>`; };
+	const prossime = m.filter((x) => !x.eff && x.quando <= piuGiorni(OGGI, 45)).sort((a, b) => a.data.localeCompare(b.data));
+	const scad = prossime.map((x) => `<li><button type="button" class="riga" onclick="${x.click}"><span class="ora num" style="min-width:64px">${giornoBreve(x.data)}<small>${x.ritardo ? 'in ritardo' : x.entra ? 'entra' : 'esce'}</small></span><span class="cosa"><b>${esc(x.cosa)}</b><span>${x.entra ? 'Da incassare' : 'Da pagare'}${x.ritardo ? ' · in ritardo' : ''}</span></span><b class="num ${x.entra ? 'entra' : 'esce'}">${x.entra ? '+' : '−'}${euro(x.importo)}</b></button></li>`).join('');
+	const senzaPiano = D.pratiche.filter((p) => pvAccettato(p.id) && !(D.pagamenti ?? []).some((g) => g.praticaId === p.id));
+	const inc = [...senzaPiano.map((p) => ({ cosa: `${p.nome}: preventivo accettato senza acconto e saldo`, click: `apri('p','${p.id}')` })), ...senzaData.filter((x) => !x.leggero)];
+	return { html: `<div class="leg"><span><i class="inc eff"></i>Incassati</span><span><i class="inc prev"></i>Da incassare</span><span><i class="pag eff"></i>Pagati</span><span><i class="pag prev"></i>Da pagare</span></div>
+		<div class="cassa-grafico">${dati.map(col).join('')}</div>
+		<p class="nota">Incassi IVA inclusa (quello che il cliente paga); pagamenti = costi segnati + IVA ${IVA_USCITE}%. Stipendi e spese dell'azienda non sono compresi. Tocca un mese per vedere le voci.</p>
+		${incompleti(inc)}
+		<h3 class="sez-sotto">Scadenze dei prossimi 45 giorni</h3>${scad ? `<ul class="lista scadenze">${scad}</ul>` : '<p class="nota">Nessuna scadenza.</p>'}`, prossime, inc };
+}
+const incompleti = (l) => (l.length ? `<div class="dati-inc"><b>Dati incompleti (${l.length})</b><ul>${l.map((x) => `<li><button type="button" class="link" onclick="${x.click}">${esc(x.cosa)}</button></li>`).join('')}</ul></div>` : '');
+function dettaglioMese(k) {
+	const { m } = movimentiLavori(), l = m.filter((x) => meseDi(x.quando) === k), [y, mm] = k.split('-').map(Number);
+	const r = (x) => ({ ico: x.entra ? I.casa : I.scatola, t: `${x.entra ? '+' : '−'}${euro(x.importo)} · ${esc(x.cosa)}`, d: `${giornoBreve(x.data)}${x.ritardo ? ' · in ritardo, contato da oggi' : ''}`, click: x.click });
+	apriFinestra(`${MESI[mm - 1].replace(/^./, (c) => c.toUpperCase())} ${y}`, [['Incassati', l.filter((x) => x.entra && x.eff).map(r)], ['Da incassare', l.filter((x) => x.entra && !x.eff).map(r)], ['Pagati', l.filter((x) => !x.entra && x.eff).map(r)], ['Da pagare', l.filter((x) => !x.entra && !x.eff).map(r)]], l.length ? '' : '<p class="nota" style="margin-top:20px">Nessun movimento dei lavori in questo mese.</p>');
+}
+function graficoLavori() {
+	const L = lavoriConti();
+	if (!L.length) return { html: '<p class="nota">Nessun lavoro con preventivo accettato.</p>', L };
+	const riga = (k) => {
+		const tot = Math.max(k.prezzo ?? 0, k.registrati + k.daSostenere, k.previsti ?? 0, 1), w = (v) => `${Math.round((v / tot) * 1000) / 10}%`;
+		return `<div class="lv"><button type="button" class="lv-nome" onclick="apri('p','${k.p.id}')"><b>${esc(titoloLavoro(k.p))}</b><span>${esc(k.p.nome)} · ${NOMI_STATO[k.p.stato]}</span></button>
+			<div class="lv-barra" role="img" aria-label="Prezzo ${euro(k.prezzo ?? 0)}, costi registrati ${euro(k.registrati)}, ancora da sostenere ${euro(k.daSostenere)}"><span class="lv-prezzo" style="width:${w(k.prezzo ?? 0)}"></span><i class="reg" style="width:${w(k.registrati)}" title="Registrati ${euro(k.registrati)}"></i><i class="da" style="left:${w(k.registrati)};width:${w(k.daSostenere)}" title="Da sostenere ${euro(k.daSostenere)}"></i>${k.previsti != null ? `<b class="lv-prev" style="left:${w(k.previsti)}" title="Costi previsti ${euro(k.previsti)}"></b>` : ''}</div>
+			${quattroConti(k)}</div>`;
+	};
+	const inc = L.flatMap((k) => [...k.mancano.map((x) => ({ cosa: `${k.p.nome}: ${x}`, click: `dettaglioConto('${k.p.id}','registrati')` })), ...(k.previsti == null ? [{ cosa: `${k.p.nome}: costi previsti da impostare`, click: `apriPrevisti('${k.p.id}')` }] : [])]);
+	return { html: `<div class="leg"><span><i class="lv-l prezzo"></i>Prezzo concordato</span><span><i class="pag eff"></i>Costi registrati</span><span><i class="pag prev"></i>Ancora da sostenere</span><span><i class="lv-l previsti"></i>Costi previsti</span></div>${L.map(riga).join('')}${incompleti(inc)}<p class="nota">Senza IVA. Ore = ore segnate × costo orario interno (${euro(costoOra())}/ora, lo vedi solo tu). Finché il lavoro è aperto il risultato è provvisorio.</p>`, L, inc };
+}
+function graficoOre() {
+	const w0 = lunediDi(OGGI), sett = [-2, -1, 0, 1].map((n) => piuGiorni(w0, n * 7));
+	const chi = andChi === 'tutti' ? OPERATORI.map((o) => o.id) : [andChi];
+	const apps = D.appuntamenti.filter((a) => a.stato !== 'annullato' && (andLav === 'tutti' || a.praticaId === andLav));
+	const dati = sett.map((l) => { const fine = piuGiorni(l, 6), qui = apps.filter((a) => a.giorno >= l && a.giorno <= fine); let prog = 0, reg = 0, manca = 0;
+		qui.forEach((a) => chi.forEach((o) => { if (!a.chi.includes(o)) return; prog += oreProgPersona(a); if (a.stato === 'svolto') { const r = oreRegPer(a, o); if (r == null) manca++; else reg += r; } })); return { l, fine, prog, reg, manca, passata: fine < OGGI, ora: l <= OGGI && OGGI <= fine }; });
+	const max = Math.max(1, ...dati.map((x) => Math.max(x.prog, x.reg)));
+	const h = (v) => `${Math.round((v / max) * 1000) / 10}%`;
+	const lavori = [...new Set(D.appuntamenti.filter((a) => a.praticaId).map((a) => a.praticaId))].map(pratica).filter(Boolean);
+	const filtri = `<div class="chips and-filtri" role="group" aria-label="Persona">${[['tutti', 'Tutta la squadra'], ...OPERATORI.map((o) => [o.id, o.nome])].map(([k, n]) => `<button type="button" class="${andChi === k ? 'attivo' : ''}" onclick="andChi='${k}';render()">${n}</button>`).join('')}</div>
+		<label class="and-lavoro">Lavoro<select class="campo" onchange="andLav=this.value;render()"><option value="tutti">Tutti i lavori</option>${lavori.map((p) => `<option value="${p.id}" ${andLav === p.id ? 'selected' : ''}>${esc(titoloLavoro(p))} · ${esc(p.nome)}</option>`).join('')}</select></label>`;
+	const col = (x) => `<button type="button" class="og-sett ${x.ora ? 'ora' : ''}" onclick="dettaglioSettimana('${x.l}')" aria-label="Settimana dal ${giornoBreve(x.l)}: programmate ${oreTesto(x.prog)}, registrate ${oreTesto(x.reg)}">
+		<span class="og-barre"><span class="og-b"><span class="og-v num">${x.prog ? oreTesto(x.prog) : ''}</span><i class="prog" style="height:${h(x.prog)}" title="Programmate ${oreTesto(x.prog)}"></i></span><span class="og-b"><span class="og-v num">${x.reg ? oreTesto(x.reg) : x.passata || x.ora ? '' : ''}</span><i class="reg" style="height:${h(x.reg)}" title="Registrate ${oreTesto(x.reg)}"></i></span></span>
+		<span class="cg-nome">${d(x.l).getUTCDate()}${d(x.l).getUTCMonth() !== d(x.fine).getUTCMonth() ? ' ' + MESI_B[d(x.l).getUTCMonth()] : ''}–${d(x.fine).getUTCDate()} ${MESI_B[d(x.fine).getUTCMonth()]}<small>${x.ora ? 'questa settimana' : x.l > OGGI ? 'prossima' : 'passata'}</small></span><span class="og-nota">${x.manca ? `<b class="manca">${x.manca} da segnare</b>` : ''}</span></button>`;
+	const daSegnare = D.appuntamenti.filter((a) => a.stato === 'svolto' && oreReg(a) == null);
+	return { html: `${filtri}<div class="leg"><span><i class="og-l prog"></i>Programmate (agenda)</span><span><i class="og-l reg"></i>Registrate (chiusura giornata)</span></div><div class="ore-grafico">${dati.map(col).join('')}</div>
+		${incompleti(daSegnare.map((a) => ({ cosa: `${giornoBreve(a.giorno)} · ${a.praticaId ? pratica(a.praticaId).nome : a.titolo}: ore non segnate`, click: `apriChiusura('${a.id}')` })))}
+		<p class="nota">Ore di squadra: ogni persona conta, pausa tolta (2 persone × 4 ore = 8 ore). Tocca una settimana per vedere le giornate.</p>`, daSegnare };
+}
+function dettaglioSettimana(l) {
+	const fine = piuGiorni(l, 6), chi = andChi === 'tutti' ? null : andChi;
+	const qui = D.appuntamenti.filter((a) => a.stato !== 'annullato' && a.giorno >= l && a.giorno <= fine && (andLav === 'tutti' || a.praticaId === andLav) && (!chi || a.chi.includes(chi))).sort((a, b) => (a.giorno + a.inizio).localeCompare(b.giorno + b.inizio));
+	const r = (a) => { const ps = chi ? [chi] : a.chi, prog = ps.reduce((t, o) => t + oreProgPersona(a), 0), regs = ps.map((o) => oreRegPer(a, o)), reg = regs.some((x) => x == null) ? null : regs.reduce((t, x) => t + x, 0);
+		return { ico: I.orologio, t: `${giornoBreve(a.giorno)} ${a.inizio}–${a.fine} · ${esc(a.praticaId ? pratica(a.praticaId).nome : a.titolo)}`, d: `${ps.map(nomeOp).join(', ')} · programmate ${oreTesto(prog)} · ${a.stato !== 'svolto' ? 'da fare' : reg == null ? '<b class="manca">ore da segnare</b>' : 'registrate ' + oreTesto(reg)}`, click: a.stato === 'svolto' && reg == null ? `apriChiusura('${a.id}')` : `apri('imp','${a.id}')` }; };
+	apriFinestra(`Settimana ${d(l).getUTCDate()}–${d(fine).getUTCDate()} ${MESI[d(fine).getUTCMonth()]}`, [['Svolte', qui.filter((a) => a.stato === 'svolto').map(r)], ['In agenda', qui.filter((a) => a.stato !== 'svolto').map(r)]], '', { filtri: false });
+}
+function andamento() {
+	const C = graficoCassa(), Lv = graficoLavori(), O = graficoOre();
+	const da30 = C.prossime.filter((x) => x.entra && x.quando <= piuGiorni(OGGI, 30)), rit = C.prossime.filter((x) => x.ritardo);
+	const inc = C.inc.length + (Lv.inc?.length ?? 0) + O.daSegnare.length;
+	const pagina = testa('Andamento', 'Solo tu lo vedi · i numeri si aprono')
+		+ `<section class="riquadro and-sez"><h2>Incassi e pagamenti dei lavori</h2>${C.html}</section>`
+		+ `<section class="riquadro and-sez"><h2>Lavori: prezzo e costi</h2>${Lv.html}</section>`
+		+ `<section class="riquadro and-sez"><h2>Ore della squadra</h2>${O.html}</section>`;
+	const card = latoCard({
+		grande: `<strong class="num">${euro(somma(da30, (x) => x.importo))}</strong>`,
+		sotto: 'da incassare nei prossimi 30 giorni (previsto, non ancora arrivato).',
+		celle: [
+			{ et: 'In ritardo', val: rit.length ? `${rit.length} · ${euroTondo(somma(rit, (x) => x.importo))}` : 'Nessuno', click: "document.querySelector('.scadenze')?.scrollIntoView({behavior:'smooth',block:'center'})" },
+			{ et: 'Lavori aperti', val: Lv.L.filter((k) => k.p.stato !== 'conclusa').length, click: "document.querySelectorAll('.and-sez')[1]?.scrollIntoView({behavior:'smooth',block:'start'})" },
+			{ et: 'Ore da segnare', val: O.daSegnare.length ? `${O.daSegnare.length} ${O.daSegnare.length === 1 ? 'giornata' : 'giornate'}` : 'Nessuna', click: "document.querySelectorAll('.and-sez')[2]?.scrollIntoView({behavior:'smooth',block:'start'})" },
+			{ et: 'Dati incompleti', val: inc || 'Nessuno', click: "document.querySelector('.dati-inc')?.scrollIntoView({behavior:'smooth',block:'center'})" }
+		],
+		nota: 'Prima i dati, poi i grafici: costi dei materiali, ore alla chiusura delle giornate, date di acconto e saldo.'
+	});
+	return conLato(pagina, card, 'Riepilogo andamento', 'lato-dopo');
+}
 const vuotoGrande = (titolo, testo) => `<div class="vuoto-grande">${I.pratiche.replace('class="ico"', 'class="ico" style="width:36px;height:36px"')}<b>${titolo}</b>${testo}</div>`;
 
 // Testata come la pagina di un lavoro del sito: foto con freccia, etichetta e contatore (pratica e impegno)
@@ -1836,6 +2055,7 @@ function schedaPratica(id, impId = null) {
 		<section class="sez"><h2>Cliente ${cl ? `<button type="button" class="link" onclick="finestraCliente('${cl.id}','${id}')">Scheda</button>` : `<button type="button" class="link" onclick="collegaCliente('${id}')">Crea e collega</button>`}</h2><p><b>${esc(p.nome)}</b>${cl ? '' : ' <span class="nota">· richiesta dal sito, non ancora in rubrica</span>'}</p><div class="contatti" style="margin-top:6px"><span>${I.tel}<a class="num" href="tel:${p.tel.replace(/\s/g, '')}">${p.tel}</a></span>${p.email ? `<span>${I.mail}<a href="mailto:${esc(p.email)}">${esc(p.email)}</a></span>` : ''}</div><dl class="coppia" style="margin-top:10px"><dt>Dove si lavora</dt><dd>${esc(p.indirizzoLavoro)}</dd><dt>Dove abita</dt><dd>${esc(p.indirizzoCliente || cl?.indirizzo || '') || '<span class="nota">non indicato</span>'}</dd></dl></section>
 		<section class="sez"><h2>Lavoro richiesto</h2><dl class="coppia"><dt>Lavoro</dt><dd><b>${esc(p.servizio)}</b></dd><dt>Dettagli</dt><dd>${esc(p.dettagli)}</dd>${p.preferenze ? `<dt>Preferenze</dt><dd>${esc(p.preferenze)}</dd>` : ''}${p.messaggio ? `<dt>Messaggio</dt><dd>«${esc(p.messaggio)}»</dd>` : ''}<dt>Stima vista dal cliente</dt><dd><span class="stima">${esc(p.stima) || '—'}</span>${p.stimaNota ? `<br><span class="nota">${esc(p.stimaNota)}</span>` : ''}</dd></dl></section>
 		<section class="sez" id="prev"><h2>Preventivo</h2>${bloccoPrev()}</section>
+		${sezioneConti(id)}
 		<section class="sez"><h2>Appuntamenti ${!chiusa(p) ? `<button type="button" class="link" onclick="apriNuovoApp('${id}')">+ Nuovo</button>` : ''}</h2>${apps.length ? `<ul class="lista">${apps.map((a) => `<li><button type="button" class="riga ${a.id === impId ? 'questo' : ''}" onclick="apri('imp','${a.id}')"><span class="ora num" style="min-width:64px">${giornoBreve(a.giorno)}<small>${a.inizio}–${a.fine}</small></span><span class="cosa"><b>${NOMI_TIPO[a.tipo]}</b><span>${a.chi.map(nomeOp).join(', ')} · ${durata(a)}</span>${tagApp(a.stato)}</span><span class="freccia">${I.freccia}</span></button></li>`).join('')}</ul>` : `<p class="nota">Nessun appuntamento.${!chiusa(p) ? ` <button type="button" class="link" onclick="apriNuovoApp('${id}')">Fissa il primo</button>` : ''}</p>`}</section>
 		<section class="sez"><h2>Materiali <span class="conta">${matDi(id).length || ''}</span>${!chiusa(p) ? ` <button type="button" class="link" onclick="apriMateriale(null,'${id}')">+ Aggiungi</button>` : ''}</h2>${matDi(id).length ? `<ul class="lista">${matDi(id).map((m) => rigaMat(m)).join('')}</ul>` : `<p class="nota">Nessun materiale. ${!chiusa(p) ? `<button type="button" class="link" onclick="preparaErica('${id}','materiali')">Fatti proporre la lista da Erica</button>` : ''}</p>`}</section>
 		<section class="sez"><h2>Note interne</h2><textarea class="campo" rows="3" placeholder="Solo per te: operatori e cliente non le vedono" onchange="salvaNote('${id}',this.value)">${esc(p.note)}</textarea><p class="nota" style="margin-top:6px">Si salvano quando esci dal campo.</p></section>
@@ -2064,7 +2284,7 @@ function altro() {
 		blocco: promemoriaLato()
 	});
 	return testa('Altro') + conLato(profilo
-		+ `<ul class="voci">${voce(I.avviso, 'Avvisi', "apri('avvisi')", nuove ? `${nuove} da leggere` : '')}${voce(I.erica, 'Erica', "apri('erica')", ericaDaVedere().length ? `${ericaDaVedere().length} da vedere` : '')}${voce(I.materiali, 'Materiali', "apri('materiali')", D.materiali.filter((m) => m.stato === 'da_comprare').length + ' da comprare')}${voce(I.pratiche, 'Impostazioni dei preventivi', "apri('impostazioni')")}${voce(I.casa, 'Sito: prezzi e ferie', "apri('sito')")}${voce(I.installa, 'Aggiungi alla schermata Home', 'apriInstalla()')}${voce(I.orologio, 'Stato del sistema', "apri('sistema')")}</ul>`
+		+ `<ul class="voci">${voce(I.andamento, 'Andamento', "vai('andamento')", 'incassi, costi dei lavori, ore')}${voce(I.avviso, 'Avvisi', "apri('avvisi')", nuove ? `${nuove} da leggere` : '')}${voce(I.erica, 'Erica', "apri('erica')", ericaDaVedere().length ? `${ericaDaVedere().length} da vedere` : '')}${voce(I.materiali, 'Materiali', "apri('materiali')", D.materiali.filter((m) => m.stato === 'da_comprare').length + ' da comprare')}${voce(I.pratiche, 'Impostazioni dei preventivi', "apri('impostazioni')")}${voce(I.casa, 'Sito: prezzi e ferie', "apri('sito')")}${voce(I.installa, 'Aggiungi alla schermata Home', 'apriInstalla()')}${voce(I.orologio, 'Stato del sistema', "apri('sistema')")}</ul>`
 		+ prova, cardA, 'Da tenere a mente', 'lato-dopo');
 }
 function cambiaRete(valore = !D.senzaRete) {
@@ -2097,7 +2317,7 @@ function impostazioni() {
 	const st = D.impostazioni;
 	return bottoneIndietro('Altro') + testa('Impostazioni dei preventivi', 'Compaiono su ogni PDF')
 		+ `<div class="due"><div><section class="riquadro"><h2>Intestazione</h2><div class="campi-box"><label>Nome<input name="im-int" value="${esc(st.intestazione)}"></label><label>Sede<input name="im-sede" value="${esc(st.sede)}"></label></div><div class="campi-box"><label>Telefono<input name="im-tel" value="${esc(st.telefono)}" inputmode="tel"></label><label>Partita IVA<input name="im-piva" value="${esc(st.piva)}" placeholder="da inserire"></label></div></section>
-		<section class="riquadro"><h2>Condizioni</h2><div class="campi-box"><label>Validità (giorni)<input name="im-val" value="${st.validita}" inputmode="numeric"></label><label>Acconto (%)<input name="im-acc" value="${st.acconto}" inputmode="numeric"></label><label>Tariffa oraria (€/ora)<input name="im-ora" value="${st.tariffaOra ?? 35}" inputmode="decimal"></label><label>Consumo a forfait (% sui materiali)<input name="im-cons" value="${st.consumoPerc ?? 5}" inputmode="decimal"></label></div><p class="nota" style="margin-top:6px">Tariffa e consumo sono d'esempio: mettici i tuoi. Servono solo a precompilare le voci nuove.</p><label class="campo">Esclusioni<textarea class="campo" name="im-escl" rows="2">${esc(st.esclusioni)}</textarea></label><label class="campo">Tempi<textarea class="campo" name="im-tempi" rows="2">${esc(st.tempi)}</textarea></label><p class="nota" style="margin-top:10px">IVA ammesse: 10% e 22% (non si cambiano da qui).</p><div id="im-esito"></div><div class="azioni"><button type="button" class="btn" onclick="salvaImpostazioni()">Salva</button><button type="button" class="btn linea" onclick="render();toast('Modifiche annullate.')">Annulla</button></div></section></div>
+		<section class="riquadro"><h2>Condizioni</h2><div class="campi-box"><label>Validità (giorni)<input name="im-val" value="${st.validita}" inputmode="numeric"></label><label>Acconto (%)<input name="im-acc" value="${st.acconto}" inputmode="numeric"></label><label>Tariffa oraria (€/ora)<input name="im-ora" value="${st.tariffaOra ?? 35}" inputmode="decimal"></label><label>Consumo a forfait (% sui materiali)<input name="im-cons" value="${st.consumoPerc ?? 5}" inputmode="decimal"></label></div><p class="nota" style="margin-top:6px">Tariffa e consumo sono d'esempio: mettici i tuoi. Servono solo a precompilare le voci nuove.</p><div class="campi-box" style="margin-top:12px"><label>Costo orario interno (€/ora)<input name="im-costo" value="${st.costoOra ?? 24}" inputmode="decimal"></label><label>Pausa nelle giornate lunghe (min)<input name="im-pausa" value="${st.pausaMin ?? 60}" inputmode="numeric"></label></div><p class="nota" style="margin-top:6px">Riservato: lo vedi solo tu. Serve a calcolare quanto costano le ore della squadra nei conti dei lavori (valore d'esempio).</p><label class="campo">Esclusioni<textarea class="campo" name="im-escl" rows="2">${esc(st.esclusioni)}</textarea></label><label class="campo">Tempi<textarea class="campo" name="im-tempi" rows="2">${esc(st.tempi)}</textarea></label><p class="nota" style="margin-top:10px">IVA ammesse: 10% e 22% (non si cambiano da qui).</p><div id="im-esito"></div><div class="azioni"><button type="button" class="btn" onclick="salvaImpostazioni()">Salva</button><button type="button" class="btn linea" onclick="render();toast('Modifiche annullate.')">Annulla</button></div></section></div>
 		<div><section class="riquadro"><h2>Come appare sul PDF</h2><div class="pdf"><p class="marchio">${esc(st.intestazione).toUpperCase().replace('MENTE', '<span>MENTE</span>')}</p><p class="nota">${esc(st.sede)} · ${esc(st.telefono)} · P. IVA ${esc(st.piva) || '…'}</p><hr><p class="nota">Valido ${st.validita} giorni. Esclusioni: ${esc(st.esclusioni)} Acconto ${st.acconto}% all'accettazione, saldo a fine lavori. ${esc(st.tempi)}</p></div></section></div></div>`;
 }
 function salvaImpostazioni() {
@@ -2106,7 +2326,7 @@ function salvaImpostazioni() {
 	if (!v('im-int')) return esito('im-esito', 'Serve il nome in intestazione.');
 	if (!(val >= 1 && val <= 365)) return esito('im-esito', 'Validità: un numero di giorni tra 1 e 365.');
 	if (!(acc >= 0 && acc <= 100)) return esito('im-esito', 'Acconto: una percentuale tra 0 e 100.');
-	Object.assign(D.impostazioni, { intestazione: v('im-int'), sede: v('im-sede'), telefono: v('im-tel'), piva: v('im-piva'), validita: val, acconto: acc, tariffaOra: parseFloat(String(v('im-ora')).replace(',', '.')) || 0, consumoPerc: parseFloat(String(v('im-cons')).replace(',', '.')) || 0, esclusioni: v('im-escl'), tempi: v('im-tempi') });
+	Object.assign(D.impostazioni, { intestazione: v('im-int'), sede: v('im-sede'), telefono: v('im-tel'), piva: v('im-piva'), validita: val, acconto: acc, tariffaOra: parseFloat(String(v('im-ora')).replace(',', '.')) || 0, consumoPerc: parseFloat(String(v('im-cons')).replace(',', '.')) || 0, costoOra: parseFloat(String(v('im-costo')).replace(',', '.')) || 0, pausaMin: parseInt(v('im-pausa'), 10) || 0, esclusioni: v('im-escl'), tempi: v('im-tempi') });
 	salva(); render(); toast('Impostazioni salvate: valgono per i prossimi PDF.');
 }
 // Prezzi «da» del sito, IVA inclusa, presi da src/lib/calcoli.js (aPartireDa + iva): qui si leggono soltanto.
@@ -2217,6 +2437,117 @@ function suggerimenti(p, cat) {
 }
 // cosa manca: i tipi da controllare senza voci e non segnati «non serve»
 const mancaPv = (pv) => CAT_CONTROLLO.filter((k) => !pv.righe.some((r) => catDi(r) === k) && !(pv.nonServe ?? []).includes(k));
+/* ===================== CONTI DEI LAVORI (solo Fabri) =====================
+   Prezzo concordato (senza IVA) · costi previsti · costi registrati · costi ancora da sostenere. Il risultato è PROVVISORIO finché il lavoro è aperto.
+   Se manca un dato (ore non segnate, materiale senza costo) si dice «Dati incompleti»: mai contato come zero o come guadagno. */
+const costoOra = () => D.impostazioni.costoOra ?? 24;
+const pvAccettato = (pid) => prevDi(pid).filter((v) => v.stato === 'accettata').at(-1) ?? null;
+const NOMI_SPESA = { materiali: 'Materiali', noleggio: 'Noleggio', smaltimento: 'Smaltimento', esterni: 'Collaboratore esterno', trasporto: 'Trasporto', altro: 'Altro' };
+const NOMI_PAG = { acconto: 'Acconto', saldo: 'Saldo', altro: 'Altro pagamento' };
+const somma = (l, f) => Math.round(l.reduce((t, x) => t + (f ? f(x) : x), 0) * 100) / 100;
+function pianoPagamenti(pid, pv, giorno) {
+	if ((D.pagamenti ??= []).some((g) => g.praticaId === pid)) return;
+	const tot = totali(pv).tot, acc = Math.round(tot * (D.impostazioni.acconto ?? 30)) / 100;
+	const ultimo = D.appuntamenti.filter((a) => a.praticaId === pid && a.stato !== 'annullato').map((a) => a.giorno).sort().at(-1) ?? null;
+	D.pagamenti.push({ id: nuovoId('g'), praticaId: pid, tipo: 'acconto', importo: acc, prevista: giorno, ricevuto: null }, { id: nuovoId('g'), praticaId: pid, tipo: 'saldo', importo: Math.round((tot - acc) * 100) / 100, prevista: ultimo, ricevuto: null });
+}
+function contiLavoro(pid) {
+	const p = pratica(pid), pv = pvAccettato(pid), co = costoOra();
+	const apps = D.appuntamenti.filter((a) => a.praticaId === pid && a.stato !== 'annullato');
+	const svolti = apps.filter((a) => a.stato === 'svolto'), futuri = apps.filter((a) => a.stato !== 'svolto');
+	const senzaOre = svolti.filter((a) => oreReg(a) == null);
+	const oreR = somma(svolti.filter((a) => oreReg(a) != null), oreReg), oreDa = somma(futuri, oreProg);
+	const mats = matDi(pid), matSenza = mats.filter((m) => !(m.costo > 0));
+	const matR = somma(mats.filter((m) => m.costo > 0 && m.stato !== 'da_comprare'), (m) => m.costo), matDa = somma(mats.filter((m) => m.costo > 0 && m.stato === 'da_comprare'), (m) => m.costo);
+	const sp = (D.spese ?? []).filter((x) => x.praticaId === pid), speseR = somma(sp.filter((x) => x.stato === 'pagata'), (x) => x.importo), speseDa = somma(sp.filter((x) => x.stato !== 'pagata'), (x) => x.importo);
+	const pr = (D.previsti ?? {})[pid], previsti = pr ? Math.round((pr.ore * co + pr.materiali + pr.altro) * 100) / 100 : null;
+	const registrati = Math.round((oreR * co + matR + speseR) * 100) / 100, daSostenere = Math.round((oreDa * co + matDa + speseDa) * 100) / 100;
+	const mancano = [...(!apps.some((a) => TIPI_CON_RESOCONTO.includes(a.tipo)) ? ['nessuna giornata di lavoro in agenda (le ore non si possono contare)'] : []), ...(senzaOre.length ? [`${senzaOre.length} ${senzaOre.length === 1 ? 'giornata svolta' : 'giornate svolte'} senza ore`] : []), ...(matSenza.length ? [`${matSenza.length} ${matSenza.length === 1 ? 'materiale' : 'materiali'} senza costo`] : [])];
+	const prezzo = pv ? totali(pv).imp : null, finale = p.stato === 'conclusa';
+	const risultato = prezzo != null && !mancano.length ? Math.round((prezzo - registrati - (finale ? 0 : daSostenere)) * 100) / 100 : null;
+	return { p, pv, prezzo, previsti, pr, registrati, daSostenere, risultato, finale, mancano, oreR, oreDa, matR, matDa, speseR, speseDa, svolti, futuri, senzaOre, mats, matSenza, sp, co };
+}
+const lavoriConti = () => D.pratiche.filter((p) => pvAccettato(p.id) && !p.archiviata).map((p) => contiLavoro(p.id));
+// i 4 numeri del lavoro, ognuno si apre per vedere da dove viene
+function quattroConti(k) {
+	const pid = k.p.id;
+	const cella = (et, val, click, nota = '') => `<button type="button" class="conto" onclick="${click}"><small>${et}</small><b class="num">${val}</b>${nota ? `<span>${nota}</span>` : ''}</button>`;
+	return `<div class="conti-4">${cella('Prezzo concordato', k.prezzo != null ? euro(k.prezzo) : '—', `dettaglioConto('${pid}','prezzo')`, 'senza IVA')}${cella('Costi previsti', k.previsti != null ? euro(k.previsti) : 'Da impostare', `apriPrevisti('${pid}')`, k.previsti != null ? 'all\'inizio' : '')}${cella('Costi registrati', euro(k.registrati), `dettaglioConto('${pid}','registrati')`, 'finora')}${cella('Ancora da sostenere', euro(k.daSostenere), `dettaglioConto('${pid}','da')`, 'per finire')}</div>
+	<div class="conti-ris ${k.risultato == null ? 'incompleto' : k.risultato < 0 ? 'neg' : ''}">${k.risultato == null ? `<b>Dati incompleti</b><span>${k.prezzo == null ? 'nessun preventivo accettato' : k.mancano.join(' · ')}: il risultato non si calcola finché mancano.</span>` : `<b class="num">${k.risultato >= 0 ? '+' : '−'}${euro(Math.abs(k.risultato))}</b><span>${k.finale ? 'Risultato finale del lavoro' : 'Risultato provvisorio: prezzo − costi registrati − costi ancora da sostenere'}</span>`}</div>`;
+}
+function dettaglioConto(pid, cosa) {
+	const k = contiLavoro(pid), co = k.co;
+	if (cosa === 'prezzo') return apriPiccolo('Prezzo concordato', k.pv ? `<p class="rq-riga"><span>${k.pv.numero}</span><span class="num">${euro(k.prezzo)}</span></p><p class="rq-riga"><span>IVA ${k.pv.iva}%</span><span class="num">${euro(totali(k.pv).iva)}</span></p><p class="rq-riga sep tot"><span>Il cliente paga</span><span class="num">${euro(totali(k.pv).tot)}</span></p><p class="nota">I costi sono senza IVA, quindi il confronto si fa sul prezzo senza IVA.</p>` : '<p class="nota">Nessun preventivo accettato.</p>');
+	const reg = cosa === 'registrati';
+	const ore = reg ? k.svolti.map((a) => [`${giornoBreve(a.giorno)} · ${NOMI_TIPO[a.tipo]}`, oreReg(a), a]) : k.futuri.map((a) => [`${giornoBreve(a.giorno)} · ${NOMI_TIPO[a.tipo]} (in agenda)`, oreProg(a), a]);
+	const mats = k.mats.filter((m) => (reg ? m.stato !== 'da_comprare' : m.stato === 'da_comprare'));
+	const sp = k.sp.filter((x) => (reg ? x.stato === 'pagata' : x.stato !== 'pagata'));
+	const r = (t, v, cl = '') => `<p class="rq-riga ${cl}"><span>${t}</span><span class="num">${v}</span></p>`;
+	apriFinestra(reg ? 'Costi registrati' : 'Costi ancora da sostenere', [
+		[`Ore della squadra × ${euro(co)}/ora`, ore.map(([t, o, a]) => ({ ico: I.orologio, t: `${t}`, d: o == null ? '<b class="manca">Ore non segnate: chiudi la giornata</b>' : `${oreTesto(o)} × ${euro(co)} = ${euro(Math.round(o * co * 100) / 100)} · ${a.chi.map(nomeOp).join(', ')}`, click: o == null && a.stato === 'svolto' ? `apriChiusura('${a.id}')` : `apri('imp','${a.id}')` }))],
+		['Materiali', mats.map((m) => ({ ico: I.materiali, t: esc(m.nome), d: m.costo > 0 ? `${euro(m.costo)} · ${esc(m.qta)}${m.data ? ' · comprato ' + giornoBreve(m.data) : ''}` : '<b class="manca">Costo mancante: aggiungilo</b>', click: `apriMateriale('${m.id}')` }))],
+		['Altre spese', sp.map((x) => ({ ico: I.scatola, t: esc(x.descr), d: `${NOMI_SPESA[x.tipo]} · ${euro(x.importo)} · ${x.data ? giornoBreve(x.data) : 'senza data'}`, click: `apriSpesa('${pid}','${x.id}')` }))]
+	], `<div class="fin-tot">${r('Ore', euro(Math.round((reg ? k.oreR : k.oreDa) * co * 100) / 100))}${r('Materiali', euro(reg ? k.matR : k.matDa))}${r('Altre spese', euro(reg ? k.speseR : k.speseDa))}${r('Totale', euro(reg ? k.registrati : k.daSostenere), 'sep tot')}${reg && k.mancano.length ? `<p class="manca">Dati incompleti: ${k.mancano.join(' · ')}</p>` : ''}</div><button type="button" class="vedi" onclick="apriSpesa('${pid}')">Aggiungi una spesa</button>`, { filtri: false });
+}
+// sezione nella pratica: pagamenti del cliente + i 4 numeri
+function sezioneConti(pid) {
+	if (operatore() || !pvAccettato(pid)) return '';
+	const k = contiLavoro(pid), pags = (D.pagamenti ?? []).filter((g) => g.praticaId === pid);
+	const pag = (g) => `<li><button type="button" class="riga" onclick="apriPagamento('${pid}','${g.id}')"><span class="ora num" style="min-width:64px">${g.ricevuto ? giornoBreve(g.ricevuto.data) : g.prevista ? giornoBreve(g.prevista) : '—'}<small>${g.ricevuto ? 'ricevuto' : g.prevista ? 'previsto' : 'senza data'}</small></span><span class="cosa"><b class="num">${NOMI_PAG[g.tipo]} · ${euro(g.importo)}</b><span>${g.ricevuto ? `Ricevuto ${giornoBreve(g.ricevuto.data)}${Math.abs(g.ricevuto.importo - g.importo) > 0.5 ? ' · ' + euro(g.ricevuto.importo) : ''}` : g.prevista ? `Previsto ${giornoBreve(g.prevista)}${g.prevista < OGGI ? ' · in ritardo' : ''}` : 'Data da fissare'}</span>${g.ricevuto ? '<span class="tag ok">Ricevuto</span>' : g.prevista && g.prevista < OGGI ? '<span class="tag err">In ritardo</span>' : !g.prevista ? '<span class="tag att">Manca la data</span>' : ''}</span><span class="freccia">${I.freccia}</span></button></li>`;
+	return `<section class="sez" id="conti"><h2>Conti del lavoro <span class="conta">solo tu</span></h2>${quattroConti(k)}
+		<h3 class="sez-sotto">Pagamenti del cliente <button type="button" class="link" onclick="apriPagamento('${pid}')">+ Aggiungi</button></h3>${pags.length ? `<ul class="lista">${pags.map(pag).join('')}</ul>` : `<p class="nota">Nessun pagamento previsto. <button type="button" class="link" onclick="pianoPagamenti('${pid}',pvAccettato('${pid}'),OGGI);salva();render()">Proponi acconto e saldo</button></p>`}
+		<p class="nota" style="margin-top:8px">Pagamenti IVA inclusa (quello che entra davvero); costi e prezzo senza IVA. <button type="button" class="link" onclick="apriSpesa('${pid}')">+ Aggiungi una spesa</button></p></section>`;
+}
+function apriPagamento(pid, id = null) {
+	const g = id ? D.pagamenti.find((x) => x.id === id) : { tipo: 'altro', importo: '', prevista: OGGI, ricevuto: null };
+	apriTendina(`<p class="nota">${esc(titoloLavoro(pratica(pid)))} · importi IVA inclusa</p>
+		<label class="campo">Che pagamento</label><div class="scelte">${Object.entries(NOMI_PAG).map(([k, n]) => `<label><input type="radio" name="pg-tipo" value="${k}" ${g.tipo === k ? 'checked' : ''}>${n}</label>`).join('')}</div>
+		<div class="campi-box"><label>Importo (€)<input name="pg-imp" inputmode="decimal" value="${g.importo ? fmtQ(g.importo) : ''}"></label><label>Quando dovrebbe arrivare<input name="pg-prev" type="date" value="${g.prevista ?? ''}"></label></div>
+		<label class="campo" style="margin-top:12px"><input type="checkbox" name="pg-ric" ${g.ricevuto ? 'checked' : ''} onchange="document.getElementById('pg-ric-box').hidden=!this.checked"> Ricevuto</label>
+		<div class="campi-box" id="pg-ric-box" ${g.ricevuto ? '' : 'hidden'}><label>Ricevuto il<input name="pg-rdata" type="date" value="${g.ricevuto?.data ?? OGGI}"></label><label>Importo ricevuto (€)<input name="pg-rimp" inputmode="decimal" value="${fmtQ(g.ricevuto?.importo ?? g.importo ?? 0)}"></label></div>
+		<div id="pg-esito"></div><div class="azioni"><button type="button" class="btn pieno" onclick="salvaPagamento('${pid}','${id ?? ''}')">Salva</button>${id ? `<button type="button" class="btn linea pieno" onclick="apriConferma('Togliere il pagamento?','Sparisce dai conti di questo lavoro.','Togli',()=>{D.pagamenti=D.pagamenti.filter((x)=>x.id!=='${id}');salva();chiudiTendina(true);render();})">Togli</button>` : ''}</div>`, id ? 'Pagamento' : 'Nuovo pagamento');
+}
+function salvaPagamento(pid, id) {
+	const n = (k) => parseFloat(String(valore(k) ?? '').replace(',', '.')) || 0, imp = n('pg-imp');
+	if (!(imp > 0)) return esito('pg-esito', 'Scrivi l\'importo.');
+	const ric = document.querySelector('[name="pg-ric"]')?.checked;
+	const dati = { tipo: valore('pg-tipo') || 'altro', importo: imp, prevista: valore('pg-prev') || null, ricevuto: ric ? { data: valore('pg-rdata') || OGGI, importo: n('pg-rimp') || imp } : null };
+	if (id) Object.assign(D.pagamenti.find((x) => x.id === id), dati); else (D.pagamenti ??= []).push({ id: nuovoId('g'), praticaId: pid, ...dati });
+	salva(); chiudiTendina(); render(); toast(ric ? 'Pagamento segnato ricevuto.' : 'Pagamento salvato.');
+}
+function apriSpesa(pid, id = null) {
+	const x = id ? D.spese.find((y) => y.id === id) : { tipo: 'materiali', descr: '', importo: '', data: OGGI, stato: 'pagata' };
+	apriTendina(`<p class="nota">${esc(titoloLavoro(pratica(pid)))} · importi senza IVA. I materiali della lista hanno il loro costo: qui metti il resto.</p>
+		<label class="campo">Che spesa</label><div class="scelte">${Object.entries(NOMI_SPESA).map(([k, n]) => `<label><input type="radio" name="sp-tipo" value="${k}" ${x.tipo === k ? 'checked' : ''}>${n}</label>`).join('')}</div>
+		<label class="campo">Cosa<input class="campo" name="sp-descr" value="${esc(x.descr)}" placeholder="es. noleggio ponteggio 3 giorni"></label>
+		<div class="campi-box"><label>Importo (€)<input name="sp-imp" inputmode="decimal" value="${x.importo ? fmtQ(x.importo) : ''}"></label><label>Data<input name="sp-data" type="date" value="${x.data ?? ''}"></label></div>
+		<label class="campo" style="margin-top:12px">A che punto è</label><div class="scelte"><label><input type="radio" name="sp-stato" value="pagata" ${x.stato === 'pagata' ? 'checked' : ''}>Già pagata</label><label><input type="radio" name="sp-stato" value="prevista" ${x.stato !== 'pagata' ? 'checked' : ''}>Da pagare</label></div>
+		<div id="sp-esito"></div><div class="azioni"><button type="button" class="btn pieno" onclick="salvaSpesa('${pid}','${id ?? ''}')">Salva</button>${id ? `<button type="button" class="btn linea pieno" onclick="apriConferma('Togliere la spesa?','Sparisce dai conti di questo lavoro.','Togli',()=>{D.spese=D.spese.filter((y)=>y.id!=='${id}');salva();chiudiTendina(true);render();})">Togli</button>` : ''}</div>`, id ? 'Spesa' : 'Nuova spesa');
+}
+function salvaSpesa(pid, id) {
+	const imp = parseFloat(String(valore('sp-imp') ?? '').replace(',', '.')) || 0, descr = (valore('sp-descr') ?? '').trim();
+	if (descr.length < 2) return esito('sp-esito', 'Scrivi cos\'è la spesa.');
+	if (!(imp > 0)) return esito('sp-esito', 'Scrivi l\'importo.');
+	const dati = { tipo: valore('sp-tipo') || 'altro', descr, importo: imp, data: valore('sp-data') || null, stato: valore('sp-stato') || 'pagata' };
+	if (id) Object.assign(D.spese.find((y) => y.id === id), dati); else (D.spese ??= []).push({ id: nuovoId('s'), praticaId: pid, ...dati });
+	salva(); chiudiTendina(); render(); toast('Spesa salvata.');
+}
+// costi previsti: proposta dal preventivo (ore di manodopera) e dall'agenda; li confermi tu
+function apriPrevisti(pid) {
+	const k = contiLavoro(pid), pv = k.pv, pr = k.pr;
+	const oreDaPv = pv ? somma(pv.righe.filter((r) => catDi(r) === 'lavoro'), (r) => { const { q, u } = qDi(r); return /^ore?$/i.test(u) ? q : /giorn/i.test(u) ? q * 8 : 0; }) : 0;
+	const oreProp = pr?.ore ?? (oreDaPv || somma([...k.svolti, ...k.futuri], oreProg));
+	apriTendina(`<p class="nota">Quanto pensi di spendere per questo lavoro (senza IVA). Si fissa all'inizio e serve a confrontare.</p>
+		<div class="campi-box"><label>Ore di squadra<input name="cp-ore" inputmode="decimal" value="${fmtQ(oreProp)}"></label><label>× costo orario<input value="${euro(k.co)}" disabled></label></div>
+		<div class="campi-box"><label>Materiali (€)<input name="cp-mat" inputmode="decimal" value="${pr ? fmtQ(pr.materiali) : ''}" placeholder="0"></label><label>Altre spese (€)<input name="cp-altro" inputmode="decimal" value="${pr ? fmtQ(pr.altro) : ''}" placeholder="noleggi, smaltimento, esterni"></label></div>
+		<p class="nota" style="margin-top:8px">${pr ? '' : oreDaPv ? `Ore proposte dalla manodopera del preventivo (${oreTesto(oreDaPv)}).` : 'Ore proposte dall\'agenda.'} Il costo orario si cambia in Impostazioni.</p>
+		<div class="azioni"><button type="button" class="btn pieno" onclick="salvaPrevisti('${pid}')">Salva i costi previsti</button></div>`, 'Costi previsti');
+}
+function salvaPrevisti(pid) {
+	const n = (k) => parseFloat(String(valore(k) ?? '').replace(',', '.')) || 0;
+	(D.previsti ??= {})[pid] = { ore: n('cp-ore'), materiali: n('cp-mat'), altro: n('cp-altro') };
+	salva(); chiudiTendina(); render(); toast('Costi previsti salvati.');
+}
 // Preventivo: stessa struttura e misure della pagina Preventivo del sito (preventivo.html: passi tr2-passo, scelte pv-carta, riquadro «risultato»;
 // sul telefono foglio a tutto schermo pv-foglio con la barra dei passi in fondo tr2-avanti).
 let pvPasso = 1, pvPassoId = null;
@@ -2456,13 +2787,27 @@ function azioneApp(id, cosa) {
    sopralluogo, consegna e altro restano semplici. Si può correggere o riaprire; ogni passo va nel registro (chi e quando).
    Impegno svolto ≠ pratica conclusa: la pratica la chiude Fabri. */
 const TIPI_CON_RESOCONTO = ['giornata_lavoro', 'inizio_lavori'];
+// ORE: l'agenda dice cosa era programmato, la chiusura cosa è successo. Programmate = (durata − pausa) a testa; 2 persone × 4 ore = 8 ore di squadra.
+const pausaDi = (a) => (minutiApp(a) > 360 ? D.impostazioni.pausaMin ?? 60 : 0);
+const oreProgPersona = (a) => Math.round((Math.max(0, minutiApp(a) - pausaDi(a)) / 60) * 4) / 4;
+const oreProg = (a) => oreProgPersona(a) * a.chi.length;
+// ore registrate a testa: null = non ancora segnate (giornata svolta senza ore = dato mancante)
+function oreRegPer(a, o) {
+	if (a.stato !== 'svolto' || !a.chi.includes(o)) return null;
+	const c = a.chiusura;
+	if (c?.orePer) return c.orePer[o] ?? 0;
+	if (c?.ore) return c.ore / a.chi.length;
+	return TIPI_CON_RESOCONTO.includes(a.tipo) ? null : oreProgPersona(a); // sopralluoghi e consegne: come in agenda
+}
+const oreReg = (a) => { const l = a.chi.map((o) => oreRegPer(a, o)); return l.some((x) => x == null) ? null : l.reduce((t, x) => t + x, 0); };
+function chOreTot() { const t = [...document.querySelectorAll('[name^="ch-ore-"]')].reduce((s, i) => s + (parseFloat(i.value.replace(',', '.')) || 0), 0); const b = document.getElementById('ch-tot'); if (b) b.textContent = oreTesto(t); }
 const minutiApp = (a) => { const [h1, m1] = a.inizio.split(':').map(Number), [h2, m2] = a.fine.split(':').map(Number); return h2 * 60 + m2 - (h1 * 60 + m1); };
 const oreTesto = (n) => String(Math.round(n * 10) / 10).replace('.', ',') + ' h';
 function apriChiusura(id) {
 	const a = D.appuntamenti.find((x) => x.id === id), p = a.praticaId ? pratica(a.praticaId) : null, lungo = TIPI_CON_RESOCONTO.includes(a.tipo), c = a.chiusura ?? {};
 	const foto = p ? Object.keys(FOTO).filter((n) => !fotoDi(p).includes(n) || n === c.foto).slice(0, 6) : [];
 	apriTendina(`<p class="nota">${NOMI_TIPO[a.tipo]} · ${giornoBreve(a.giorno)} ${a.inizio}–${a.fine}${p ? ' · ' + esc(p.nome) : ''}</p>
-	${lungo ? `<div class="campi-box"><label>Ore effettive<input name="ch-ore" inputmode="decimal" value="${String(c.ore ?? Math.round((minutiApp(a) / 60) * 2) / 2).replace('.', ',')}"></label><label>Previste<input value="${durata(a)}" disabled></label></div>
+	${lungo ? `<label class="campo">Ore lavorate, per persona (pausa tolta)</label><div class="campi-box ch-ore-box">${a.chi.map((o) => `<label>${nomeOp(o)}<input name="ch-ore-${o}" inputmode="decimal" oninput="chOreTot()" value="${fmtQ(c.orePer?.[o] ?? (c.ore && !c.orePer ? c.ore / a.chi.length : oreProgPersona(a)))}"></label>`).join('')}</div><p class="nota" style="margin-top:6px">In agenda ${durata(a)}${pausaDi(a) ? `, meno ${pausaDi(a)} min di pausa` : ''}: ${oreTesto(oreProgPersona(a))} a testa. Correggi se qualcuno ha fatto di più o di meno. Ore di squadra: <b id="ch-tot">${oreTesto(a.chi.reduce((t, o) => t + (c.orePer?.[o] ?? oreProgPersona(a)), 0))}</b></p>
 	<label class="campo">Cosa è stato fatto<textarea class="campo" name="ch-fatto" rows="2" placeholder="es. posato il pavimento del bagno">${esc(c.fatto ?? '')}</textarea></label>
 	<label class="campo">Cosa resta da finire (facoltativo)<textarea class="campo" name="ch-resta" rows="2" placeholder="es. stuccatura domani mattina">${esc(c.resta ?? '')}</textarea></label>
 	${foto.length ? `<label class="campo">Una foto (facoltativa)</label><div class="ch-foto"><label><input type="radio" name="ch-foto" value="" ${c.foto ? '' : 'checked'}><span>Nessuna</span></label>${foto.map((n) => `<label><input type="radio" name="ch-foto" value="${n}" ${c.foto === n ? 'checked' : ''}><img src="${mini(n)}" alt="${esc(FOTO[n][0])}"></label>`).join('')}</div>` : ''}`
@@ -2475,16 +2820,19 @@ function salvaChiusura(id) {
 	const a = D.appuntamenti.find((x) => x.id === id), p = a.praticaId ? pratica(a.praticaId) : null, lungo = TIPI_CON_RESOCONTO.includes(a.tipo);
 	const fatto = (valore('ch-fatto') ?? '').trim();
 	let ore = null;
+	let orePer = null;
 	if (lungo) {
-		ore = parseFloat(String(valore('ch-ore') ?? '').replace(',', '.'));
-		if (!(ore > 0 && ore <= 16)) return esito('ch-esito', 'Scrivi le ore effettive, per esempio 7,5.');
+		orePer = Object.fromEntries(a.chi.map((o) => [o, parseFloat(String(valore('ch-ore-' + o) ?? '').replace(',', '.'))]));
+		if (Object.values(orePer).some((x) => !(x >= 0 && x <= 16))) return esito('ch-esito', 'Scrivi le ore di ognuno, per esempio 7,5 (0 se non è venuto).');
+		ore = Object.values(orePer).reduce((t, x) => t + x, 0);
+		if (!(ore > 0)) return esito('ch-esito', 'Scrivi le ore lavorate.');
 		if (!fatto) return esito('ch-esito', 'Scrivi in due parole cosa è stato fatto.');
 	}
 	const resta = lungo ? (valore('ch-resta') ?? '').trim() : '';
 	const foto = lungo ? document.querySelector('[name="ch-foto"]:checked')?.value || null : null;
 	const correzione = a.stato === 'svolto', chi = D.utente;
 	if (foto && p && !(p.fotoCantiere ?? []).some((x) => x.nome === foto)) (p.fotoCantiere ??= []).push({ nome: foto, chi, quando: adessoIso() });
-	a.stato = 'svolto'; a.chiusura = { chi, quando: adessoIso(), ore, fatto, resta, foto };
+	a.stato = 'svolto'; a.chiusura = { chi, quando: adessoIso(), ore, orePer, fatto, resta, foto };
 	(a.registro ??= []).push([adessoIso(), chi, correzione ? 'Chiusura corretta' : 'Segnato svolto']);
 	const riass = [ore ? oreTesto(ore) : null, fatto || null, resta ? 'resta: ' + resta : null].filter(Boolean).join(' · ');
 	p?.storico.push([adessoIso(), `${NOMI_TIPO[a.tipo]} ${correzione ? '— chiusura corretta' : 'segnato svolto'} (${nomeOp(chi)})${riass ? ': ' + riass : ''}`]);
@@ -2507,7 +2855,7 @@ function riapriImpegno(id) {
 function sezioneChiusura(a) {
 	if (!a.chiusura && !a.registro?.length) return '';
 	const c = a.chiusura;
-	return `<section class="sez"><h2>${c ? 'Resoconto' : 'Registro'}</h2>${c ? `<dl class="coppia"><dt>Chiuso da</dt><dd>${nomeOp(c.chi)} · ${quando(c.quando)}</dd>${c.ore ? `<dt>Ore effettive</dt><dd>${oreTesto(c.ore)} <span class="nota">(previste ${durata(a)})</span></dd>` : ''}${c.fatto ? `<dt>${TIPI_CON_RESOCONTO.includes(a.tipo) ? 'Fatto' : 'Note'}</dt><dd>${esc(c.fatto)}</dd>` : ''}${c.resta ? `<dt>Da finire</dt><dd>${esc(c.resta)}</dd>` : ''}${c.foto ? `<dt>Foto</dt><dd><img class="mini" src="${mini(c.foto)}" alt="" width="52" height="52"></dd>` : ''}</dl>` : ''}
+	return `<section class="sez"><h2>${c ? 'Resoconto' : 'Registro'}</h2>${c ? `<dl class="coppia"><dt>Chiuso da</dt><dd>${nomeOp(c.chi)} · ${quando(c.quando)}</dd>${c.ore ? `<dt>Ore lavorate</dt><dd>${oreTesto(c.ore)} di squadra${c.orePer ? ` <span class="nota">(${Object.entries(c.orePer).map(([o, x]) => nomeOp(o) + ' ' + oreTesto(x)).join(' · ')})</span>` : ''} <span class="nota">· in agenda ${oreTesto(oreProg(a))}</span></dd>` : ''}${c.fatto ? `<dt>${TIPI_CON_RESOCONTO.includes(a.tipo) ? 'Fatto' : 'Note'}</dt><dd>${esc(c.fatto)}</dd>` : ''}${c.resta ? `<dt>Da finire</dt><dd>${esc(c.resta)}</dd>` : ''}${c.foto ? `<dt>Foto</dt><dd><img class="mini" src="${mini(c.foto)}" alt="" width="52" height="52"></dd>` : ''}</dl>` : ''}
 		${a.registro?.length ? `<ul class="storico" style="margin-top:12px">${[...a.registro].reverse().map(([q, chi, t]) => `<li><span class="q num">${quando(q)}</span><span>${esc(t)} · ${nomeOp(chi)}</span></li>`).join('')}</ul>` : ''}</section>`;
 }
 function apriSposta(id) {
@@ -2554,7 +2902,7 @@ function salvaRegistra(pvId, azione) {
 	if (bloccoRete()) return;
 	const pv = D.preventivi.find((x) => x.id === pvId), p = pratica(pv.praticaId), q = valore('rg-quando') + 'T' + new Date().toTimeString().slice(0, 5);
 	if (azione === 'inviata') { pv.stato = 'inviata'; pv.inviato = q; pv.canale = valore('rg-canale'); p.storico.push([q, `Preventivo ${pv.numero} segnato inviato (${CANALI[pv.canale]})`]); toast('Registrato come inviato: nessun messaggio è partito da qui.'); }
-	if (azione === 'accettata') { pv.stato = 'accettata'; pv.accettato = q; pv.accettatoCanale = valore('rg-canale'); p.storico.push([q, `Preventivo ${pv.numero} registrato come accettato (${CANALI[pv.accettatoCanale]})`]); toast('Accettazione registrata. Adesso: programma il lavoro.'); }
+	if (azione === 'accettata') { pv.stato = 'accettata'; pv.accettato = q; pv.accettatoCanale = valore('rg-canale'); p.storico.push([q, `Preventivo ${pv.numero} registrato come accettato (${CANALI[pv.accettatoCanale]})`]); pianoPagamenti(p.id, pv, q.slice(0, 10)); toast('Accettazione registrata. Acconto e saldo proposti nei conti del lavoro: controlla le date.'); }
 	if (azione === 'rifiutata') { const m = valore('rg-motivo'); if (!m.trim()) return toast('Scrivi il motivo.'); pv.stato = 'rifiutata'; pv.rifiutato = q; pv.motivo = m; p.storico.push([q, `Preventivo ${pv.numero} registrato come rifiutato: ${m}`]); toast('Rifiuto registrato.'); }
 	salva(); chiudiTendina(); apri('p', p.id, { indietro: true });
 }
@@ -2596,6 +2944,7 @@ const tagMat = (st) => `<span class="tag ${st === 'da_comprare' ? 'att' : st ===
 const matDi = (pid) => D.materiali.filter((m) => m.praticaId === pid);
 const SERVIZI = [['Imbiancatura', 'rullo'], ['Parquet', 'parquet'], ['Falegnameria', 'martello'], ['Montaggio mobili', 'mobile'], ['Ristrutturazioni', 'casa'], ['Risanamento umidità', 'goccia'], ['Traslochi', 'furgone']];
 Object.assign(I, {
+	andamento: ic('M3 3v16a2 2 0 0 0 2 2h16M7 15l4-5 3.5 3.3L20 6.5'),
 	rullo: ic('M5 4h12v5H5z M17 6.5h3v5h-8v3 M11 14.5h2v6h-2z'),
 	parquet: ic('M4 4h16v16H4z M4 9l4 4 4-4 4 4 4-4 M4 15l4 4 4-4 4 4 4-4'),
 	mobile: ic('M5 4h14v16H5z M5 9.3h14 M5 14.6h14 M10.5 6.7h3 M10.5 12h3 M10.5 17.3h3'),
@@ -2692,7 +3041,8 @@ function apriMateriale(id, praticaId = null) {
 	<div class="campi-box"><label>Cosa<input name="mt-nome" value="${esc(m.nome)}" placeholder="es. Silicone sanitario bianco"></label><label>Quanto<input name="mt-qta" value="${esc(m.qta)}" placeholder="es. 4 pezzi"></label></div>
 	<label class="campo">A che punto è</label><div class="scelte">${Object.entries(NOMI_MAT).map(([v, n]) => `<label><input type="radio" name="mt-stato" value="${v}" ${v === m.stato ? 'checked' : ''}>${n}</label>`).join('')}</div>
 	${operatore() ? '' : `<label class="campo">Chi lo ritira</label><div class="scelte"><label><input type="radio" name="mt-chi" value="" ${!m.chi ? 'checked' : ''}>Nessuno ancora</label>${OPERATORI.map((o) => `<label><input type="radio" name="mt-chi" value="${o.id}" ${m.chi === o.id ? 'checked' : ''}>${o.nome}</label>`).join('')}</div>
-	<div class="campi-box" style="grid-template-columns:1fr"><label>Dove si compra<input name="mt-forn" value="${esc(m.fornitore ?? '')}" placeholder="es. Ferramenta Bertolin"></label></div>`}
+	<div class="campi-box" style="grid-template-columns:1fr"><label>Dove si compra<input name="mt-forn" value="${esc(m.fornitore ?? '')}" placeholder="es. Ferramenta Bertolin"></label></div>
+	<div class="campi-box"><label>Costo (€, senza IVA)<input name="mt-costo" inputmode="decimal" value="${m.costo ? fmtQ(m.costo) : ''}" placeholder="quanto lo paghi"></label><label>Comprato il<input name="mt-data" type="date" value="${m.data ?? ''}"></label></div><p class="nota" style="margin-top:6px">Lo vedi solo tu: serve per i conti del lavoro. Se non lo sai ancora, mettilo stimato e correggi dopo.</p>`}
 	<div id="mt-esito"></div>
 	<div class="azioni"><button type="button" class="btn pieno" onclick="salvaMateriale('${id ?? ''}','${m.praticaId}')">${id ? 'Salva' : 'Aggiungi'}</button>${id && !operatore() ? `<button type="button" class="btn pericolo pieno" onclick="apriConferma('Togliere «${esc(m.nome).replace(/'/g, '')}»?','Sparisce dalla lista dei materiali di questa pratica.','Togli',()=>togliMateriale('${id}'))">Togli dalla lista</button>` : `<button type="button" class="btn linea pieno" onclick="chiudiTendina()">Annulla</button>`}</div>`, id ? 'Materiale' : 'Aggiungi un materiale');
 }
@@ -2700,7 +3050,8 @@ function salvaMateriale(id, praticaId) {
 	if (bloccoRete()) return;
 	const v = (n) => (valore(n) ?? '').trim();
 	const dati = { nome: v('mt-nome'), qta: v('mt-qta'), stato: v('mt-stato') || 'da_comprare' };
-	if (!operatore()) { dati.chi = v('mt-chi') || null; dati.fornitore = v('mt-forn'); }
+	if (!operatore()) { dati.chi = v('mt-chi') || null; dati.fornitore = v('mt-forn'); dati.costo = parseFloat(v('mt-costo').replace(',', '.')) || null; dati.data = v('mt-data') || null; }
+	if (['preso', 'in_cantiere'].includes(dati.stato) && !dati.data && !(id && D.materiali.find((x) => x.id === id)?.data)) dati.data = OGGI;
 	if (dati.nome.length < 2) return esito('mt-esito', 'Scrivi cosa serve.');
 	if (id) Object.assign(D.materiali.find((x) => x.id === id), dati);
 	else D.materiali.push({ id: nuovoId('m'), praticaId, chi: null, fornitore: '', ...dati });
@@ -2710,6 +3061,7 @@ function togliMateriale(id) { if (bloccoRete()) return; D.materiali = D.material
 function statoMateriale(id, st) {
 	if (bloccoRete()) return;
 	const m = D.materiali.find((x) => x.id === id); m.stato = st;
+	if (['preso', 'in_cantiere'].includes(st) && !m.data) m.data = OGGI;
 	if (operatore()) { m.chi = m.chi ?? D.utente; D.avvisi.unshift({ id: nuovoId('v'), quando: adessoIso(), titolo: `${io().nome}: ${NOMI_MAT[st].toLowerCase()}`, testo: `${m.nome} · ${titoloLavoro(pratica(m.praticaId))}`, praticaId: m.praticaId, letto: false }); }
 	salva(); render(); toast(`${m.nome}: ${NOMI_MAT[st].toLowerCase()}.`);
 }
@@ -2929,6 +3281,7 @@ const NAV_I = {
 	agenda: [nv('<rect x="2" y="3.6" width="20" height="18.4" rx="4"/><path d="M2 9.6h20M7.4 1.6v4M16.6 1.6v4"/>'), nv('<rect class="pieno" x="2" y="3.6" width="20" height="18.4" rx="4"/><path d="M7.4 1.6v4M16.6 1.6v4"/><path class="buco-l" d="M2.6 9.6h18.8"/><circle class="buco" cx="7.4" cy="14.8" r="1.4"/><circle class="buco" cx="12" cy="14.8" r="1.4"/><circle class="buco" cx="16.6" cy="14.8" r="1.4"/>')],
 	pratiche: [nv('<path d="M5.6 1.8h9.8l6.2 6.2V19a3.2 3.2 0 0 1-3.2 3.2H5.6A3.2 3.2 0 0 1 2.4 19V5a3.2 3.2 0 0 1 3.2-3.2z"/><path d="M15.2 2v6.2h6.2M7.4 13h9.2M7.4 17.4h6.2"/>'), nv('<path class="pieno" d="M5.6 1.8h9.8l6.2 6.2V19a3.2 3.2 0 0 1-3.2 3.2H5.6A3.2 3.2 0 0 1 2.4 19V5a3.2 3.2 0 0 1 3.2-3.2z"/><path class="buco-l" d="M7.6 13h8.8M7.6 17.4h6"/>')],
 	preventivi: [nv('<path d="M7.4 1.8h9.2a2.8 2.8 0 0 1 2.8 2.8v17.6l-2.47-1.6-2.47 1.6-2.47-1.6-2.47 1.6-2.47-1.6-2.47 1.6V4.6a2.8 2.8 0 0 1 2.8-2.8z"/><path d="M15.2 8.4a3.8 3.8 0 1 0 0 6.2M7.6 10.6h5.6M7.6 12.8h5.6"/>'), nv('<path class="pieno" d="M7.4 1.8h9.2a2.8 2.8 0 0 1 2.8 2.8v17.6l-2.47-1.6-2.47 1.6-2.47-1.6-2.47 1.6-2.47-1.6-2.47 1.6V4.6a2.8 2.8 0 0 1 2.8-2.8z"/><path class="buco-l" d="M15.2 8.4a3.8 3.8 0 1 0 0 6.2M7.6 10.6h5.6M7.6 12.8h5.6"/>')],
+	andamento: [nv('<path d="M2.2 2.2v16.6a3 3 0 0 0 3 3h16.6"/><path d="m6.8 15.4 4.4-5.2 3.6 3.4 6.2-7.6"/>'), nv('<path d="M2.2 2.2v16.6a3 3 0 0 0 3 3h16.6"/><path d="m6.8 15.4 4.4-5.2 3.6 3.4 6.2-7.6"/>', 'spessa')],
 	clienti: [nv('<circle cx="12" cy="7.2" r="5.4"/><path d="M2.4 22.4a9.6 9.2 0 0 1 19.2 0"/>'), nv('<circle class="pieno" cx="12" cy="7.2" r="5.4"/><path class="pieno" d="M2.4 22.4a9.6 9.2 0 0 1 19.2 0z"/>')],
 	materiali: [nv('<path d="M2.4 6.8 12 1.8l9.6 5v10.4L12 22.2l-9.6-5z"/><path d="M2.4 6.8 12 12l9.6-5.2M12 12v10.2"/>'), nv('<path class="pieno" d="M2.4 6.8 12 1.8l9.6 5v10.4L12 22.2l-9.6-5z"/><path class="buco-l" d="M3.6 7.4 12 12l8.4-4.6M12 12v9"/>')],
 	altro: [nv('<path d="M2 4.6h20M2 12h20M2 19.4h20"/>'), nv('<path d="M2 4.6h20M2 12h20M2 19.4h20"/>', 'spessa')],
