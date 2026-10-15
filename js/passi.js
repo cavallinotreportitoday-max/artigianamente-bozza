@@ -5,6 +5,7 @@
 // con Esc o con il tasto indietro del telefono. L'ultimo «Avanti» porta alla stima (il riquadro nero sotto i passi,
 // a destra sul computer). I conti restano in app.js (calcola, calcolaBagno): qui si legge solo quello che mostrano.
 import { durata, finisciArrivo, tieniPosto, rigaChiusa, liberaPosti, fuocoDopoChiusura, daTastiera, ravviva } from './tendine.js?v=2026101214';
+import { ambientiManca, ambientiSintesi } from './ambienti.js?v=2026101501';
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -40,6 +41,12 @@ export function avviaPassi(box) {
 	function manca(p) {
 		for (const el of $$('[data-obbligo]', p)) {
 			if (el.closest('[data-mostra-se][hidden]') || el.closest('[data-pv-fissata]')) continue;
+			// schede delle stanze (imbiancatura): la prima scheda incompleta
+			if (el.matches('[data-ambienti]')) {
+				const scheda = ambientiManca(el);
+				if (scheda) return scheda;
+				continue;
+			}
 			if (el.matches('[data-somma]')) {
 				const tot = $$('input[type="number"]', el).reduce((t, i) => t + (Number(i.value) || 0), 0);
 				const o = el.dataset.sommaO && $(`input[name="${el.dataset.sommaO}"]`, form);
@@ -63,6 +70,13 @@ export function avviaPassi(box) {
 			if (c.closest('label.check') && c !== c.closest('label.check')) continue;
 			// le domande nascoste per le risposte date non entrano nel riassunto (12/10, «percorsi più chiari»)
 			if (c.closest('[data-mostra-se][hidden]') || c.closest('.tr2-avanti')) continue;
+			// schede delle stanze: una riga sola («Camera 4 × 3 m, Bagno, misure da prendere»)
+			if (c.matches('[data-ambienti]')) {
+				const t = ambientiSintesi(c);
+				if (t) parti.push(t);
+				continue;
+			}
+			if (c.closest('[data-ambienti]')) continue;
 			if (c.matches('fieldset')) {
 				// nei livelli del bagno basta il nome (Base, Comfort, Top), nelle schede il titolo (senza l'esempio)
 				const scelti = $$('input:checked', c).filter((i) => !i.disabled).map((i) => testo($('.livello__nome, .tr__imballo-nome', i.closest('label')) || i.closest('label')));

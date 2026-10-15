@@ -1,8 +1,9 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101021-r55';
-import { percorso } from './percorsi.js?v=2026101220';
-import { cerca } from './ricerca.js?v=2026100914-r55';
-import { attivaModuli } from './invio.js?v=2026101220-r55';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101501-r56';
+import { percorso } from './percorsi.js?v=2026101501';
+import { avviaAmbienti, ambientiAggiorna, ambientiRighe } from './ambienti.js?v=2026101501';
+import { cerca } from './ricerca.js?v=2026100914-r56';
+import { attivaModuli } from './invio.js?v=2026101220-r56';
 import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -300,6 +301,8 @@ function vale(regola, box) {
 	);
 }
 function condizioni(box) {
+	// schede delle stanze (imbiancatura): parti che servono o no, nomi e titoli (static/js/ambienti.js)
+	ambientiAggiorna(box);
 	// più giri finché niente cambia: una domanda può dipendere da un'altra che dipende da una terza
 	for (let giro = 0; giro < 5; giro++) {
 		let cambiato = false;
@@ -366,6 +369,12 @@ function dettagliDa(box, p) {
 		if (passo.hidden) continue;
 		for (const el of $$('fieldset.campo, .campo, label.check', $('[data-passo-corpo]', passo))) {
 			if (nascosto(el) || el.closest('.tr2-avanti')) continue;
+			// schede delle stanze: una riga per scheda
+			if (el.matches('[data-ambienti]')) {
+				righe.push(...ambientiRighe(el));
+				continue;
+			}
+			if (el.closest('[data-ambienti]')) continue;
 			if (el.matches('.campo') && el.closest('fieldset.campo') && el.closest('fieldset.campo') !== el) continue;
 			if (el.matches('label.check')) {
 				const c = $('input', el);
@@ -405,13 +414,92 @@ function dettagliDa(box, p) {
 		.join('\n');
 }
 
-const euroRiga = (r) => `${euro(r.min)}–${euro(r.max)} €`;
+const euroRiga = (r) => (r.min === r.max ? `${euro(r.min)} €` : `${euro(r.min)}–${euro(r.max)} €`);
 const iva = (testo) => {
 	const s = document.createElement('span');
 	s.className = 'risultato__iva';
 	s.textContent = testo;
 	return s;
 };
+
+/* Stima voce per voce (15/10, imbiancatura): totali per gruppo sempre in vista, tutte le voci nel dettaglio apribile,
+   «Materiali di consumo*» con la nota, materiali che compra il cliente fuori dal totale. */
+const euroVoce = (x) => (x.compresa ? 'compresa' : x.soglia ? `fino a ${euro(x.min)} €` : x.min === x.max ? `${euro(x.min)} €` : euroRiga(x));
+function scontrinoVoci(r) {
+	const box = document.createElement('div');
+	box.className = 'scontrino scontrino--voci';
+	let gruppo = '';
+	let ul = null;
+	for (const x of r.voci) {
+		if (x.gruppo !== gruppo) {
+			gruppo = x.gruppo;
+			const t = document.createElement('p');
+			t.className = 'scontrino__gruppo';
+			t.textContent = gruppo;
+			ul = document.createElement('ul');
+			box.append(t, ul);
+		}
+		const li = document.createElement('li');
+		const a = document.createElement('span');
+		a.className = 'scontrino__nome';
+		a.textContent = x.nome;
+		if (x.quantita) {
+			const q = document.createElement('small');
+			q.className = 'scontrino__qta';
+			q.textContent = x.quantita;
+			a.append(q);
+		}
+		const b = document.createElement('span');
+		b.className = 'scontrino__euro';
+		b.textContent = euroVoce(x);
+		li.append(a, b);
+		ul.append(li);
+	}
+	const nota = document.createElement('p');
+	nota.className = 'scontrino__nota';
+	nota.textContent = `Importi senza IVA. * Materiali di consumo: ${r.consumo}.`;
+	box.append(nota);
+	return box;
+}
+function disegnaVoci(r, dove) {
+	for (const el of $$('[data-out-gruppi]', dove)) {
+		if (!r?.voci) {
+			el.hidden = true;
+			el.replaceChildren();
+			continue;
+		}
+		const tot = new Map();
+		for (const x of r.voci) {
+			const t = tot.get(x.gruppo) ?? { min: 0, max: 0, soglia: false };
+			tot.set(x.gruppo, { min: t.min + x.min, max: t.max + x.max, soglia: t.soglia || Boolean(x.soglia) });
+		}
+		const righe = [...tot.entries()].map(([g, t]) => [g, euroVoce(t)]);
+		righe.push([`IVA ${r.ivaPerc}%`, euroRiga({ min: r.min - r.nettoMin, max: r.max - r.nettoMax })]);
+		el.replaceChildren(
+			...righe.map(([g, v]) => {
+				const li = document.createElement('li');
+				const a = document.createElement('span');
+				const b = document.createElement('span');
+				a.textContent = g;
+				b.textContent = v;
+				li.append(a, b);
+				return li;
+			})
+		);
+		el.hidden = false;
+	}
+	for (const el of $$('[data-out-comprare]', dove)) {
+		const v = r?.daComprare ?? [];
+		el.hidden = !v.length;
+		$('[data-out-comprare-lista]', el)?.replaceChildren(
+			...v.map((t) => {
+				const li = document.createElement('li');
+				li.textContent = t;
+				return li;
+			})
+		);
+	}
+}
 
 for (const calc of $$('[data-calc]')) {
 	const tipo = calc.dataset.calc;
@@ -487,6 +575,11 @@ for (const calc of $$('[data-calc]')) {
 			if (!r.min) {
 				p.esito = 'V';
 				r = null;
+			} else if (r.voci) {
+				// stima voce per voce: le sue ipotesi e le cose da verificare si aggiungono a quelle del percorso
+				p.ipotesi = [...p.ipotesi, ...(r.ipotesi ?? [])];
+				p.daVerificare = [...p.daVerificare, ...(r.daVerificare ?? [])];
+				if (r.titoloStima) p.stimaTitolo = r.titoloStima;
 			} else if (p.rimontare) {
 				r.dettaglio = r.dettaglio.replace(', con smontaggio dei vecchi mobili.', ', da smontare e rimontare.');
 				r.riepilogo = r.riepilogo.replace('Smontaggio vecchi mobili sì.', 'Da smontare e rimontare.');
@@ -513,6 +606,10 @@ for (const calc of $$('[data-calc]')) {
 			if (cifra.firstChild?.textContent.trim() !== testo) queueMicrotask(() => ravviva(cifra));
 			cifra.replaceChildren(testo + ' ', iva(`IVA ${r.ivaPerc}% inclusa`));
 			dettaglio.textContent = r.dettaglio;
+			disegnaVoci(r, ris);
+			if (r.voci) {
+				liste.replaceChildren(scontrinoVoci(r));
+			} else {
 			const ul = document.createElement('ul');
 			for (const c of r.comprende) {
 				const li = document.createElement('li');
@@ -524,7 +621,8 @@ for (const calc of $$('[data-calc]')) {
 			fuori.className = 'risultato__dettaglio';
 			fuori.textContent = r.esclude.length ? 'Non comprende: ' + r.esclude.join(', ').toLowerCase() + '.' : '';
 			liste.replaceChildren(ul, fuori);
-		}
+			}
+		} else disegnaVoci(null, ris);
 		// ipotesi e cose da verificare: separate da quello che hai detto
 		const note = [...(S ? p.ipotesi.map((t) => ['ipotesi', t]) : []), ...(S ? p.daVerificare.map((t) => ['verifica', t]) : [])];
 		R('note').hidden = !note.length;
@@ -557,6 +655,7 @@ for (const calc of $$('[data-calc]')) {
 			});
 		}
 	};
+	avviaAmbienti(inputs);
 	inputs.addEventListener('submit', (e) => e.preventDefault()); // Invio in un campo non ricarica la pagina
 	inputs.addEventListener('change', esclusivi, true);
 	inputs.addEventListener('input', aggiorna);
@@ -1762,9 +1861,9 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r55').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r56').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
-if ($('[data-passi]')) import('./passi.js?v=2026101220').catch(senzaTendine);
+if ($('[data-passi]')) import('./passi.js?v=2026101501').catch(senzaTendine);
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {

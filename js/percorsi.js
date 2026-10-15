@@ -49,49 +49,116 @@ export function percorso(tipo, a, et) {
 const oNonSo = (a, nome, l, seNonSo) => (lista(a[nome]).includes('nonso') ? seNonSo : elenco(l(nome)));
 const osserva = (a, l) => oNonSo(a, 'osserva', l, 'stato da vedere');
 
+/* Imbiancatura voce per voce (15/10/2026, Gian + revisione ChatGPT): stanza per stanza (o parete per parete), poi
+   superfici e colore, mobili, pittura e accesso. La stima la fa calcoli.js (imbiancaturaDettagliata) con
+   { versione: 2, ... }: qui solo le risposte del cliente, raccolte nella forma che il calcolo (e il server) si aspetta. */
+const NOMI_AMB = { camera: 'camera', soggiorno: 'soggiorno', cucina: 'cucina', bagno: 'bagno', corridoio: 'corridoio', altro: 'altra stanza' };
+/** Le stanze (o pareti) scritte nelle schede: amb{n}_campo → [{ tipo, modo, l, w, h, mq, ... }] in ordine */
+export function ambientiDa(a) {
+	const per = new Map();
+	for (const [k, val] of Object.entries(a)) {
+		const m = k.match(/^amb(\d+)_(\w+)$/);
+		if (!m) continue;
+		if (!per.has(+m[1])) per.set(+m[1], {});
+		per.get(+m[1])[m[2]] = val;
+	}
+	return [...per.entries()]
+		.sort((x, y) => x[0] - y[0])
+		.map(([, x]) => ({
+			tipo: x.tipo || '',
+			modo: x.modo || '',
+			l: num(x.l),
+			w: num(x.w),
+			h: num(x.h),
+			mq: num(x.mq),
+			pareti: x.pareti || 'tutte',
+			quante: num(x.quante) || 1,
+			soffitto: x.soffitto === true,
+			vetrata: num(x.vetrata),
+			problemi: lista(x.problemi).filter((p) => p !== 'nessuno'),
+			estesi: x.estesi === 'gran'
+		}));
+}
+const virgola = (n) => String(Math.round(n * 100) / 100).replace('.', ',');
 function imbiancatura(a, et, l) {
 	const cosa = a.cosa_imb;
 	if (!cosa) return { titolo: 'La tua imbiancatura', mancaPerStima: 'scegli cosa imbiancare' };
-	if (cosa === 'stanze') {
-		const mq = num(a.mq);
-		const nonso = a.nonso === true;
-		const soffitti = { si: 'soffitti inclusi', no: 'senza soffitti', dadecidere: 'soffitti da decidere' }[a.soffitti_r];
-		const arredo = { arredate: 'locali arredati', vuote: 'locali vuoti', dadecidere: 'arredo da decidere' }[a.stanze];
-		const descrizione = frase(['imbiancatura interna', mq ? `${mq} m² di pavimento` : nonso ? 'm² da misurare al sopralluogo' : '', soffitti, arredo, { buone: 'pareti in buono stato', crepe: 'pareti con crepe o piccoli buchi', rasare: 'pareti da lisciare', nonso: 'stato delle pareti da vedere' }[a.pareti], a.particolare ? 'colore o finitura particolare' : '']);
-		const base = { titolo: 'La tua imbiancatura', descrizione, iniziato: true };
-		const valutare = nonso || a.pareti === 'nonso' || a.particolare === true;
-		if (valutare)
-			return {
-				...base,
-				esito: 'V',
-				perche: nonso ? 'Misuriamo noi le stanze al sopralluogo, poi ricevi il preventivo.' : a.pareti === 'nonso' ? 'Lo stato delle pareti lo vediamo al sopralluogo, poi ricevi il preventivo.' : 'Colori e finiture particolari li valutiamo al sopralluogo.'
-			};
-		const manca = !mq ? 'i metri quadri' : !a.soffitti_r ? 'i soffitti' : !a.pareti ? 'lo stato delle pareti' : !a.stanze ? 'l’arredo' : '';
+	const fornitura = a.fornitura || 'decidere';
+	if (cosa === 'ritocchi') {
+		const zone = num(a.rit_zone);
+		const parete = a.rit_come === 'parete';
+		const descrizione = frase([zone ? `${zone} ${zone === 1 ? 'zona' : 'zone'} da ritoccare` : 'ritocchi', a.rit_dim ? l('rit_dim')[0] : '', lista(a.rit_difetti).length ? elenco(l('rit_difetti')) : '', parete ? 'con tutta la parete' : a.rit_come ? 'solo le zone' : '']);
+		const base = { titolo: 'I tuoi ritocchi', descrizione, iniziato: true };
+		const manca = !zone ? 'quante zone' : !a.rit_dim ? 'quanto sono grandi' : !a.rit_come ? 'come ritoccare' : '';
 		if (manca) return { ...base, esito: 'V', perche: 'Con le risposte che mancano vedi la stima.', mancaPerStima: manca };
 		return {
 			...base,
 			esito: 'S',
-			motore: { tipo: 'imbiancatura', input: { mq: String(mq), soffitti: a.soffitti_r === 'si', pittura: 'traspirante', pareti: a.pareti, stanze: a.stanze === 'vuote' ? 'vuote' : 'arredate', colore: 'bianco' } },
-			stimaTitolo: 'Stima indicativa',
-			ipotesi: ['Pittura bianca traspirante: pittura e colore li scegliamo insieme', a.stanze === 'dadecidere' && 'Locali arredati (arredo ancora da decidere)'].filter(Boolean),
-			daVerificare: [a.soffitti_r === 'dadecidere' && 'Soffitti: da decidere, non compresi nella stima'].filter(Boolean)
+			motore: { tipo: 'imbiancatura', input: { versione: 2, lavoro: 'ritocchi', fornitura: parete ? fornitura : 'noi', ritocchi: { zone, dimensione: a.rit_dim, parete, l: num(a.rit_l), h: num(a.rit_h), stessa: a.rit_stessa || 'nonso' } } },
+			stimaTitolo: 'Stima del lavoro'
 		};
 	}
-	if (cosa === 'ritocchi') {
-		const mq = num(a.mq_parete);
+	if (cosa === 'esterni') {
+		const lrg = num(a.est_l);
+		const alt = num(a.est_h);
+		const descrizione = frase([et('est_tipo')[0] || 'superficie esterna', lrg && alt ? `${virgola(lrg)} × ${virgola(alt)} m` : a.est_nonso ? 'misure da prendere' : '', a.est_alto ? l('est_alto')[0] : '', lista(a.est_fondo).length ? elenco(l('est_fondo')) : '']);
+		const base = { titolo: 'La tua imbiancatura esterna', descrizione, iniziato: true };
+		if (a.est_nonso === true) return { ...base, esito: 'V', perche: 'Misuriamo noi la superficie al sopralluogo, poi ricevi il preventivo.' };
+		const manca = !lrg || !alt ? 'le misure' : !a.est_alto ? 'l’altezza da terra' : !lista(a.est_fondo).length ? 'com’è adesso' : '';
+		if (manca) return { ...base, esito: 'V', perche: 'Con le risposte che mancano vedi la stima.', mancaPerStima: manca };
 		return {
-			titolo: 'I tuoi ritocchi',
-			iniziato: true,
-			descrizione: frase([a.quanto_rit ? `ritocchi: ${l('quanto_rit')[0]}` : 'ritocchi', osserva(a, l), mq ? `circa ${mq} m² di parete` : 'superficie da verificare']),
-			perche: 'Al sopralluogo vediamo le pareti e la preparazione che serve.'
+			...base,
+			esito: 'S',
+			motore: { tipo: 'imbiancatura', input: { versione: 2, lavoro: 'esterni', esterni: { tipo: a.est_tipo || 'altro', l: lrg, h: alt, alto: a.est_alto, fondo: lista(a.est_fondo).filter((x) => x !== 'buono'), colore: a.est_colore || 'bianco' } } },
+			stimaTitolo: a.est_alto === 'basso' && alt <= 3 ? 'Stima del lavoro' : 'Stima delle lavorazioni'
 		};
 	}
-	const mq = num(a.mq_esterno);
+	// stanze, alcune pareti, solo soffitti
+	const ambienti = ambientiDa(a);
+	const quale = cosa === 'pareti' ? ['parete', 'pareti'] : ['stanza', 'stanze'];
+	const nomi = ambienti
+		.map((x) => {
+			const nome = cosa === 'pareti' ? '' : NOMI_AMB[x.tipo] || '';
+			const mis = x.modo === 'misure' && x.l && (cosa === 'pareti' ? x.h || true : x.w) ? (cosa === 'pareti' ? `${virgola(x.l)} m` : `${virgola(x.l)} × ${virgola(x.w)} m`) : x.modo === 'mq' && x.mq ? `${virgola(x.mq)} m²` : '';
+			return [nome, mis].filter(Boolean).join(' ');
+		})
+		.filter(Boolean);
+	const descrizione = frase([
+		ambienti.length ? `${ambienti.length} ${ambienti.length === 1 ? quale[0] : quale[1]}${nomi.length ? ` (${nomi.join(', ')})` : ''}` : '',
+		a.colore ? l('colore')[0] : '',
+		a.uso ? `pittura ${l('uso')[0].replace(/^per /, 'per ')}` : '',
+		a.mobili ? `mobili: ${l('mobili')[0]}` : ''
+	]);
+	const base = { titolo: { pareti: 'Le tue pareti', soffitti: 'I tuoi soffitti' }[cosa] || 'La tua imbiancatura', descrizione, iniziato: true };
+	const valida = (x) => (cosa === 'pareti' ? x.modo === 'nonso' || x.l > 0 : x.tipo && (x.modo === 'nonso' || (x.modo === 'misure' && x.l > 0 && x.w > 0) || (x.modo === 'mq' && x.mq > 0)));
+	const manca = !ambienti.length || !ambienti.every(valida) ? (cosa === 'pareti' ? 'le pareti' : 'le stanze') : !a.adesso ? 'com’è adesso' : !a.colore ? 'il colore' : !a.uso ? 'l’uso delle pareti' : !a.mobili ? 'i mobili' : !a.fornitura ? 'chi porta la pittura' : '';
+	if (manca) return { ...base, esito: 'V', perche: 'Con le risposte che mancano vedi la stima.', mancaPerStima: manca };
+	const sm = (k) => num(a[`sm_${k}`]);
 	return {
-		titolo: 'La tua imbiancatura esterna',
-		iniziato: true,
-		descrizione: frase([et('cosa_est')[0] || 'superfici esterne', l('quanto_est')[0], osserva(a, l), mq ? `circa ${mq} m²` : 'superficie da verificare']),
-		perche: 'Al sopralluogo vediamo superficie, stato e come arrivarci.'
+		...base,
+		esito: 'S',
+		motore: {
+			tipo: 'imbiancatura',
+			input: {
+				versione: 2,
+				lavoro: cosa,
+				ambienti,
+				adesso: a.adesso,
+				colore: a.colore,
+				scuro: a.scuro === true,
+				piuColori: a.piu_colori === true,
+				uso: a.uso,
+				mobili: a.mobili,
+				abitata: a.abitata === 'si',
+				rallenta: a.rallenta === true,
+				smalti: { termosifone: sm('termosifone'), porta: sm('porta'), finestra: sm('finestra'), ringhiera: sm('ringhiera'), battiscopa: sm('battiscopa') },
+				fornitura,
+				piano: num(a.piano),
+				ascensore: a.ascensore === 'si',
+				accesso: a.accesso || 'normale'
+			}
+		},
+		stimaTitolo: 'Stima del lavoro'
 	};
 }
 
