@@ -1,5 +1,5 @@
 // Stime orientative per il preventivo guidato.
-import datiRevisione from './revisione-dati.js?r=59';
+import datiRevisione from './revisione-dati.js?r=60';
 // ATTENZIONE: tutte le tariffe sono PROVVISORIE (bozza ottobre 2026), da approvare con il titolare.
 // Lo stesso file serve sia alla pagina (prima visualizzazione) sia allo script nel browser.
 
@@ -234,8 +234,13 @@ export const iva = {
 	traslochi: 0.22
 };
 
-// Arrotonda a cifre "da listino": 6,6 → 7; 73 → 75; 549 → 550; 3.960 → 4.000
-const bello = (n) => (n < 20 ? Math.round(n) : n < 200 ? Math.round(n / 5) * 5 : n < 2000 ? Math.round(n / 10) * 10 : Math.round(n / 100) * 100);
+// Arrotonda a cifre "da listino", per eccesso: 6,6 → 7; 73 → 75; 541 → 550; 3.910 → 4.000
+// 15/10 (Gian): per i prezzi «da» si arrotonda sempre per eccesso, mai sotto il prezzo vero (60 € + IVA = 66 € → 70 €)
+const bello = (x) => {
+	const n = Math.round(x * 100) / 100; // niente resti delle virgole (55,000001 resta 55)
+	const passo = n < 20 ? 1 : n < 200 ? 5 : n < 2000 ? 10 : 100;
+	return Math.ceil(n / passo) * passo;
+};
 
 /** Prezzo "da" IVA inclusa da un netto qualsiasi, es. daEuro(350, '/m²') → "390 €/m²" */
 export const daEuro = (netto, unita = '', aliquota = 0.1) => `${euro(bello(netto * (1 + aliquota)))} €${unita}`;
