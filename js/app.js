@@ -1,9 +1,9 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101501-r57';
-import { percorso } from './percorsi.js?v=2026101501';
-import { avviaAmbienti, ambientiAggiorna, ambientiRighe } from './ambienti.js?v=2026101501';
-import { cerca } from './ricerca.js?v=2026100914-r57';
-import { attivaModuli } from './invio.js?v=2026101220-r57';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101502-r58';
+import { percorso } from './percorsi.js?v=2026101502';
+import { avviaAmbienti, ambientiAggiorna, ambientiRighe } from './ambienti.js?v=2026101502';
+import { cerca } from './ricerca.js?v=2026100914-r58';
+import { attivaModuli } from './invio.js?v=2026101220-r58';
 import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -407,6 +407,7 @@ function dettagliDa(box, p) {
 		...righe,
 		p.ipotesi?.length ? `Ipotesi della stima: ${p.ipotesi.join('; ')}` : '',
 		p.daVerificare?.length ? `Da verificare: ${p.daVerificare.join('; ')}` : '',
+		p.modo !== 'valutazione' && p.daQuantificare?.length ? `Da quantificare (non compreso): ${p.daQuantificare.join('; ')}` : '',
 		`Esito: ${esito}`,
 		p.contesto ? `Arriva da: ${p.contesto}` : ''
 	]
@@ -422,7 +423,7 @@ const iva = (testo) => {
 	return s;
 };
 
-/* Stima voce per voce (15/10, imbiancatura): totali per gruppo sempre in vista, tutte le voci nel dettaglio apribile,
+/* Stima voce per voce (15/10, imbiancatura e umidità): totali per gruppo sempre in vista, tutte le voci nel dettaglio apribile,
    «Materiali di consumo*» con la nota, materiali che compra il cliente fuori dal totale. */
 const euroVoce = (x) => (x.compresa ? 'compresa' : x.soglia ? `fino a ${euro(x.min)} €` : x.min === x.max ? `${euro(x.min)} €` : euroRiga(x));
 function scontrinoVoci(r) {
@@ -487,6 +488,17 @@ function disegnaVoci(r, dove) {
 			})
 		);
 		el.hidden = false;
+	}
+	for (const el of $$('[data-out-quantificare]', dove)) {
+		const v = r?.daQuantificare ?? [];
+		el.hidden = !v.length;
+		$('[data-out-quantificare-lista]', el)?.replaceChildren(
+			...v.map((t) => {
+				const li = document.createElement('li');
+				li.textContent = t;
+				return li;
+			})
+		);
 	}
 	for (const el of $$('[data-out-comprare]', dove)) {
 		const v = r?.daComprare ?? [];
@@ -579,6 +591,7 @@ for (const calc of $$('[data-calc]')) {
 				// stima voce per voce: le sue ipotesi e le cose da verificare si aggiungono a quelle del percorso
 				p.ipotesi = [...p.ipotesi, ...(r.ipotesi ?? [])];
 				p.daVerificare = [...p.daVerificare, ...(r.daVerificare ?? [])];
+				p.daQuantificare = r.daQuantificare ?? [];
 				if (r.titoloStima) p.stimaTitolo = r.titoloStima;
 			} else if (p.rimontare) {
 				r.dettaglio = r.dettaglio.replace(', con smontaggio dei vecchi mobili.', ', da smontare e rimontare.');
@@ -1861,9 +1874,9 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r57').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r58').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
-if ($('[data-passi]')) import('./passi.js?v=2026101501').catch(senzaTendine);
+if ($('[data-passi]')) import('./passi.js?v=2026101502').catch(senzaTendine);
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {

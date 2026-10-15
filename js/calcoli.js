@@ -1,5 +1,5 @@
 // Stime orientative per il preventivo guidato.
-import datiRevisione from './revisione-dati.js?r=57';
+import datiRevisione from './revisione-dati.js?r=58';
 // ATTENZIONE: tutte le tariffe sono PROVVISORIE (bozza ottobre 2026), da approvare con il titolare.
 // Lo stesso file serve sia alla pagina (prima visualizzazione) sia allo script nel browser.
 
@@ -81,6 +81,59 @@ export const tariffe = {
 			terra: 3 // m: fin qui si lavora da terra con le scale
 		},
 		minimoLavoro: 250 // minimo del lavoro (soglia: non si somma)
+	},
+	/* Risanamento umidità voce per voce (15/10/2026, Gian + revisione ChatGPT): stima del ripristino delle superfici,
+	   mai della causa. Prezzi SENZA IVA, PROVVISORI (fonti in DESIGN.md: edilizia.com 2026 ciclo deumidificante
+	   55–90 €/m², rimozione intonaco 15–35 €/m², rasatura e pittura 12–30 €/m²; elenco prezzi IO Veneto 2024
+	   rimozione intonaco 18,11 €/m²; scheda Fassa RisanaFacile: 10 kg/m² per cm, almeno 2 cm, rinzaffo 5–15 mm).
+	   Li approva e li cambia Fabri dalla Gestione. [da, a] = forchetta. */
+	risanamento: {
+		lavoro: {
+			preparazione: [40, 80], // a muro: protezione del locale, del pavimento e delle zone vicine
+			mobili: [30, 60], // a muro: spostare e rimettere i mobili
+			rimozione: [12, 20], // €/m² rimozione dell'intonaco degradato fino a 2 cm, a mano, con insacco
+			rivestimenti: [12, 22], // €/m² rimozione di piastrelle, perline o contropareti
+			pulizia: [3, 6], // €/m² pulizia e preparazione della muratura (o della superficie)
+			giunti: [8, 15], // €/m² ripristino di giunti e parti deteriorate
+			antisale: [3, 6], // €/m² posa del trattamento antisale
+			rinzaffo: [6, 10], // €/m² posa del rinzaffo
+			risanante: [18, 28], // €/m² posa dell'intonaco risanante, spessore di base
+			spessoreCm: [5, 8], // €/m² per ogni cm in più di intonaco risanante (posa)
+			rasatura: [7, 12], // €/m² rasatura compatibile
+			pittura: [5, 8], // €/m² pittura traspirante compatibile, due mani (posa)
+			muffa: [5, 9], // €/m² trattamento superficiale della muffa, prodotto compreso
+			fondo: [1.5, 3], // €/m² fondo traspirante, materiale compreso (trattamento delle superfici)
+			battiscopa: [6, 12], // €/m rimozione e riposa del battiscopa
+			termosifoni: [80, 160], // a corpo: smontaggio e rimontaggio dei termosifoni
+			prese: [30, 60], // a corpo: prese e interruttori
+			macerie: [2, 4] // €/m² movimentazione e insacco delle macerie
+		},
+		materiali: {
+			risanante: [0.7, 1.2], // €/kg intonaco risanante (sacco da 25 kg)
+			rinzaffo: [0.5, 0.9], // €/kg
+			rasante: [0.8, 1.4], // €/kg
+			antisale: [8, 15], // €/litro
+			pittura: [9, 15], // €/litro pittura traspirante compatibile (silicati o per risananti)
+			kgRisanante: 10, // kg/m² per ogni cm di spessore
+			kgRinzaffo: 8, // kg/m²
+			kgRasante: 3, // kg/m²
+			lAntisale: 0.3, // litri/m²
+			resaPittura: 7 // m² per litro, una mano
+		},
+		spessore: 2, // cm di intonaco risanante di base (in più 1 cm su pietra o muro misto)
+		oltre: 50, // cm di intonaco da togliere sopra il danno visibile: ipotesi, la decide il sistema scelto (fino a 1 m)
+		bordo: 20, // cm attorno a una macchia isolata (e sopra il danno quando l'intonaco resta)
+		quotaGiunti: 20, // % della superficie con giunti da ripristinare (edifici antichi)
+		rifiuti: { viaggio: [80, 150], kg: [0.03, 0.06], kgMq: 35, kgRivestimenti: 20 }, // a corpo + €/kg; kg di macerie al m²
+		acqua: [150, 300], // a corpo: trasporto via acqua, andata e ritorno
+		manoMedia: [60, 120], // a corpo: trasporto a mano dall'approdo, 50–200 m
+		manoLunga: [120, 240], // a corpo: trasporto a mano dall'approdo, oltre 200 m
+		piano: [20, 40], // a piano senza ascensore, dal secondo in su
+		resaGiorno: 8, // m² finiti al giorno (per i giorni di attrezzatura in altezza)
+		consumo: { mq: [0.8, 1.5], minimo: [30, 50] }, // materiali di consumo: €/m² lavorato, minimo per intervento
+		tipicoL: 3, // m: muro senza misure, fascia lunga 3 m (dichiarata)
+		tipicoH: 1, // m: e alta 1 m
+		minimoLavoro: 350
 	},
 	parquet: {
 		lavoro: {
@@ -196,6 +249,7 @@ function calcolaNetto(tipo, v) {
 	const t = tariffe[tipo];
 	// 15/10: preventivo dettagliato voce per voce (le pagine di prima mandano ancora le scelte vecchie: formula di sempre)
 	if (tipo === 'imbiancatura' && Number(v?.versione) === 2) return imbiancaturaDettagliata(v, t);
+	if (tipo === 'risanamento') return risanamentoDettagliato(v && typeof v === 'object' ? v : {}, t);
 	if (tipo === 'imbiancatura') {
 		const mq = num(v.mq, 0);
 		if (!mq) return { vuoto: true, messaggio: 'Scrivi i metri quadri di pavimento delle stanze da imbiancare.', dettaglio: '', comprende: [], esclude: [], riepilogo: 'Imbiancatura: metri quadri da indicare.' };
@@ -577,6 +631,37 @@ function ritocchiDettagliati(v, t) {
 	});
 }
 
+/**
+ * Lavorare in alto (esterni dell'imbiancatura e muri esterni dell'umidità): fino a 3 m da terra con le scale; fino a
+ * 6 m trabattello; oltre, piattaforma aerea o ponteggio (il più conveniente per questa superficie e questi giorni).
+ * Prezzi del noleggio: tariffe.imbiancatura.esterni (uno solo, per tutti i lavori). Aggiunge le voci e l'ipotesi.
+ * @returns {string} l'attrezzatura scelta, '' se non serve
+ */
+function attrezzatura(voci, ipotesi, mq, h, giorni, te) {
+	if (!(h > te.terra)) return '';
+	let attrezzo;
+	const gg = `${giorni} ${giorni === 1 ? 'giorno' : 'giorni'}`;
+	if (h <= te.trabattelloFino) {
+		voci.push(voce('Attrezzatura', 'Trabattello: noleggio', gg, giorni * te.trabattello[0], giorni * te.trabattello[1]));
+		voci.push(voce('Attrezzatura', 'Trabattello: trasporto, montaggio e smontaggio', 'a corpo', te.trabattelloPorto[0], te.trabattelloPorto[1]));
+		attrezzo = 'trabattello';
+	} else {
+		const mesiIn = Math.max(0, Math.ceil(giorni / 22) - 1);
+		const ponteggio = [mq * (te.ponteggio[0] + mesiIn * te.ponteggioMese[0]), mq * (te.ponteggio[1] + mesiIn * te.ponteggioMese[1])];
+		const piattaforma = [giorni * te.piattaforma[0] + te.piattaformaPorto[0], giorni * te.piattaforma[1] + te.piattaformaPorto[1]];
+		if (piattaforma[0] + piattaforma[1] <= ponteggio[0] + ponteggio[1]) {
+			voci.push(voce('Attrezzatura', 'Piattaforma aerea: noleggio', gg, giorni * te.piattaforma[0], giorni * te.piattaforma[1]));
+			voci.push(voce('Attrezzatura', 'Piattaforma aerea: consegna e ritiro', 'a corpo', te.piattaformaPorto[0], te.piattaformaPorto[1]));
+			attrezzo = 'piattaforma aerea';
+		} else {
+			voci.push(voce('Attrezzatura', `Ponteggio: montaggio, smontaggio e ${mesiIn ? `${mesiIn + 1} mesi` : 'primo mese'}`, m2(Math.round(mq)) + ' di facciata', ponteggio[0], ponteggio[1]));
+			attrezzo = 'ponteggio';
+		}
+	}
+	ipotesi.push(`Per lavorare fino a ${String(Math.round(h * 10) / 10).replace('.', ',')} m da terra: ${attrezzo}, circa ${gg} di lavoro. La scelta la confermiamo al sopralluogo`);
+	return attrezzo;
+}
+
 /** Esterni: lavorazioni sulle superfici e attrezzatura per lavorare in alto (trabattello, piattaforma o ponteggio) */
 function esterniDettagliati(v, t) {
 	const e = v.esterni && typeof v.esterni === 'object' ? v.esterni : {};
@@ -604,29 +689,7 @@ function esterniDettagliati(v, t) {
 	voci.push(voce('Manodopera', 'Tinteggiatura esterna, due mani', m2(Math.round(mq)), mq * te.lavoro[0], mq * te.lavoro[1]));
 	voci.push(voce('Materiali', `Pittura per esterni${e.colore === 'colorato' ? ' colorata' : ''}`, m2(Math.round(mq)), mq * te.pittura[0], mq * te.pittura[1]));
 	voci.push(voce('Materiali', 'Materiali di consumo*', m2(Math.round(mq)) + ' lavorati', Math.max(mq * t.consumo.mq[0], t.consumo.minimo[0]), Math.max(mq * t.consumo.mq[1], t.consumo.minimo[1])));
-	// lavorare in alto: fino a 3 m da terra con le scale; fino a 6 m trabattello; oltre, piattaforma aerea o ponteggio
-	// (il più conveniente per questa superficie e questi giorni)
-	let attrezzo = '';
-	if (h > te.terra) {
-		if (h <= te.trabattelloFino) {
-			voci.push(voce('Attrezzatura', 'Trabattello: noleggio', `${giorni} ${giorni === 1 ? 'giorno' : 'giorni'}`, giorni * te.trabattello[0], giorni * te.trabattello[1]));
-			voci.push(voce('Attrezzatura', 'Trabattello: trasporto, montaggio e smontaggio', 'a corpo', te.trabattelloPorto[0], te.trabattelloPorto[1]));
-			attrezzo = 'trabattello';
-		} else {
-			const mesiIn = Math.max(0, Math.ceil(giorni / 22) - 1);
-			const ponteggio = [mq * (te.ponteggio[0] + mesiIn * te.ponteggioMese[0]), mq * (te.ponteggio[1] + mesiIn * te.ponteggioMese[1])];
-			const piattaforma = [giorni * te.piattaforma[0] + te.piattaformaPorto[0], giorni * te.piattaforma[1] + te.piattaformaPorto[1]];
-			if (piattaforma[0] + piattaforma[1] <= ponteggio[0] + ponteggio[1]) {
-				voci.push(voce('Attrezzatura', 'Piattaforma aerea: noleggio', `${giorni} ${giorni === 1 ? 'giorno' : 'giorni'}`, giorni * te.piattaforma[0], giorni * te.piattaforma[1]));
-				voci.push(voce('Attrezzatura', 'Piattaforma aerea: consegna e ritiro', 'a corpo', te.piattaformaPorto[0], te.piattaformaPorto[1]));
-				attrezzo = 'piattaforma aerea';
-			} else {
-				voci.push(voce('Attrezzatura', `Ponteggio: montaggio, smontaggio e ${mesiIn ? `${mesiIn + 1} mesi` : 'primo mese'}`, m2(Math.round(mq)) + ' di facciata', ponteggio[0], ponteggio[1]));
-				attrezzo = 'ponteggio';
-			}
-		}
-		ipotesi.push(`Per lavorare fino a ${String(h).replace('.', ',')} m da terra: ${attrezzo}, circa ${giorni} ${giorni === 1 ? 'giorno' : 'giorni'} di lavoro. La scelta la confermiamo al sopralluogo`);
-	}
+	const attrezzo = attrezzatura(voci, ipotesi, mq, h, giorni, te);
 	voci.push(voce('Extra', 'Pulizia di fine lavoro', 'compresa', 0, 0, { compresa: true }));
 	if (e.davanti === 'pubblico' && attrezzo) daVerificare.push('Occupazione di suolo pubblico per l’attrezzatura: tassa e permesso del Comune, da verificare');
 	if (e.davanti === 'acqua') daVerificare.push('Lavoro dal lato dell’acqua: trasporto e attrezzatura da quantificare');
@@ -640,6 +703,198 @@ function esterniDettagliati(v, t) {
 		titoloStima: 'Stima del lavoro',
 		dettaglio: `Circa ${m2(Math.round(mq))} di superficie esterna${attrezzo ? `, con ${attrezzo}` : ''}.`,
 		riepilogo: `Imbiancatura (esterni): ${m2(Math.round(mq))}, altezza ${String(h).replace('.', ',')} m${attrezzo ? `, ${attrezzo}` : ''}.`
+	});
+}
+
+/* ---------------------------------------------------------------------------
+   RISANAMENTO UMIDITÀ VOCE PER VOCE (15/10/2026, Gian + revisione ChatGPT)
+   Stima del ripristino delle superfici, mai della causa: il cliente descrive, non sceglie la diagnosi.
+   Due casi, decisi dai segni: «Ripristino dell'intonaco» (intonaco gonfio o che si stacca, depositi bianchi, oppure
+   «Non so») e «Trattamento delle superfici» (macchie, muffa, odore: l'intonaco resta). Edificio vincolato: niente
+   demolizione automatica, solo il trattamento; il resto «da quantificare». La causa (barriera, infiltrazioni,
+   impermeabilizzazioni…) è sempre «da quantificare»: mai 0 €, mai nel subtotale.
+   Superfici muro per muro: danno visibile (lunghezza × altezza) e superficie di intervento ipotizzata (sopra il danno
+   la fascia `oltre`; attorno a una macchia il `bordo`). La conferma Fabri al sopralluogo.
+   Ingresso (static/js/percorsi.js): { versione: 1, zona, antico, vincolato, lato, piano, punto, segni, peggiora,
+   perdite, muri: [{ tipo, modo, l, h, altro }], muro, rivestimento, provato, uso, riscaldato, condensa, ostacoli,
+   pianoN, ascensore, distanza, finitura }.
+--------------------------------------------------------------------------- */
+const NOME_MURO = { ...NOME_STANZA, cantina: 'Cantina', esterno: 'Muro esterno' };
+function risanamentoDettagliato(v, t) {
+	const lav = t.lavoro;
+	const mat = t.materiali;
+	const lista = (x) => (Array.isArray(x) ? x : []);
+	const muri = lista(v.muri)
+		.filter((x) => x && typeof x === 'object')
+		.slice(0, 20);
+	if (!muri.length) return { vuoto: true, messaggio: 'Aggiungi almeno un muro.', dettaglio: '', comprende: [], esclude: [], riepilogo: '' };
+	const segni = lista(v.segni);
+	const ostacoli = lista(v.ostacoli);
+	const punto = lista(v.punto);
+	const peggiora = lista(v.peggiora);
+	const provato = lista(v.provato).filter((x) => x !== 'no');
+	const nonSo = !segni.some((x) => x !== 'nonso');
+	const storico = v.vincolato === true;
+	const ripristino = !storico && (nonSo || segni.includes('intonaco') || segni.includes('sali'));
+	const finitura = ['pronto', 'pitturato', 'decidere'].includes(v.finitura) ? v.finitura : 'decidere';
+	const pittura = finitura !== 'pronto';
+	const rasatura = ripristino; // dopo l'intonaco risanante: sempre una rasatura compatibile
+	const voci = [];
+	const ipotesi = [];
+	const daVerificare = [];
+	const daQuantificare = [];
+
+	// superfici, muro per muro
+	const oltre = fra(num(t.oltre, 50), 0, 200) / 100;
+	const bordo = fra(num(t.bordo, 20), 0, 100) / 100;
+	let danno = 0;
+	let area = 0;
+	let fascia = 0; // metri lineari di fascia (battiscopa)
+	let stimate = 0;
+	let doppi = 0;
+	let esterni = 0; // m² sui muri esterni
+	let altezza = 0; // il punto più alto da raggiungere sui muri esterni
+	for (const x of muri) {
+		let l = fra(num(x.l, 0), 0, 50);
+		let h = fra(num(x.h, 0), 0, 10);
+		const macchia = x.modo === 'macchia';
+		if (x.modo === 'nonso' || !l || !h) {
+			[l, h] = [t.tipicoL, t.tipicoH];
+			stimate++;
+		}
+		const lati = x.altro === 'si' ? 2 : 1;
+		if (lati === 2) doppi++;
+		const inter = macchia ? (l + 2 * bordo) * (h + 2 * bordo) : l * (h + (ripristino ? oltre : bordo));
+		danno += l * h * lati;
+		area += inter * lati;
+		if (!macchia) fascia += l * lati;
+		if (x.tipo === 'esterno') {
+			esterni += inter;
+			altezza = Math.max(altezza, macchia ? h + 2 * bordo : h + (ripristino ? oltre : bordo));
+		}
+	}
+	const A = Math.round(area * 10) / 10;
+	const q = m2(Math.round(A));
+	const n = muri.length;
+	const nMuri = `${n} ${n === 1 ? 'muro' : 'muri'}`;
+
+	// MANODOPERA
+	voci.push(voce('Manodopera', 'Preparazione e protezione del locale', nMuri, n * lav.preparazione[0], n * lav.preparazione[1]));
+	if (ostacoli.includes('mobili')) voci.push(voce('Manodopera', 'Spostamento e riposizionamento dei mobili', nMuri, n * lav.mobili[0], n * lav.mobili[1]));
+	if (ripristino && (v.rivestimento === 'tutto' || v.rivestimento === 'parte')) {
+		const r = v.rivestimento === 'tutto' ? A : A / 2;
+		voci.push(voce('Manodopera', 'Rimozione di rivestimenti o contropareti', m2(Math.round(r)), r * lav.rivestimenti[0], r * lav.rivestimenti[1]));
+		if (v.rivestimento === 'parte') ipotesi.push('Rivestimento su metà della superficie di intervento');
+	}
+	if (v.rivestimento === 'nonso') daVerificare.push('Rivestimenti o contropareti sopra il muro: da verificare');
+	let kgMacerie = 0;
+	if (ripristino) {
+		const cm = fra(num(t.spessore, 2), 1, 6);
+		const piu = ['pietra', 'misto'].includes(v.muro) ? 1 : 0;
+		voci.push(voce('Manodopera', 'Rimozione dell’intonaco degradato (fino a 2 cm)', q, A * lav.rimozione[0], A * lav.rimozione[1]));
+		voci.push(voce('Manodopera', 'Pulizia e preparazione della muratura', q, A * lav.pulizia[0], A * lav.pulizia[1]));
+		if (v.antico === 'si') {
+			const g = (A * t.quotaGiunti) / 100;
+			voci.push(voce('Manodopera', 'Ripristino di giunti e parti deteriorate', m2(Math.round(g)), g * lav.giunti[0], g * lav.giunti[1]));
+			ipotesi.push(`Giunti e parti deteriorate: circa il ${t.quotaGiunti}% della superficie`);
+		}
+		if (segni.includes('sali')) voci.push(voce('Manodopera', 'Trattamento antisale', q, A * lav.antisale[0], A * lav.antisale[1]));
+		voci.push(voce('Manodopera', 'Rinzaffo', q, A * lav.rinzaffo[0], A * lav.rinzaffo[1]));
+		voci.push(voce('Manodopera', `Intonaco risanante, spessore ${cm} cm`, q, A * lav.risanante[0], A * lav.risanante[1]));
+		if (piu) voci.push(voce('Manodopera', `Spessore aggiuntivo, ${piu} cm (muro ${v.muro === 'pietra' ? 'in pietra' : 'misto'})`, q, A * piu * lav.spessoreCm[0], A * piu * lav.spessoreCm[1]));
+		voci.push(voce('Manodopera', 'Rasatura compatibile', q, A * lav.rasatura[0], A * lav.rasatura[1]));
+		if (pittura) voci.push(voce('Manodopera', 'Pittura traspirante compatibile, due mani', q, A * lav.pittura[0], A * lav.pittura[1]));
+		if (ostacoli.includes('battiscopa') && fascia) voci.push(voce('Manodopera', 'Rimozione e riposa del battiscopa', `${euro(Math.round(fascia))} m`, fascia * lav.battiscopa[0], fascia * lav.battiscopa[1]));
+		if (ostacoli.includes('termosifoni')) voci.push(voce('Manodopera', 'Smontaggio e rimontaggio dei termosifoni', 'a corpo', lav.termosifoni[0], lav.termosifoni[1]));
+		if (ostacoli.includes('prese')) voci.push(voce('Manodopera', 'Prese e interruttori: smontaggio e rimontaggio', 'a corpo', lav.prese[0], lav.prese[1]));
+		voci.push(voce('Manodopera', 'Movimentazione e insacco delle macerie', q, A * lav.macerie[0], A * lav.macerie[1]));
+		// MATERIALI (in kg e litri: la posa qui sopra non li comprende)
+		if (segni.includes('sali')) {
+			const lt = Math.ceil(A * mat.lAntisale);
+			voci.push(voce('Materiali', 'Prodotto antisale', `circa ${lt} ${lt === 1 ? 'litro' : 'litri'}`, lt * mat.antisale[0], lt * mat.antisale[1]));
+		}
+		const kgR = Math.ceil(A * mat.kgRinzaffo);
+		voci.push(voce('Materiali', 'Malta da rinzaffo', `circa ${euro(kgR)} kg`, kgR * mat.rinzaffo[0], kgR * mat.rinzaffo[1]));
+		const kgI = Math.ceil(A * mat.kgRisanante * (cm + piu));
+		voci.push(voce('Materiali', 'Intonaco risanante', `circa ${euro(kgI)} kg`, kgI * mat.risanante[0], kgI * mat.risanante[1]));
+		const kgS = Math.ceil(A * mat.kgRasante);
+		voci.push(voce('Materiali', 'Rasante compatibile', `circa ${euro(kgS)} kg`, kgS * mat.rasante[0], kgS * mat.rasante[1]));
+		kgMacerie = A * t.rifiuti.kgMq + (v.rivestimento === 'tutto' ? A : v.rivestimento === 'parte' ? A / 2 : 0) * t.rifiuti.kgRivestimenti;
+	} else {
+		voci.push(voce('Manodopera', 'Pulizia e preparazione della superficie', q, A * lav.pulizia[0], A * lav.pulizia[1]));
+		if (segni.includes('muffa')) voci.push(voce('Manodopera', 'Trattamento superficiale della muffa', q, A * lav.muffa[0], A * lav.muffa[1]));
+		voci.push(voce('Manodopera', 'Fondo traspirante', q, A * lav.fondo[0], A * lav.fondo[1]));
+		if (pittura) voci.push(voce('Manodopera', 'Pittura traspirante compatibile, due mani', q, A * lav.pittura[0], A * lav.pittura[1]));
+	}
+	if (pittura) {
+		const lt = Math.ceil(((A * 2) / (mat.resaPittura || 7)) * 1.1);
+		voci.push(voce('Materiali', 'Pittura traspirante compatibile', `circa ${lt} ${lt === 1 ? 'litro' : 'litri'}`, lt * mat.pittura[0], lt * mat.pittura[1]));
+	}
+	voci.push(voce('Materiali', 'Materiali di consumo*', `${q} lavorati`, Math.max(A * t.consumo.mq[0], t.consumo.minimo[0]), Math.max(A * t.consumo.mq[1], t.consumo.minimo[1])));
+
+	// muri esterni in alto: la stessa attrezzatura degli esterni dell'imbiancatura
+	if (esterni) attrezzatura(voci, ipotesi, esterni, altezza, Math.max(1, Math.ceil(esterni / (t.resaGiorno || 8))), tariffe.imbiancatura.esterni);
+
+	// RIFIUTI E LOGISTICA
+	if (kgMacerie) {
+		const kg = Math.ceil(kgMacerie / 10) * 10;
+		voci.push(voce('Rifiuti e logistica', 'Trasporto e conferimento delle macerie', `circa ${euro(kg)} kg`, t.rifiuti.viaggio[0] + kg * t.rifiuti.kg[0], t.rifiuti.viaggio[1] + kg * t.rifiuti.kg[1]));
+	}
+	const acqua = v.zona === 'venezia' || v.zona === 'isole';
+	if (acqua) {
+		voci.push(voce('Rifiuti e logistica', 'Trasporto via acqua, andata e ritorno', 'a corpo', t.acqua[0], t.acqua[1]));
+		if (v.distanza === 'medio') voci.push(voce('Rifiuti e logistica', 'Trasporto a mano dall’approdo (50–200 m)', 'a corpo', t.manoMedia[0], t.manoMedia[1]));
+		if (v.distanza === 'lontano') voci.push(voce('Rifiuti e logistica', 'Trasporto a mano dall’approdo (oltre 200 m)', 'a corpo', t.manoLunga[0], t.manoLunga[1]));
+		if (!['vicino', 'medio', 'lontano'].includes(v.distanza)) daQuantificare.push('Logistica non ancora verificabile: approdo, ponti, scale, deposito e ritiro delle macerie');
+	}
+	const piano = fra(Math.round(num(v.pianoN, 0)), 0, 30);
+	if (piano >= 2 && v.ascensore !== true) voci.push(voce('Rifiuti e logistica', 'Materiali e macerie ai piani, senza ascensore', `${piano}° piano`, (piano - 1) * t.piano[0], (piano - 1) * t.piano[1]));
+	voci.push(voce('Rifiuti e logistica', 'Pulizia di fine lavoro', 'compresa', 0, 0, { compresa: true }));
+
+	// IPOTESI (quello che abbiamo supposto per fare il conto)
+	ipotesi.unshift(
+		ripristino
+			? 'Ripristino dell’intonaco: rimozione, preparazione, intonaco risanante e finitura'
+			: 'Trattamento delle superfici: pulizia, trattamento e pittura, con l’intonaco che resta'
+	);
+	if (nonSo) ipotesi.push('Non sai ancora cosa noti: abbiamo contato il ripristino dell’intonaco');
+	if (ripristino) ipotesi.push(`Superficie di intervento: ${String(Math.round(oltre * 100))} cm oltre il danno visibile (alcuni sistemi chiedono fino a 1 m: lo confermiamo dopo il sopralluogo)`);
+	else if (!storico) ipotesi.push('L’intonaco può restare: se al sopralluogo è degradato, va rifatto e il preventivo cambia');
+	if (stimate) ipotesi.push(`Misure stimate per ${stimate === n ? (n === 1 ? 'il muro' : 'tutti i muri') : `${stimate} ${stimate === 1 ? 'muro' : 'muri'}`}: fascia di ${String(t.tipicoL).replace('.', ',')} × ${String(t.tipicoH).replace('.', ',')} m`);
+	if (doppi) ipotesi.push('Stessa misura anche dall’altro lato del muro');
+	if (finitura === 'decidere') ipotesi.push('Finitura: abbiamo contato anche la pittura (hai detto «da decidere»)');
+	ipotesi.push('Materiali forniti da noi, tutti dello stesso sistema: prodotti compatibili tra loro');
+
+	// DA QUANTIFICARE (non compreso nel subtotale, mai 0 €)
+	daQuantificare.unshift('Intervento sulla causa dell’umidità, dopo la verifica (barriera, riparazione di infiltrazioni, ventilazione o altro)');
+	if (punto.includes('basso') || punto.includes('controterra') || ['sotto', 'terra'].includes(v.piano)) daQuantificare.push('Eventuale barriera contro la risalita: al metro lineare, dopo la verifica dello spessore del muro');
+	if (v.perdite === 'presente' || segni.includes('bagnato')) daQuantificare.push('Riparazione della perdita o dell’infiltrazione');
+	if (punto.includes('controterra')) daQuantificare.push('Impermeabilizzazione del muro contro terra');
+	if (ostacoli.includes('fissi')) daQuantificare.push('Interventi su impianti ed elementi fissi (cucina, sanitari, mobili a muro)');
+	if (v.antico === 'si' || provato.length) daQuantificare.push('Analisi e indagini (misure, sali), solo se le concordiamo prima');
+	if (v.antico === 'si' && ripristino) daQuantificare.push('Eventuali consolidamenti della muratura');
+	if (storico) daQuantificare.push('Lavorazioni sulle superfici storiche (intonaci da conservare) ed eventuale ripristino dell’intonaco');
+
+	// DA VERIFICARE
+	if (v.perdite === 'presente') daVerificare.push('La perdita va riparata prima del ripristino');
+	if (peggiora.includes('acquaalta')) daVerificare.push('Acqua alta e risalita sono fenomeni diversi: li distinguiamo al sopralluogo');
+	if (segni.includes('sali') || v.antico === 'si') daVerificare.push('Sali e murature antiche vanno valutati: una sola misura con lo strumento non basta a stabilire la causa');
+	if (segni.includes('muffa') && (v.condensa === true || v.riscaldato === 'no' || v.uso === 'stagionale' || v.uso === 'vuoto')) daVerificare.push('La muffa può dipendere da condensa e ventilazione: lo verifichiamo prima di scegliere i prodotti');
+	if (provato.length) daVerificare.push('Il problema è già tornato dopo un intervento: verifichiamo perché, prima di rifare');
+	if (v.antico === 'si' && !storico) daVerificare.push('Edificio antico: valutiamo insieme cosa conservare degli intonaci');
+	daVerificare.push('Il sopralluogo è gratuito; eventuali analisi aggiuntive le concordiamo prima');
+	daVerificare.push('IVA al 10% ipotizzata: l’aliquota si conferma secondo intervento, immobile e fornitura');
+
+	const dove = [...new Set(muri.map((x) => NOME_MURO[x.tipo]).filter(Boolean))].join(', ');
+	return chiudiVoci(voci, t.minimoLavoro, {
+		ipotesi,
+		daVerificare,
+		daComprare: [],
+		daQuantificare,
+		consumo: 'teli, nylon, nastro, sacchi per le macerie, spazzole e dischi abrasivi',
+		titoloStima: 'Stima del ripristino delle superfici',
+		dettaglio: `Danno visibile circa ${m2(Math.round(danno))}, intervento ipotizzato circa ${q}. Comprende le lavorazioni elencate. Gli eventuali interventi sulla causa dell’umidità sono da verificare e non sono compresi.`,
+		riepilogo: `Risanamento umidità (${ripristino ? 'ripristino dell’intonaco' : 'trattamento delle superfici'}): ${nMuri}${dove ? ` (${dove.toLowerCase()})` : ''}, danno visibile ${m2(Math.round(danno))}, intervento ipotizzato ${q}.`
 	});
 }
 
@@ -662,7 +917,7 @@ function chiudiVoci(voci, minimo, extra) {
 		voci,
 		consumo: 'carta, nylon, nastro di carta, carta abrasiva, sacchi per i residui',
 		comprende: righe,
-		esclude: ['Opere murarie e impianti', 'Cause dell’umidità', ...extra.daComprare.map((x) => `Da comprare dal cliente: ${x}`)],
+		esclude: ['Opere murarie e impianti', 'Cause dell’umidità', ...extra.daComprare.map((x) => `Da comprare dal cliente: ${x}`), ...(extra.daQuantificare ?? []).map((x) => `Da quantificare: ${x}`)],
 		...extra
 	};
 }
@@ -832,7 +1087,7 @@ aPartireDa.ristrutturazioni.euro = prezzoDaBagno();
    Il server ricalcola ogni stima con i parametri della revisione pubblicata, usando queste stesse funzioni.
    versioneFormule: da aumentare quando si cambia il modo di calcolare (non quando cambiano i numeri).
 --------------------------------------------------------------------------- */
-export const versioneFormule = 3; // 15/10: imbiancatura voce per voce (le scelte vecchie come prima); esterni con l'attrezzatura per l'altezza
+export const versioneFormule = 4; // 15/10: imbiancatura voce per voce (le scelte vecchie come prima); esterni con l'attrezzatura per l'altezza; risanamento umidità voce per voce
 
 const copia = (x) => JSON.parse(JSON.stringify(x));
 const tipoDi = (x) => (Array.isArray(x) ? 'lista' : x === null ? 'null' : typeof x);

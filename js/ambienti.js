@@ -1,4 +1,5 @@
-// Schede delle stanze (o delle pareti) nel preventivo dell'imbiancatura (15/10/2026, Gian + revisione ChatGPT).
+// Schede delle stanze (o delle pareti) nel preventivo dell'imbiancatura (15/10/2026, Gian + revisione ChatGPT),
+// e dei muri con l'umidità nel risanamento (data-ambienti="muri": tipo, fascia o macchia, misure, altro lato).
 // Una scheda per stanza: tipo, misure (le misure / i m² di pavimento / «Non lo so»), cosa pitturare, problemi.
 // «Aggiungi una stanza», «Duplica» (copia le scelte della scheda) e «Togli». I nomi dei campi sono amb{n}_campo:
 // static/js/percorsi.js li raccoglie (ambientiDa). Le parti che non servono si nascondono e si spengono
@@ -6,17 +7,18 @@
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
-const NOMI = { stanze: 'Stanza', pareti: 'Parete', soffitti: 'Stanza' };
-const AGGIUNGI = { stanze: 'Aggiungi una stanza', pareti: 'Aggiungi una parete', soffitti: 'Aggiungi una stanza' };
+const NOMI = { stanze: 'Stanza', pareti: 'Parete', soffitti: 'Stanza', muri: 'Muro' };
+const AGGIUNGI = { stanze: 'Aggiungi una stanza', pareti: 'Aggiungi una parete', soffitti: 'Aggiungi una stanza', muri: 'Aggiungi un muro' };
 const AIUTO = {
 	stanze: 'Una scheda per ogni stanza. Le misure vanno bene anche a occhio.',
 	pareti: 'Una scheda per ogni parete: larghezza e altezza, anche a occhio.',
-	soffitti: 'Una scheda per ogni stanza: bastano le misure del pavimento.'
+	soffitti: 'Una scheda per ogni stanza: bastano le misure del pavimento.',
+	muri: 'Una scheda per ogni muro con l’umidità. Le misure vanno bene anche a occhio.'
 };
-const NOME_TIPO = { camera: 'Camera', soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', corridoio: 'Corridoio', altro: 'Altra stanza' };
+const NOME_TIPO = { camera: 'Camera', soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', corridoio: 'Corridoio', altro: 'Altra stanza', cantina: 'Cantina', esterno: 'Muro esterno' };
 
-/** Che cosa si imbianca adesso: stanze, pareti o soffitti (la scelta del primo passo) */
-const modoDi = (box) => $('input[name="cosa_imb"]:checked', box.closest('form'))?.value || 'stanze';
+/** Che cosa si imbianca adesso: stanze, pareti o soffitti (la scelta del primo passo); «muri» per l'umidità (fisso) */
+const modoDi = (box) => box.dataset.ambienti || $('input[name="cosa_imb"]:checked', box.closest('form'))?.value || 'stanze';
 const valore = (card, campo) => {
 	const els = $$(`[name$="_${campo}"]`, card).filter((i) => !i.disabled);
 	if (!els.length) return '';
@@ -58,7 +60,7 @@ function disegnaScheda(card, modo) {
 	}
 	// per una parete: «larghezza» al posto di «lunghezza»
 	const l = $('input[name$="_l"]', card);
-	if (l) l.placeholder = modo === 'pareti' ? 'largo' : 'lungo';
+	if (l && modo !== 'muri') l.placeholder = modo === 'pareti' ? 'largo' : 'lungo';
 }
 
 /** Riscrive nomi e titoli delle schede; si chiama a ogni cambio (anche dal primo passo) */
@@ -86,7 +88,9 @@ export function ambientiManca(box) {
 	for (const card of $$('[data-amb]', box)) {
 		const m = valore(card, 'modo');
 		const tipoOk = modo === 'pareti' || valore(card, 'tipo');
-		const misOk = m === 'nonso' || (m === 'misure' && numero(valore(card, 'l')) && (modo === 'pareti' || numero(valore(card, 'w')))) || (m === 'mq' && numero(valore(card, 'mq')));
+		const misOk =
+			m === 'nonso' ||
+			(modo === 'muri' ? (m === 'fascia' || m === 'macchia') && numero(valore(card, 'l')) && numero(valore(card, 'h')) : (m === 'misure' && numero(valore(card, 'l')) && (modo === 'pareti' || numero(valore(card, 'w')))) || (m === 'mq' && numero(valore(card, 'mq'))));
 		if (!tipoOk || !misOk) return card;
 	}
 	return $$('[data-amb]', box).length ? null : box;
@@ -94,12 +98,16 @@ export function ambientiManca(box) {
 
 /** Descrizione breve di una scheda: «Camera 4 × 3,5 m», «Parete 3 m», «Soggiorno, misure da prendere» */
 function testoScheda(card, modo, k) {
-	const tipo = modo === 'pareti' ? `Parete ${k + 1}` : NOME_TIPO[valore(card, 'tipo')] || `Stanza ${k + 1}`;
+	const tipo = modo === 'pareti' ? `Parete ${k + 1}` : NOME_TIPO[valore(card, 'tipo')] || `${NOMI[modo] || 'Stanza'} ${k + 1}`;
 	const m = valore(card, 'modo');
 	const l = numero(valore(card, 'l'));
 	const w = numero(valore(card, 'w'));
 	const mq = numero(valore(card, 'mq'));
-	const mis = m === 'misure' && l ? (modo === 'pareti' ? `${virgola(l)} m` : w ? `${virgola(l)} × ${virgola(w)} m` : '') : m === 'mq' && mq ? `${virgola(mq)} m²` : m === 'nonso' ? 'misure da prendere' : '';
+	const h = numero(valore(card, 'h'));
+	const mis =
+		modo === 'muri'
+			? m === 'nonso' ? 'misure da prendere' : l && h ? `${m === 'macchia' ? 'macchia ' : ''}${virgola(l)} × ${virgola(h)} m` : ''
+			: m === 'misure' && l ? (modo === 'pareti' ? `${virgola(l)} m` : w ? `${virgola(l)} × ${virgola(w)} m` : '') : m === 'mq' && mq ? `${virgola(mq)} m²` : m === 'nonso' ? 'misure da prendere' : '';
 	return [tipo, mis].filter(Boolean).join(m === 'nonso' ? ', ' : ' ');
 }
 /** Riassunto del passo (riga sotto il titolo) */
@@ -114,6 +122,11 @@ export function ambientiRighe(box) {
 	const modo = modoDi(box);
 	return $$('[data-amb]', box).map((card, k) => {
 		const parti = [testoScheda(card, modo, k)];
+		if (modo === 'muri') {
+			const altro = valore(card, 'altro');
+			if (altro) parti.push({ si: 'anche dall’altro lato', no: 'non dall’altro lato', nonso: 'altro lato: non so' }[altro]);
+			return `- ${parti.join(', ')}`;
+		}
 		const h = numero(valore(card, 'h'));
 		if (h) parti.push(`altezza ${virgola(h)} m`);
 		const pareti = valore(card, 'pareti');

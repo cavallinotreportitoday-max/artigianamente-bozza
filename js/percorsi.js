@@ -242,21 +242,77 @@ function montaggio(a, et) {
 	return { ...base, esito: 'S', stimaTitolo: 'Stima indicativa', motore: { tipo: 'montaggio', input }, rimontare: op === 'rimontare' };
 }
 
+/* Risanamento umidità voce per voce (15/10/2026, Gian + revisione ChatGPT): il cliente descrive (dove, cosa nota, da
+   quando, muro per muro), non sceglie la diagnosi. La stima è del ripristino delle superfici (calcoli.js,
+   risanamentoDettagliato); la causa resta «da quantificare». */
+const NOMI_MURO = { ...NOMI_AMB, cantina: 'cantina', esterno: 'muro esterno' };
+/** I muri scritti nelle schede: amb{n}_campo → [{ tipo, modo, l, h, altro }] in ordine */
+export function muriDa(a) {
+	const per = new Map();
+	for (const [k, val] of Object.entries(a)) {
+		const m = k.match(/^amb(\d+)_(\w+)$/);
+		if (!m) continue;
+		if (!per.has(+m[1])) per.set(+m[1], {});
+		per.get(+m[1])[m[2]] = val;
+	}
+	return [...per.entries()].sort((x, y) => x[0] - y[0]).map(([, x]) => ({ tipo: x.tipo || '', modo: x.modo || '', l: num(x.l), h: num(x.h), altro: x.altro || '' }));
+}
 function risanamento(a, et, l) {
-	if (!a.dove?.length && !a.segni?.length) return { titolo: 'Il tuo risanamento', mancaPerStima: '' };
-	const metri = num(a.metri);
-	const est = { zona: 'una piccola zona', parete: 'una parete', piu: 'più pareti', nonso: 'estensione da vedere' }[a.estensione];
+	const muri = muriDa(a);
+	const iniziato = Boolean(a.zona || a.lato || lista(a.segni).length);
+	if (!iniziato) return { titolo: 'Il tuo risanamento', mancaPerStima: '' };
+	const nomi = muri
+		.map((x) => {
+			const nome = NOMI_MURO[x.tipo] || '';
+			const mis = x.modo !== 'nonso' && x.l && x.h ? `${virgola(x.l)} × ${virgola(x.h)} m` : x.modo === 'nonso' ? 'misure da prendere' : '';
+			return [nome, mis].filter(Boolean).join(' ');
+		})
+		.filter(Boolean);
+	const descrizione = frase([
+		a.lato ? l('lato')[0] : '',
+		lista(a.punto).length ? oNonSo(a, 'punto', l, 'zona da individuare') : '',
+		lista(a.segni).length ? oNonSo(a, 'segni', l, 'segni da vedere') : '',
+		muri.length && nomi.length ? `${muri.length} ${muri.length === 1 ? 'muro' : 'muri'} (${nomi.join(', ')})` : ''
+	]);
+	const base = { titolo: 'Il tuo risanamento', descrizione, iniziato: true };
+	const valido = (x) => x.tipo && (x.modo === 'nonso' || ((x.modo === 'fascia' || x.modo === 'macchia') && x.l > 0 && x.h > 0));
+	const manca = !a.zona ? 'dove si trova' : !a.lato || !a.piano || !lista(a.punto).length ? 'dove compare' : !lista(a.segni).length ? 'cosa noti' : !muri.length || !muri.every(valido) ? 'i muri' : !a.finitura ? 'la finitura' : '';
+	if (manca) return { ...base, esito: 'V', perche: 'Con le risposte che mancano vedi la stima. La causa la verifichiamo noi al sopralluogo.', mancaPerStima: manca };
 	return {
-		titolo: 'Il tuo risanamento',
-		iniziato: true,
-		descrizione: frase([
-			a.dove?.length ? oNonSo(a, 'dove', l, 'zona da individuare') : '',
-			a.segni?.length ? oNonSo(a, 'segni', l, 'segni da vedere') : '',
-			est,
-			metri ? `circa ${metri} m di muro in lunghezza` : '',
-			a.quando ? `si nota: ${l('quando')[0]}` : ''
-		]),
-		perche: 'Verifichiamo la causa prima di proporti l’intervento.'
+		...base,
+		esito: 'S',
+		motore: {
+			tipo: 'risanamento',
+			input: {
+				versione: 1,
+				zona: a.zona,
+				immobile: a.immobile || '',
+				antico: a.antico || 'nonso',
+				vincolato: a.vincolato === true,
+				lato: a.lato,
+				piano: a.piano,
+				punto: lista(a.punto),
+				segni: lista(a.segni),
+				daQuanto: a.da_quanto || '',
+				peggiora: lista(a.peggiora),
+				perdite: a.perdite || '',
+				muri,
+				muro: a.muro || 'nonso',
+				spessore: num(a.spessore),
+				rivestimento: a.rivestimento || 'no',
+				provato: lista(a.provato),
+				ricomparso: a.ricomparso || '',
+				uso: a.uso || '',
+				riscaldato: a.riscaldato || '',
+				condensa: a.condensa === true,
+				ostacoli: lista(a.ostacoli).filter((x) => x !== 'nessuno'),
+				pianoN: num(a.piano_n),
+				ascensore: a.ascensore === 'si',
+				distanza: a.distanza || '',
+				finitura: a.finitura
+			}
+		},
+		stimaTitolo: 'Stima del ripristino delle superfici'
 	};
 }
 
