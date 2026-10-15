@@ -299,6 +299,8 @@ function risanamento(a, et, l) {
 				muri,
 				muro: a.muro || 'nonso',
 				spessore: num(a.spessore),
+				crepeM: num(a.crepe_m),
+				spigoli: num(a.spigoli),
 				rivestimento: a.rivestimento || 'no',
 				provato: lista(a.provato),
 				ricomparso: a.ricomparso || '',
@@ -306,10 +308,14 @@ function risanamento(a, et, l) {
 				riscaldato: a.riscaldato || '',
 				condensa: a.condensa === true,
 				ostacoli: lista(a.ostacoli).filter((x) => x !== 'nessuno'),
+				preseN: num(a.prese_n),
+				passaggi: a.passaggi === true,
+				deposito: a.deposito || '',
 				pianoN: num(a.piano_n),
 				ascensore: a.ascensore === 'si',
 				distanza: a.distanza || '',
-				finitura: a.finitura
+				finitura: a.finitura,
+				opzioni: lista(a.opzioni)
 			}
 		},
 		stimaTitolo: 'Stima del ripristino delle superfici'

@@ -1,9 +1,9 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101502-r58';
-import { percorso } from './percorsi.js?v=2026101502';
-import { avviaAmbienti, ambientiAggiorna, ambientiRighe } from './ambienti.js?v=2026101502';
-import { cerca } from './ricerca.js?v=2026100914-r58';
-import { attivaModuli } from './invio.js?v=2026101220-r58';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101503-r59';
+import { percorso } from './percorsi.js?v=2026101503';
+import { avviaAmbienti, ambientiAggiorna, ambientiRighe } from './ambienti.js?v=2026101503';
+import { cerca } from './ricerca.js?v=2026100914-r59';
+import { attivaModuli } from './invio.js?v=2026101220-r59';
 import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -444,6 +444,13 @@ function scontrinoVoci(r) {
 		const a = document.createElement('span');
 		a.className = 'scontrino__nome';
 		a.textContent = x.nome;
+		if (x.verifica) {
+			// voce nel totale che Fabri conferma al sopralluogo
+			const v = document.createElement('small');
+			v.className = 'scontrino__verifica';
+			v.textContent = 'da verificare';
+			a.append(' ', v);
+		}
 		if (x.quantita) {
 			const q = document.createElement('small');
 			q.className = 'scontrino__qta';
@@ -458,7 +465,7 @@ function scontrinoVoci(r) {
 	}
 	const nota = document.createElement('p');
 	nota.className = 'scontrino__nota';
-	nota.textContent = `Importi senza IVA. * Materiali di consumo: ${r.consumo}.`;
+	nota.textContent = `Importi senza IVA.${r.voci.some((x) => x.verifica) ? ' «Da verificare»: è nel totale, Fabri la conferma dopo il sopralluogo.' : ''} * Materiali di consumo: ${r.consumo}.`;
 	box.append(nota);
 	return box;
 }
@@ -488,6 +495,17 @@ function disegnaVoci(r, dove) {
 			})
 		);
 		el.hidden = false;
+	}
+	for (const el of $$('[data-out-opzioni]', dove)) {
+		const v = r?.opzioni ?? [];
+		el.hidden = !v.length;
+		$('[data-out-opzioni-lista]', el)?.replaceChildren(
+			...v.map((x) => {
+				const li = document.createElement('li');
+				li.textContent = `${x.nome}${x.quantita ? ` (${x.quantita})` : ''}: ${euroVoce(x)} + IVA`;
+				return li;
+			})
+		);
 	}
 	for (const el of $$('[data-out-quantificare]', dove)) {
 		const v = r?.daQuantificare ?? [];
@@ -1874,9 +1892,9 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r58').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r59').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
-if ($('[data-passi]')) import('./passi.js?v=2026101502').catch(senzaTendine);
+if ($('[data-passi]')) import('./passi.js?v=2026101503').catch(senzaTendine);
 
 /* Link alla stessa pagina (es. "Scrivici" → #scrivici): scorrimento morbido fatto qui, non dal CSS */
 document.addEventListener('click', (e) => {
