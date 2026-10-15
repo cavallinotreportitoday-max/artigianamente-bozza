@@ -1,5 +1,5 @@
 // Stime orientative per il preventivo guidato.
-import datiRevisione from './revisione-dati.js?r=60';
+import datiRevisione from './revisione-dati.js?r=61';
 // ATTENZIONE: tutte le tariffe sono PROVVISORIE (bozza ottobre 2026), da approvare con il titolare.
 // Lo stesso file serve sia alla pagina (prima visualizzazione) sia allo script nel browser.
 
@@ -167,6 +167,56 @@ export const tariffe = {
 		tipicoH: 1, // m: e alta 1 m
 		minimoLavoro: 350
 	},
+	/* Falegnameria, gruppo A (15/10/2026, Gian + revisione ChatGPT): riparazioni e piccoli lavori a pezzo. Il cliente
+	   dice cosa e che problema ha; il calcolo propone la lavorazione. Prezzi SENZA IVA, PROVVISORI: ipotesi da
+	   confrontare con tempi e costi reali di Fabri (fonti in DESIGN.md: cronoshare.it per l'ora, edilizia.com per le
+	   tapparelle). Li cambia Fabri dalla Gestione. [da, a] = forchetta. */
+	falegnameria: {
+		uscita: [30, 50], // a corpo, una volta per appuntamento
+		ora: [35, 45], // €/ora, per i lavori fuori catalogo (oggi non usata in automatico)
+		minimo: 80, // uscita + manodopera almeno questo (soglia, non si somma); ricambi e consumi a parte
+		consumo: [5, 15], // materiali di consumo (viti, tasselli, colla, cera, abrasivi), una volta per appuntamento
+		lavoro: {
+			antaRegola: [10, 15], // ad anta: regolazione semplice, ferramenta integra
+			cerniera: [15, 25], // a cerniera: sostituzione, regolazione compresa
+			cernieraSupporto: [25, 45], // a cerniera: ripristino del fissaggio su supporto rovinato (da verificare)
+			manigliaMobile: [5, 10], // a maniglia o pomolo, su fori già adatti
+			cassettoRegola: [15, 25], // a cassetto: pulizia e regolazione
+			guide: [30, 50], // a cassetto: posa della coppia di guide
+			frontale: [20, 35], // a cassetto: frontale staccato da rifissare
+			instabile: [30, 60], // a pezzo: tavolo o sedia che traballa (da verificare)
+			staccata: [25, 50], // a pezzo: parte staccata da rincollare o fissare, caso semplice (da verificare)
+			cigola: [20, 35], // a letto: controllo e serraggio
+			ripiano: [10, 20], // a ripiano: fissaggio o supporti
+			portaRegola: [20, 35], // a porta: regolazione semplice
+			piallatura: [40, 70], // a porta: smontaggio, piallatura del bordo, rimontaggio (da verificare)
+			serratura: [40, 70], // a porta: sostituzione compatibile della serratura
+			manigliaPorta: [15, 25], // a coppia di maniglie (due lati)
+			cernieraPorta: [20, 30], // a cerniera della porta
+			scorrevoleRegola: [20, 35], // ad anta scorrevole: regolazione
+			ruote: [40, 70], // ad anta scorrevole: ruote o binario
+			finestraRegola: [25, 45], // ad anta di finestra o scuro: regolazione semplice
+			guarnizione: [6, 10], // al metro: posa della guarnizione
+			cinghia: [30, 50], // a tapparella: sola cinghia
+			avvolgitore: [40, 70], // a tapparella: cinghia e avvolgitore
+			stecche: [50, 90], // a tapparella: sostituzione delle stecche (da verificare)
+			tapparellaBlocca: [40, 70], // a tapparella: verifica e sblocco di rullo o guide (da verificare)
+			zanzarieraRegola: [15, 25], // a zanzariera: regolazione
+			zanzarieraRete: [30, 50], // a zanzariera: sostituzione della rete
+			fissare: [20, 40] // a pezzo: altro da fissare o regolare (da verificare)
+		},
+		ricambi: {
+			cerniera: [3, 10], // a cerniera di mobile, modelli semplici
+			guide: [15, 40], // a coppia di guide, modelli compatibili
+			serratura: [15, 40], // serratura per porta interna, modelli semplici
+			cernieraPorta: [5, 15], // a cerniera di porta
+			cinghia: [5, 12], // a tapparella
+			avvolgitore: [15, 30], // a tapparella
+			guarnizione: [2, 5], // al metro
+			rete: [10, 25] // a zanzariera
+		},
+		metriGuarnizione: 5 // m di guarnizione per anta di finestra
+	},
 	parquet: {
 		lavoro: {
 			prefinito: [25, 40],
@@ -213,7 +263,7 @@ export const aPartireDa = {
 	ristrutturazioni: { euro: 0, unita: '', dettaglio: 'Rinnovo di un bagno piccolo con finiture Base, impianti invariati.' },
 	imbiancatura: { euro: 6, unita: '/m²', dettaglio: 'Al m² di parete: pittura bianca traspirante e manodopera, pareti in buono stato.' },
 	'risanamento-umidita': { euro: 60, unita: '/m²', dettaglio: 'Al m² di muro, con intonaco deumidificante di base. La causa va verificata al sopralluogo.' },
-	falegnameria: { euro: 60, unita: '', dettaglio: 'Piccole riparazioni a domicilio.' },
+	falegnameria: { euro: 85, unita: '', dettaglio: 'Piccola riparazione a domicilio: uscita e lavoro (minimo 80 € + IVA) e materiali di consumo.' }, // 15/10: allineato al minimo (revisione ChatGPT)
 	'montaggio-mobili': { euro: 70, unita: '', dettaglio: 'Uscita minima per mobili piccoli.' },
 	traslochi: { euro: 300, unita: '', dettaglio: 'Monolocale in zona, con ascensore, scatoloni preparati da te.' }, // dal calcolatore (trasloco.js): esempio Monolocale, 1° piano con ascensore, 3 km, imballo io con i miei scatoloni → 300–370 €
 	parquet: { euro: 14, unita: '/m²', dettaglio: 'Sola posa di laminato, al m². Materiale escluso.' }
@@ -287,6 +337,7 @@ function calcolaNetto(tipo, v) {
 	// 15/10: preventivo dettagliato voce per voce (le pagine di prima mandano ancora le scelte vecchie: formula di sempre)
 	if (tipo === 'imbiancatura' && Number(v?.versione) === 2) return imbiancaturaDettagliata(v, t);
 	if (tipo === 'risanamento') return risanamentoDettagliato(v && typeof v === 'object' ? v : {}, t);
+	if (tipo === 'falegnameria') return falegnameriaDettagliata(v && typeof v === 'object' ? v : {}, t);
 	if (tipo === 'imbiancatura') {
 		const mq = num(v.mq, 0);
 		if (!mq) return { vuoto: true, messaggio: 'Scrivi i metri quadri di pavimento delle stanze da imbiancare.', dettaglio: '', comprende: [], esclude: [], riepilogo: 'Imbiancatura: metri quadri da indicare.' };
@@ -1031,6 +1082,137 @@ function risanamentoDettagliato(v, t) {
 	});
 }
 
+/* ---------------------------------------------------------------------------
+   FALEGNAMERIA, GRUPPO A (15/10/2026, Gian + revisione ChatGPT): riparazioni e piccoli lavori.
+   Il cliente dice cosa (anta, cassetto, porta, tapparella…), che problema ha e quanti sono: il calcolo propone la
+   lavorazione, senza addebiti doppi (la sostituzione di una cerniera comprende la sua regolazione). Uscita una volta
+   per appuntamento; minimo su uscita + manodopera (soglia), ricambi e consumi a parte. Ricambi separati: «da
+   verificare» per i modelli semplici, «da quantificare» quando il modello va scelto o identificato. «Non so» o una
+   parte rotta da rifare: mai ore a forfait, «da quantificare». Se manca una lavorazione necessaria il titolo è
+   «Subtotale delle lavorazioni stimabili».
+   Ingresso (static/js/percorsi.js): { versione: 1, lavori: [{ tipo, problema, n, ricambio, descr }], zona, dove }.
+--------------------------------------------------------------------------- */
+const OGGETTI_FAL = {
+	anta: ['Anta di mobile', 'ante di mobili'],
+	cassetto: ['Cassetto', 'cassetti'],
+	mobile: ['Mobile, tavolo o letto', 'mobili'],
+	porta: ['Porta interna', 'porte interne'],
+	scorrevole: ['Anta o porta scorrevole', 'ante scorrevoli'],
+	finestra: ['Finestra o scuro', 'finestre o scuri'],
+	tapparella: ['Tapparella', 'tapparelle'],
+	zanzariera: ['Zanzariera', 'zanzariere'],
+	altro: ['Altro', 'altri lavori']
+};
+// oggetto.problema → [lavoro, lavorazione, unità, unità al plurale, ricambio ('?' = da identificare), da verificare]
+// lavoro null = da quantificare (si vede prima di fare)
+const CATALOGO_FAL = {
+	'anta.regola': ['antaRegola', 'regolazione', 'anta', 'ante'],
+	'anta.cerniera': ['cerniera', 'sostituzione della cerniera, regolazione compresa', 'cerniera', 'cerniere', 'cerniera'],
+	'anta.supporto': ['cernieraSupporto', 'ripristino del fissaggio della cerniera', 'cerniera', 'cerniere', 'cerniera', true],
+	'anta.maniglia': ['manigliaMobile', 'montaggio di maniglia o pomolo', 'maniglia', 'maniglie', '?'],
+	'cassetto.scorre': ['cassettoRegola', 'pulizia e regolazione', 'cassetto', 'cassetti'],
+	'cassetto.guide': ['guide', 'sostituzione delle guide (coppia)', 'cassetto', 'cassetti', 'guide'],
+	'cassetto.frontale': ['frontale', 'frontale da rifissare', 'cassetto', 'cassetti'],
+	'cassetto.maniglia': ['manigliaMobile', 'montaggio di maniglia o pomolo', 'maniglia', 'maniglie', '?'],
+	'mobile.instabile': ['instabile', 'consolidamento delle giunzioni', 'pezzo', 'pezzi', null, true],
+	'mobile.staccata': ['staccata', 'parte staccata da rincollare o fissare', 'pezzo', 'pezzi', null, true],
+	'mobile.cigola': ['cigola', 'controllo e serraggio', 'letto', 'letti'],
+	'mobile.ripiano': ['ripiano', 'fissaggio del ripiano o dei supporti', 'ripiano', 'ripiani'],
+	'mobile.rotta': [null, 'parte rotta da rifare'],
+	'porta.regola': ['portaRegola', 'regolazione', 'porta', 'porte'],
+	'porta.striscia': ['piallatura', 'smontaggio, piallatura del bordo e rimontaggio', 'porta', 'porte', null, true],
+	'porta.serratura': ['serratura', 'sostituzione della serratura', 'porta', 'porte', 'serratura'],
+	'porta.maniglia': ['manigliaPorta', 'sostituzione delle maniglie (coppia, due lati)', 'coppia', 'coppie', '?'],
+	'porta.cerniera': ['cernieraPorta', 'sostituzione della cerniera', 'cerniera', 'cerniere', 'cernieraPorta'],
+	'scorrevole.regola': ['scorrevoleRegola', 'regolazione', 'anta', 'ante'],
+	'scorrevole.ruote': ['ruote', 'sostituzione di ruote o binario', 'anta', 'ante', '?'],
+	'scorrevole.scomparsa': [null, 'porta a scomparsa nel muro che non scorre'],
+	'finestra.regola': ['finestraRegola', 'regolazione', 'anta', 'ante'],
+	'finestra.guarnizione': ['guarnizione', 'sostituzione delle guarnizioni', 'm', 'm', 'guarnizione', true],
+	'finestra.ferramenta': [null, 'ferramenta rotta'],
+	'tapparella.cinghia': ['cinghia', 'sostituzione della sola cinghia', 'tapparella', 'tapparelle', 'cinghia'],
+	'tapparella.avvolgitore': ['avvolgitore', 'sostituzione di cinghia e avvolgitore', 'tapparella', 'tapparelle', 'avvolgitore'],
+	'tapparella.stecche': ['stecche', 'sostituzione delle stecche rotte', 'tapparella', 'tapparelle', '?', true],
+	'tapparella.blocca': ['tapparellaBlocca', 'verifica e sblocco di rullo o guide', 'tapparella', 'tapparelle', '?', true],
+	'tapparella.motore': [null, 'tapparella motorizzata che non va (parte elettrica)'],
+	'zanzariera.regola': ['zanzarieraRegola', 'regolazione', 'zanzariera', 'zanzariere'],
+	'zanzariera.rete': ['zanzarieraRete', 'sostituzione della rete', 'zanzariera', 'zanzariere', 'rete'],
+	'zanzariera.meccanismo': [null, 'meccanismo rotto'],
+	'altro.fissare': ['fissare', 'da fissare o regolare', 'pezzo', 'pezzi', null, true],
+	'altro.rotta': [null, 'parte rotta']
+};
+const NOME_RICAMBIO = { cerniera: 'cerniere per mobili', guide: 'guide per cassetti (coppie)', serratura: 'serrature', cernieraPorta: 'cerniere per porte', cinghia: 'cinghie', avvolgitore: 'cinghie e avvolgitori', guarnizione: 'guarnizione (al metro)', rete: 'reti per zanzariere' };
+function falegnameriaDettagliata(v, t) {
+	const lavori = (Array.isArray(v.lavori) ? v.lavori : []).filter((x) => x && typeof x === 'object' && OGGETTI_FAL[x.tipo]).slice(0, 30);
+	if (!lavori.length) return { vuoto: true, messaggio: 'Aggiungi almeno un lavoro.', dettaglio: '', comprende: [], esclude: [], riepilogo: '' };
+	const G = { uscita: [], lavoro: [], ricambi: [], materiali: [] };
+	const ipotesi = [];
+	const daVerificare = [];
+	const daQuantificare = [];
+	const verifica = { verifica: true };
+	let stimabili = 0;
+	let ricambioCliente = false;
+	let casa = false; // porte, finestre, tapparelle, zanzariere: l'IVA potrebbe essere al 10%
+	const descr = (x) => (x.tipo === 'altro' && typeof x.descr === 'string' && x.descr.trim() ? x.descr.trim().slice(0, 60) : OGGETTI_FAL[x.tipo][0]);
+	for (const x of lavori) {
+		const voce_ = CATALOGO_FAL[`${x.tipo}.${x.problema}`];
+		const n = fra(Math.round(num(x.n, 1)) || 1, 1, 30);
+		if (['porta', 'scorrevole', 'finestra', 'tapparella', 'zanzariera'].includes(x.tipo)) casa = true;
+		if (!voce_ || !voce_[0]) {
+			daQuantificare.push(`${descr(x)}${n > 1 ? ` (${n})` : ''}: ${voce_ ? voce_[1] : 'problema da vedere'}. Lo valutiamo e ti diciamo il costo prima di procedere`);
+			continue;
+		}
+		const [lav, nome, uno, piu, ric, ver] = voce_;
+		stimabili++;
+		const q = lav === 'guarnizione' ? n * (t.metriGuarnizione || 5) : n;
+		const quantita = lav === 'guarnizione' ? `${euro(q)} m, ${n} ${n === 1 ? 'anta' : 'ante'}` : `${n} ${n === 1 ? uno : piu}`;
+		const p = t.lavoro[lav];
+		G.lavoro.push(voce('Manodopera', `${descr(x)}: ${nome}`, quantita, q * p[0], q * p[1], ver ? verifica : {}));
+		if (!ric) continue;
+		if (x.ricambio === 'ho') {
+			ricambioCliente = true;
+			continue;
+		}
+		if (ric === '?') {
+			daQuantificare.push(`Ricambio per ${descr(x).toLowerCase()}: modello da scegliere o identificare. Non compreso nel subtotale: te lo comunichiamo prima dell’acquisto`);
+			continue;
+		}
+		const r = t.ricambi[ric];
+		G.ricambi.push(voce('Ricambi', `Ricambio previsto: ${NOME_RICAMBIO[ric]}`, lav === 'guarnizione' ? `${euro(q)} m` : `${n} ${n === 1 ? 'pezzo' : 'pezzi'}`, q * r[0], q * r[1], verifica));
+	}
+	if (!stimabili) return { valutazione: true, messaggio: 'I lavori indicati vanno visti prima: ti diciamo il costo dopo la verifica.', dettaglio: '', comprende: [], esclude: [], riepilogo: `Falegnameria (riparazioni): ${lavori.length} ${lavori.length === 1 ? 'lavoro' : 'lavori'} da vedere.` };
+	G.uscita.push(voce('Uscita', 'Uscita, conteggiata una sola volta', 'a corpo', t.uscita[0], t.uscita[1]));
+	G.materiali.push(voce('Materiali', 'Materiali di consumo*', 'per l’appuntamento', t.consumo[0], t.consumo[1]));
+	const voci = [...G.uscita, ...G.lavoro, ...G.ricambi, ...G.materiali];
+	// minimo: uscita + manodopera almeno t.minimo (soglia, una volta sola); ricambi e consumi a parte
+	const base = [...G.uscita, ...G.lavoro].reduce((s, r) => [s[0] + r.min, s[1] + r.max], [0, 0]);
+	if (base[0] < t.minimo) voci.push(voce('Minimo d’intervento', 'Adeguamento al minimo d’intervento', `uscita e lavoro almeno ${euro(t.minimo)} € + IVA`, t.minimo - base[0], Math.max(0, t.minimo - base[1]), { soglia: true }));
+
+	// IPOTESI
+	ipotesi.push('La stima prevede fissaggi integri e componenti compatibili con quelli esistenti. Eventuali adattamenti o riparazioni del supporto li concordiamo prima');
+	ipotesi.push('La stima prevede un accesso. Se occorre ordinare un ricambio o lavorare in laboratorio, concordiamo prima eventuali costi e un nuovo appuntamento');
+	if (ricambioCliente) ipotesi.push('Possiamo usare il ricambio che hai già, dopo averne verificato la compatibilità. Eventuali adattamenti li concordiamo prima');
+	if (G.ricambi.length) ipotesi.push('Ricambi previsti per modelli semplici e compatibili: il prezzo esatto lo confermiamo quando vediamo il pezzo');
+	if (voci.some((x) => x.verifica)) ipotesi.push('Le voci «da verificare» sono nel totale, calcolate sull’ipotesi indicata: Fabri le conferma dopo la verifica');
+	// DA VERIFICARE
+	if (v.zona === 'venezia' || v.zona === 'isole') daVerificare.push('Venezia e isole: l’eventuale trasporto via acqua lo concordiamo (per piccoli attrezzi spesso non serve)');
+	daVerificare.push('L’uscita serve a eseguire i lavori: non è il sopralluogo gratuito. Cosa si paga se un lavoro non si può fare lo concordiamo prima');
+	daVerificare.push(`IVA al 22% ipotizzata${casa ? ': per porte, finestre e tapparelle di casa potrebbe essere al 10%, lo conferma il commercialista' : ''}`);
+
+	const nL = lavori.length;
+	const completo = !daQuantificare.some((x) => !x.startsWith('Ricambio'));
+	return chiudiVoci(voci, 0, {
+		ipotesi,
+		daVerificare,
+		daComprare: [],
+		daQuantificare,
+		consumo: 'viti, tasselli, colla, cera, abrasivi',
+		titoloStima: completo ? 'Stima delle riparazioni' : 'Subtotale delle lavorazioni stimabili',
+		dettaglio: `Hai indicato ${nL} ${nL === 1 ? 'lavoro' : 'lavori'} da eseguire nello stesso appuntamento: l’uscita si conta una sola volta. Prima del lavoro confermiamo interventi, ricambi e prezzo; nessun lavoro in più senza la tua approvazione.`,
+		riepilogo: `Falegnameria (riparazioni): ${lavori.map((x) => `${descr(x).toLowerCase()} ×${fra(Math.round(num(x.n, 1)) || 1, 1, 30)}`).join(', ')}.`
+	});
+}
+
 /** Totali (somma delle voci, senza IVA) con il minimo come soglia; testi per il server e per Fabri */
 function chiudiVoci(voci, minimo, extra) {
 	let min = voci.reduce((x, r) => x + r.min, 0);
@@ -1220,7 +1402,7 @@ aPartireDa.ristrutturazioni.euro = prezzoDaBagno();
    Il server ricalcola ogni stima con i parametri della revisione pubblicata, usando queste stesse funzioni.
    versioneFormule: da aumentare quando si cambia il modo di calcolare (non quando cambiano i numeri).
 --------------------------------------------------------------------------- */
-export const versioneFormule = 5; // 15/10: imbiancatura voce per voce (le scelte vecchie come prima); esterni con l'attrezzatura per l'altezza; risanamento umidità voce per voce, poi con le voci in più (da verificare, lavori in più)
+export const versioneFormule = 6; // falegnameria gruppo A voce per voce; 15/10: imbiancatura voce per voce (le scelte vecchie come prima); esterni con l'attrezzatura per l'altezza; risanamento umidità voce per voce, poi con le voci in più (da verificare, lavori in più)
 
 const copia = (x) => JSON.parse(JSON.stringify(x));
 const tipoDi = (x) => (Array.isArray(x) ? 'lista' : x === null ? 'null' : typeof x);

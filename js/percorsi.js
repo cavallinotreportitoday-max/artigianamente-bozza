@@ -322,10 +322,21 @@ function risanamento(a, et, l) {
 	};
 }
 
-const OGGETTI_RIP = { armadio: 'del tuo armadio', cassettiera: 'della tua cassettiera', tavolo: 'di tavolo o sedie', letto: 'del tuo letto', altro: 'del tuo mobile' };
 const SU_MISURA = { armadio: 'Il tuo armadio su misura', libreria: 'La tua libreria su misura', bagno: 'Il tuo mobile bagno su misura', cucina: 'La tua cucina su misura', tv: 'Il tuo mobile TV su misura', altro: 'Il tuo mobile su misura' };
 const PORTE = { interna: 'La tua porta interna', finestra: 'Le tue finestre o scuri', ingresso: 'Il tuo portoncino', altro: 'Il tuo serramento' };
 
+const NOMI_LAV = { anta: 'anta di mobile', cassetto: 'cassetto', mobile: 'mobile', porta: 'porta', scorrevole: 'anta scorrevole', finestra: 'finestra', tapparella: 'tapparella', zanzariera: 'zanzariera', altro: 'altro' };
+/** I lavori scritti nelle schede: amb{n}_campo → [{ tipo, problema, n, ricambio, descr }] in ordine */
+export function lavoriDa(a) {
+	const per = new Map();
+	for (const [k, val] of Object.entries(a)) {
+		const m = k.match(/^amb(\d+)_(\w+)$/);
+		if (!m) continue;
+		if (!per.has(+m[1])) per.set(+m[1], {});
+		per.get(+m[1])[m[2]] = val;
+	}
+	return [...per.entries()].sort((x, y) => x[0] - y[0]).map(([, x]) => ({ tipo: x.tipo || '', problema: x.problema || '', n: Math.max(1, Math.round(num(x.n))) || 1, ricambio: x.ricambio || '', descr: (x.descr || '').trim() }));
+}
 function falegnameria(a, et, l) {
 	const t = a.tipo;
 	if (!t) return { titolo: 'Il tuo lavoro in legno', mancaPerStima: '' };
@@ -338,10 +349,14 @@ function falegnameria(a, et, l) {
 	let descrizione = '';
 	let perche = '';
 	if (t === 'riparazione') {
-		titolo = a.oggetto_rip ? `La riparazione ${OGGETTI_RIP[a.oggetto_rip]}` : 'La tua riparazione';
-		const sint = l(`sint_${a.oggetto_rip === 'letto' ? 'altro' : a.oggetto_rip}`);
-		descrizione = frase([et('oggetto_rip')[0] ? `${et('oggetto_rip')[0]}${altro ? `: ${altro}` : ''}` : '', sint.length ? oNonSo(a, `sint_${a.oggetto_rip === 'letto' ? 'altro' : a.oggetto_rip}`, l, 'problema da vedere') : '']);
-		perche = 'Al sopralluogo vediamo il mobile e cosa serve per sistemarlo.';
+		// 15/10 (Gian + revisione ChatGPT), gruppo A: un lavoro per scheda; la stima la fa calcoli.js (falegnameriaDettagliata)
+		const lavori = lavoriDa(a);
+		const nomi = lavori.map((x) => [NOMI_LAV[x.tipo], x.n > 1 ? `×${x.n}` : ''].filter(Boolean).join(' ')).filter(Boolean);
+		const base = { titolo: lavori.length > 1 ? 'Le tue riparazioni' : 'La tua riparazione', descrizione: frase([nomi.length ? `${lavori.length} ${lavori.length === 1 ? 'lavoro' : 'lavori'} (${nomi.join(', ')})` : '', a.zona ? et('zona')[0] : '']), iniziato: true };
+		const valido = (x) => x.tipo && x.problema && x.n > 0;
+		const manca = !lavori.length || !lavori.every(valido) ? 'i lavori' : !a.zona ? 'dove si trova' : '';
+		if (manca) return { ...base, esito: 'V', perche: 'Con le risposte che mancano vedi la stima.', mancaPerStima: manca };
+		return { ...base, esito: 'S', motore: { tipo: 'falegnameria', input: { versione: 1, lavori, zona: a.zona, dove: a.dove || '' } }, stimaTitolo: 'Stima delle riparazioni' };
 	} else if (t === 'mobile') {
 		titolo = SU_MISURA[a.oggetto_mis] || 'Il tuo mobile su misura';
 		const forma = a[`apertura_${{ libreria: 'lib', armadio: 'arm', tv: 'tv' }[a.oggetto_mis]}`];
@@ -357,7 +372,7 @@ function falegnameria(a, et, l) {
 		titolo = PORTE[a.porte_cosa] || 'Le tue porte e finestre';
 		const n = num(a.porte_n);
 		const ms = misure([['porta_larghezza', 'larghezza'], ['porta_altezza', 'altezza']]);
-		descrizione = frase([a.porte_cosa === 'altro' && altro ? altro : '', l('porte_azione')[0], n ? `${n} in tutto` : '', a.porte_problema?.length ? elenco(l('porte_problema')) : '', ms.length ? `${ms.join(', ')} indicative` : '']);
+		descrizione = frase([a.porte_cosa === 'altro' && altro ? altro : '', 'da realizzare o sostituire', n ? `${n} in tutto` : '', ms.length ? `${ms.join(', ')} indicative` : '']);
 		perche = 'Al sopralluogo prendiamo le misure e vediamo come intervenire.';
 	} else if (t === 'restauro') {
 		titolo = 'Il tuo restauro';
@@ -373,11 +388,6 @@ function falegnameria(a, et, l) {
 		const g = num(a.scala_gradini);
 		descrizione = frase([a.scala === 'nuova' ? 'scala nuova' : a.scala === 'esistente' ? 'scala da sistemare' : '', a.scala_parte?.length ? elenco(l('scala_parte')) : '', g ? `circa ${g} gradini` : '']);
 		perche = 'Al sopralluogo prendiamo le misure e vediamo la struttura.';
-	} else if (t === 'piccoli') {
-		titolo = 'I tuoi piccoli lavori';
-		const n = num(a.piccoli_n);
-		descrizione = frase([a.piccoli?.length ? elenco(l('piccoli').map((x) => (x === 'altro' && altro ? altro : x))) : '', n ? `circa ${n} interventi` : '']);
-		perche = 'Al sopralluogo vediamo i lavori e i ricambi che servono.';
 	}
 	return { titolo, descrizione, perche, iniziato: true, esito: 'V' };
 }

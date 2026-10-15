@@ -1,5 +1,6 @@
 // Schede delle stanze (o delle pareti) nel preventivo dell'imbiancatura (15/10/2026, Gian + revisione ChatGPT),
-// e dei muri con l'umidità nel risanamento (data-ambienti="muri": tipo, fascia o macchia, misure, altro lato).
+// dei muri con l'umidità nel risanamento (data-ambienti="muri": tipo, fascia o macchia, misure, altro lato) e dei
+// lavori della falegnameria (data-ambienti="lavori": cosa, problema, quanti, ricambio).
 // Una scheda per stanza: tipo, misure (le misure / i m² di pavimento / «Non lo so»), cosa pitturare, problemi.
 // «Aggiungi una stanza», «Duplica» (copia le scelte della scheda) e «Togli». I nomi dei campi sono amb{n}_campo:
 // static/js/percorsi.js li raccoglie (ambientiDa). Le parti che non servono si nascondono e si spengono
@@ -7,14 +8,20 @@
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
-const NOMI = { stanze: 'Stanza', pareti: 'Parete', soffitti: 'Stanza', muri: 'Muro' };
-const AGGIUNGI = { stanze: 'Aggiungi una stanza', pareti: 'Aggiungi una parete', soffitti: 'Aggiungi una stanza', muri: 'Aggiungi un muro' };
+const NOMI = { stanze: 'Stanza', pareti: 'Parete', soffitti: 'Stanza', muri: 'Muro', lavori: 'Lavoro' };
+const AGGIUNGI = { stanze: 'Aggiungi una stanza', pareti: 'Aggiungi una parete', soffitti: 'Aggiungi una stanza', muri: 'Aggiungi un muro', lavori: 'Aggiungi un altro lavoro' };
 const AIUTO = {
 	stanze: 'Una scheda per ogni stanza. Le misure vanno bene anche a occhio.',
 	pareti: 'Una scheda per ogni parete: larghezza e altezza, anche a occhio.',
 	soffitti: 'Una scheda per ogni stanza: bastano le misure del pavimento.',
-	muri: 'Una scheda per ogni muro con l’umidità. Le misure vanno bene anche a occhio.'
+	muri: 'Una scheda per ogni muro con l’umidità. Le misure vanno bene anche a occhio.',
+	lavori: 'Un lavoro per scheda: cosa, che problema ha e quanti sono. L’uscita si conta una volta sola.'
 };
+// falegnameria, riparazioni e piccoli lavori (data-ambienti="lavori")
+const NOME_LAV = { anta: 'Anta di mobile', cassetto: 'Cassetto', mobile: 'Mobile, tavolo o letto', porta: 'Porta interna', scorrevole: 'Anta scorrevole', finestra: 'Finestra o scuro', tapparella: 'Tapparella', zanzariera: 'Zanzariera', altro: 'Altro' };
+const UNITA_LAV = { anta: 'ante', cassetto: 'cassetti', mobile: 'pezzi', porta: 'porte', scorrevole: 'ante', finestra: 'ante', tapparella: 'tapparelle', zanzariera: 'zanzariere', altro: 'pezzi' };
+/** Il testo della scelta fatta (es. il problema), per riassunti e messaggi */
+const etichetta = (card, campo) => $$(`input[name$="_${campo}"]:checked`, card).find((i) => !i.disabled)?.nextElementSibling?.textContent.trim() || '';
 const NOME_TIPO = { camera: 'Camera', soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', corridoio: 'Corridoio', altro: 'Altra stanza', cantina: 'Cantina', esterno: 'Muro esterno' };
 
 /** Che cosa si imbianca adesso: stanze, pareti o soffitti (la scelta del primo passo); «muri» per l'umidità (fisso) */
@@ -40,11 +47,20 @@ function disegnaScheda(card, modo) {
 	const vale = (regola) => {
 		if (regola === 'estesi') return problemi.some((p) => !['nessuno', 'carta'].includes(p));
 		const [k, v] = regola.split('=');
-		return k === 'modo' ? modoMis === v : k === 'pareti' ? pareti === v : false;
+		if (k === 'modo') return modoMis === v;
+		if (k === 'pareti') return pareti === v;
+		const x = valore(card, k); // altri campi della scheda (lavori: tipo, problema), anche più valori «a,b»
+		return v.split(',').some((y) => (Array.isArray(x) ? x.includes(y) : x === y));
 	};
 	for (const el of $$('[data-amb-per], [data-amb-se]', card)) {
 		const si = (!el.dataset.ambPer || el.dataset.ambPer.split(',').includes(modo)) && (!el.dataset.ambSe || vale(el.dataset.ambSe));
 		el.hidden = !si;
+	}
+	if (modo === 'lavori') {
+		const u = $('[data-amb-unita]', card);
+		const tipo = valore(card, 'tipo');
+		const prob = valore(card, 'problema');
+		if (u) u.textContent = prob === 'cerniera' || prob === 'supporto' ? 'cerniere' : prob === 'maniglia' ? (tipo === 'porta' ? 'coppie' : 'maniglie') : prob === 'cigola' ? 'letti' : UNITA_LAV[tipo] || 'pezzi';
 	}
 	// i campi dentro le parti nascoste sono spenti (fuori da stima, riassunto e invio)
 	for (const i of $$('input', card)) {
@@ -70,10 +86,11 @@ export function ambientiAggiorna(form) {
 		box.dataset.modo = modo;
 		const schede = $$('[data-amb]', box);
 		schede.forEach((card, k) => {
-			const tipo = modo === 'pareti' ? '' : NOME_TIPO[valore(card, 'tipo')];
+			const tipo = modo === 'pareti' ? '' : modo === 'lavori' ? NOME_LAV[valore(card, 'tipo')] : NOME_TIPO[valore(card, 'tipo')];
 			$('[data-amb-nome]', card).textContent = tipo ? `${tipo}` : `${NOMI[modo]} ${k + 1}`;
 			$('[data-amb-togli]', card).hidden = schede.length < 2;
 			disegnaScheda(card, modo);
+			if (modo === 'lavori') disegnaScheda(card, modo); // il problema dipende dall'oggetto, il ricambio dal problema
 		});
 		const t = $('[data-amb-aggiungi-testo]', box);
 		if (t) t.textContent = AGGIUNGI[modo];
@@ -87,6 +104,10 @@ export function ambientiManca(box) {
 	const modo = modoDi(box);
 	for (const card of $$('[data-amb]', box)) {
 		const m = valore(card, 'modo');
+		if (modo === 'lavori') {
+			if (!valore(card, 'tipo') || !valore(card, 'problema') || !numero(valore(card, 'n'))) return card;
+			continue;
+		}
 		const tipoOk = modo === 'pareti' || valore(card, 'tipo');
 		const misOk =
 			m === 'nonso' ||
@@ -98,6 +119,11 @@ export function ambientiManca(box) {
 
 /** Descrizione breve di una scheda: «Camera 4 × 3,5 m», «Parete 3 m», «Soggiorno, misure da prendere» */
 function testoScheda(card, modo, k) {
+	if (modo === 'lavori') {
+		const descr = valore(card, 'descr');
+		const n = numero(valore(card, 'n')) || 1;
+		return [`${NOME_LAV[valore(card, 'tipo')] || `Lavoro ${k + 1}`}${descr ? `: ${descr}` : ''}`, etichetta(card, 'problema').toLowerCase(), n > 1 ? `${n} ${$('[data-amb-unita]', card)?.textContent || 'pezzi'}` : ''].filter(Boolean).join(', ');
+	}
 	const tipo = modo === 'pareti' ? `Parete ${k + 1}` : NOME_TIPO[valore(card, 'tipo')] || `${NOMI[modo] || 'Stanza'} ${k + 1}`;
 	const m = valore(card, 'modo');
 	const l = numero(valore(card, 'l'));
@@ -122,6 +148,11 @@ export function ambientiRighe(box) {
 	const modo = modoDi(box);
 	return $$('[data-amb]', box).map((card, k) => {
 		const parti = [testoScheda(card, modo, k)];
+		if (modo === 'lavori') {
+			const r = valore(card, 'ricambio');
+			if (r) parti.push(r === 'ho' ? 'ricambio: ce l’ho già' : 'ricambio: lo portate voi');
+			return `- ${parti.join(', ')}`;
+		}
 		if (modo === 'muri') {
 			const altro = valore(card, 'altro');
 			if (altro) parti.push({ si: 'anche dall’altro lato', no: 'non dall’altro lato', nonso: 'altro lato: non so' }[altro]);
