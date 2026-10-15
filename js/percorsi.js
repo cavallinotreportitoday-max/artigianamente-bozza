@@ -323,7 +323,6 @@ function risanamento(a, et, l) {
 }
 
 const SU_MISURA = { armadio: 'Il tuo armadio su misura', libreria: 'La tua libreria su misura', bagno: 'Il tuo mobile bagno su misura', cucina: 'La tua cucina su misura', tv: 'Il tuo mobile TV su misura', altro: 'Il tuo mobile su misura' };
-const PORTE = { interna: 'La tua porta interna', finestra: 'Le tue finestre o scuri', ingresso: 'Il tuo portoncino', altro: 'Il tuo serramento' };
 
 const NOMI_LAV = { anta: 'anta di mobile', cassetto: 'cassetto', mobile: 'mobile', porta: 'porta', scorrevole: 'anta scorrevole', finestra: 'finestra', tapparella: 'tapparella', zanzariera: 'zanzariera', altro: 'altro' };
 /** I lavori scritti nelle schede: amb{n}_campo → [{ tipo, problema, n, ricambio, descr }] in ordine */
@@ -336,6 +335,19 @@ export function lavoriDa(a) {
 		per.get(+m[1])[m[2]] = val;
 	}
 	return [...per.entries()].sort((x, y) => x[0] - y[0]).map(([, x]) => ({ tipo: x.tipo || '', problema: x.problema || '', n: Math.max(1, Math.round(num(x.n))) || 1, ricambio: x.ricambio || '', descr: (x.descr || '').trim() }));
+}
+const NOMI_RES = { sedia: 'sedia', tavolo: 'tavolo', contenitore: 'mobile', porta: 'porta', scuro: 'scuro', altro: 'altro' };
+const NOMI_SER = { porta: 'porta', scorrevole: 'porta scorrevole', scomparsa: 'porta a scomparsa', finestra: 'finestra', scuri: 'scuri', portoncino: 'portoncino' };
+/** Le schede (amb{n}_campo) così come sono: [{ campo: valore }] in ordine */
+export function schedeDa(a) {
+	const per = new Map();
+	for (const [k, val] of Object.entries(a)) {
+		const m = k.match(/^amb(\d+)_(\w+)$/);
+		if (!m) continue;
+		if (!per.has(+m[1])) per.set(+m[1], {});
+		per.get(+m[1])[m[2]] = val;
+	}
+	return [...per.entries()].sort((x, y) => x[0] - y[0]).map(([, x]) => x);
 }
 function falegnameria(a, et, l) {
 	const t = a.tipo;
@@ -368,16 +380,27 @@ function falegnameria(a, et, l) {
 		descrizione = `${testoForma}${dove ? `, ${dove}` : ''}.` + (ms.length ? ` ${maiuscola(ms.map((x) => x.replace(/^(\S+) /, '$1 indicativa ')).join(', '))}; ${ms.length < 3 ? 'altre misure' : 'misure precise'} da definire.` : ' Misure da definire.');
 		perche = 'Al sopralluogo definiamo misure, materiali e finiture.';
 		return { titolo, descrizione, perche, iniziato: true, esito: 'V' };
-	} else if (t === 'porte') {
-		titolo = PORTE[a.porte_cosa] || 'Le tue porte e finestre';
-		const n = num(a.porte_n);
-		const ms = misure([['porta_larghezza', 'larghezza'], ['porta_altezza', 'altezza']]);
-		descrizione = frase([a.porte_cosa === 'altro' && altro ? altro : '', 'da realizzare o sostituire', n ? `${n} in tutto` : '', ms.length ? `${ms.join(', ')} indicative` : '']);
-		perche = 'Al sopralluogo prendiamo le misure e vediamo come intervenire.';
-	} else if (t === 'restauro') {
-		titolo = 'Il tuo restauro';
-		descrizione = frase([a.oggetto_res === 'altro' && altro ? altro : et('oggetto_res')[0], l('risultato')[0], a.res_nota?.trim() ? `vorresti: ${a.res_nota.trim()}` : '']);
-		perche = 'Al sopralluogo vediamo lo stato del mobile e il trattamento giusto.';
+	} else if (t === 'restauro' || t === 'porte') {
+		// 15/10 (Gian + revisione ChatGPT), gruppo B: una scheda per oggetto o serramento; la stima la fa calcoli.js
+		const schede = schedeDa(a);
+		const restauro = t === 'restauro';
+		const NOMI = restauro ? NOMI_RES : NOMI_SER;
+		const nomi = schede.map((x) => [NOMI[x.tipo], num(x.n) > 1 ? `×${num(x.n)}` : ''].filter(Boolean).join(' ')).filter(Boolean);
+		const quanti = restauro ? ['oggetto', 'oggetti'] : ['elemento', 'elementi'];
+		const base = {
+			titolo: restauro ? 'Il tuo restauro' : 'Le tue porte e finestre',
+			descrizione: frase([nomi.length ? `${schede.length} ${schede.length === 1 ? quanti[0] : quanti[1]} (${nomi.join(', ')})` : '', a.zona ? et('zona')[0] : '']),
+			iniziato: true
+		};
+		const validoRes = (x) => x.tipo && (x.tipo === 'altro' || (x.risultato && (!['tavolo', 'contenitore'].includes(x.tipo) || x.misura)));
+		const validoSer = (x) => x.tipo && (x.tipo === 'portoncino' || (x.comprato && (x.comprato === 'si' || x.scelta) && (x.misure === 'nonso' || (x.misure === 'so' && num(x.l) && num(x.h)))));
+		const manca = !schede.length || !schede.every(restauro ? validoRes : validoSer) ? (restauro ? 'gli oggetti' : 'le porte e finestre') : !a.zona ? 'dove si trova' : '';
+		if (manca) return { ...base, esito: 'V', perche: 'Con le risposte che mancano vedi la stima.', mancaPerStima: manca };
+		const n = (x) => Math.max(1, Math.round(num(x.n))) || 1;
+		const input = restauro
+			? { versione: 1, ramo: 'restauro', zona: a.zona, lavorazione: a.lavorazione || '', oggetti: schede.map((x) => ({ tipo: x.tipo, descr: x.descr || '', misura: x.misura || '', superficie: x.superficie || '', stato: lista(x.stato).filter((y) => y !== 'nonso'), risultato: x.risultato || '', lati: x.lati || 'due', telaio: x.telaio || 'anta', antico: x.antico || '', n: n(x) })) }
+			: { versione: 1, ramo: 'serramenti', zona: a.zona, pianoN: num(a.piano_n), ascensore: a.ascensore === 'si', vincoli: a.vincoli || '', elementi: schede.map((x) => ({ tipo: x.tipo, comprato: x.comprato || '', scelta: x.scelta || '', misure: x.misure || '', l: num(x.l), h: num(x.h), ante: num(x.ante) || 2, apertura: x.apertura || '', scuro: x.scuro || '', vecchia: x.vecchia || '', telaio: x.telaio || '', n: n(x) })) };
+		return { ...base, esito: 'S', motore: { tipo: 'falegnameria', input }, stimaTitolo: restauro ? 'Stima del restauro' : 'Stima della posa' };
 	} else if (t === 'pergola') {
 		titolo = 'La tua pergola';
 		const ms = misure([['pergola_l', 'larghezza'], ['pergola_p', 'profondità']], 'm');

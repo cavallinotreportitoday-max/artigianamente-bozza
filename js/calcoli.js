@@ -1,5 +1,5 @@
 // Stime orientative per il preventivo guidato.
-import datiRevisione from './revisione-dati.js?r=61';
+import datiRevisione from './revisione-dati.js?r=62';
 // ATTENZIONE: tutte le tariffe sono PROVVISORIE (bozza ottobre 2026), da approvare con il titolare.
 // Lo stesso file serve sia alla pagina (prima visualizzazione) sia allo script nel browser.
 
@@ -215,7 +215,38 @@ export const tariffe = {
 			guarnizione: [2, 5], // al metro
 			rete: [10, 25] // a zanzariera
 		},
-		metriGuarnizione: 5 // m di guarnizione per anta di finestra
+		metriGuarnizione: 5, // m di guarnizione per anta di finestra
+		/* Gruppo B (15/10/2026, Gian + revisione ChatGPT): restauro e finiture; porte e finestre nuove.
+		   Ipotesi interne provvisorie (da validare con ore e materiali reali di Fabri). Restauro: a pezzo, lavoro e
+		   prodotti di finitura compresi. */
+		restauro: {
+			sedia: { ravvivare: [30, 60], rifare: [90, 160], laccare: [110, 190] }, // a sedia o sgabello
+			tavoloPiccolo: { ravvivare: [50, 90], rifare: [150, 250], laccare: [180, 300] },
+			tavoloMedio: { ravvivare: [80, 150], rifare: [250, 400], laccare: [300, 480] },
+			tavoloGrande: { ravvivare: [120, 220], rifare: [350, 600], laccare: [420, 700] },
+			contenitorePiccolo: { ravvivare: [40, 80], rifare: [120, 220], laccare: [150, 250] }, // comodino, mobiletto
+			contenitoreMedio: { ravvivare: [80, 150], rifare: [250, 450], laccare: [300, 550] }, // cassettiera, credenza bassa
+			contenitoreGrande: { ravvivare: [150, 300], rifare: [450, 900], laccare: [550, 1000] }, // armadio, credenza alta, libreria
+			portaLato: { ravvivare: [30, 50], rifare: [70, 130], laccare: [80, 150] }, // a lato della sola anta
+			portaTelaio: { ravvivare: [20, 40], rifare: [40, 80], laccare: [50, 90] }, // telaio e coprifili, a porta
+			portaSmontaggio: [20, 40], // a porta: smontaggio e rimontaggio
+			scuro: { ravvivare: [40, 70], rifare: [70, 120], laccare: [90, 150] }, // ad anta
+			lavorata: 1.3, // cornici, persiane, parti tornite: più lavoro
+			incollaggi: [25, 60], // a pezzo: parti staccate da rincollare (caso semplice, da verificare)
+			ritiro: [40, 80], // a corpo: ritiro e riconsegna per il laboratorio
+			consumo: [10, 25] // materiali di consumo (abrasivi, stucco, teli, solventi), una volta
+		},
+		// porte e finestre nuove: si stima la posa e quello che è già definito; la fornitura resta da quantificare
+		serramenti: {
+			posaPorta: [100, 180], // a porta a battente, vano in buono stato
+			posaScorrevole: [130, 250], // porta scorrevole esterno muro
+			posaFinestra: { piccola: [100, 140], media: [140, 200], grande: [200, 280], portafinestra: [260, 340] }, // fino a 1,7 m², 2,8 m², 4 m², oltre (studiomadera)
+			posaScuro: [40, 70], // ad anta
+			smaltPorta: [30, 60], // smontaggio e smaltimento della vecchia porta
+			smaltFinestra: [80, 120], // smontaggio e smaltimento del vecchio infisso
+			smaltScuro: [20, 40], // ad anta
+			piano: [20, 40] // a piano senza ascensore, dal secondo in su
+		}
 	},
 	parquet: {
 		lavoro: {
@@ -1143,6 +1174,8 @@ const CATALOGO_FAL = {
 };
 const NOME_RICAMBIO = { cerniera: 'cerniere per mobili', guide: 'guide per cassetti (coppie)', serratura: 'serrature', cernieraPorta: 'cerniere per porte', cinghia: 'cinghie', avvolgitore: 'cinghie e avvolgitori', guarnizione: 'guarnizione (al metro)', rete: 'reti per zanzariere' };
 function falegnameriaDettagliata(v, t) {
+	if (v.ramo === 'restauro') return restauriDettagliati(v, t);
+	if (v.ramo === 'serramenti') return serramentiDettagliati(v, t);
 	const lavori = (Array.isArray(v.lavori) ? v.lavori : []).filter((x) => x && typeof x === 'object' && OGGETTI_FAL[x.tipo]).slice(0, 30);
 	if (!lavori.length) return { vuoto: true, messaggio: 'Aggiungi almeno un lavoro.', dettaglio: '', comprende: [], esclude: [], riepilogo: '' };
 	const G = { uscita: [], lavoro: [], ricambi: [], materiali: [] };
@@ -1210,6 +1243,192 @@ function falegnameriaDettagliata(v, t) {
 		titoloStima: completo ? 'Stima delle riparazioni' : 'Subtotale delle lavorazioni stimabili',
 		dettaglio: `Hai indicato ${nL} ${nL === 1 ? 'lavoro' : 'lavori'} da eseguire nello stesso appuntamento: l’uscita si conta una sola volta. Prima del lavoro confermiamo interventi, ricambi e prezzo; nessun lavoro in più senza la tua approvazione.`,
 		riepilogo: `Falegnameria (riparazioni): ${lavori.map((x) => `${descr(x).toLowerCase()} ×${fra(Math.round(num(x.n, 1)) || 1, 1, 30)}`).join(', ')}.`
+	});
+}
+
+/* ---------------------------------------------------------------------------
+   FALEGNAMERIA, GRUPPO B (15/10/2026, Gian + revisione ChatGPT)
+   Restauro e finiture: una scheda per oggetto (cosa, misura, superficie liscia o lavorata, com'è, risultato, quanti).
+   Prezzo a pezzo con lavoro e prodotti di finitura compresi; oggetti antichi o di valore, parti mancanti,
+   impiallacciatura, tarli e danni strutturali: «da quantificare» (serve una valutazione prima del trattamento).
+   Porte e finestre nuove: si stima la posa e quello che è già definito (smontaggio e smaltimento); la fornitura resta
+   «da quantificare» finché non si scelgono modello, misure e accessori; senza misure, le parti che dipendono dalle
+   dimensioni restano da quantificare. Casa o laboratorio: è una preferenza, Fabri conferma.
+--------------------------------------------------------------------------- */
+const lista_ = (x) => (Array.isArray(x) ? x : []);
+const pezzi = (n, uno, piu) => `${n} ${n === 1 ? uno : piu}`;
+/** Uscita una volta, minimo su uscita + lavoro (soglia), poi le altre voci; chiude come le riparazioni */
+function chiudiFalegnameria(t, G, extra) {
+	const voci = [...G.uscita, ...G.lavoro, ...G.altre, ...G.materiali];
+	const base = [...G.uscita, ...G.lavoro].reduce((s, r) => [s[0] + r.min, s[1] + r.max], [0, 0]);
+	if (G.uscita.length && base[0] < t.minimo) voci.push(voce('Minimo d’intervento', 'Adeguamento al minimo d’intervento', `uscita e lavoro almeno ${euro(t.minimo)} € + IVA`, t.minimo - base[0], Math.max(0, t.minimo - base[1]), { soglia: true }));
+	return chiudiVoci(voci, 0, extra);
+}
+const RES_NOME = { sedia: 'Sedia o sgabello', tavolo: 'Tavolo', contenitore: 'Mobile contenitore', porta: 'Porta interna', scuro: 'Scuro o finestra in legno', altro: 'Altro oggetto' };
+const RES_RISULTATO = { ravvivare: 'ravvivatura (pulizia, cera o olio)', rifare: 'finitura rifatta (sverniciatura e nuova vernice o olio)', laccare: 'laccatura (colore coprente)' };
+function restauriDettagliati(v, t) {
+	const r = t.restauro;
+	const oggetti = lista_(v.oggetti).filter((x) => x && typeof x === 'object' && RES_NOME[x.tipo]).slice(0, 20);
+	if (!oggetti.length) return { vuoto: true, messaggio: 'Aggiungi almeno un oggetto.', dettaglio: '', comprende: [], esclude: [], riepilogo: '' };
+	const G = { uscita: [], lavoro: [], altre: [], materiali: [] };
+	const ipotesi = [];
+	const daVerificare = [];
+	const daQuantificare = [];
+	let stimati = 0;
+	let medie = 0;
+	let decidere = 0;
+	for (const x of oggetti) {
+		const n = fra(Math.round(num(x.n, 1)) || 1, 1, 30);
+		const nome = RES_NOME[x.tipo];
+		const stato = lista_(x.stato);
+		if (x.antico === 'si') {
+			daQuantificare.push(`${nome}${n > 1 ? ` (${n})` : ''}: oggetto antico o di valore. Serve una valutazione prima di scegliere il trattamento e stimare il prezzo`);
+			continue;
+		}
+		if (x.tipo === 'altro') {
+			daQuantificare.push(`${x.descr ? String(x.descr).slice(0, 60) : nome}: lo valutiamo dalle foto o al sopralluogo`);
+			continue;
+		}
+		const ris = ['ravvivare', 'rifare', 'laccare'].includes(x.risultato) ? x.risultato : 'rifare';
+		if (!['ravvivare', 'rifare', 'laccare'].includes(x.risultato)) decidere++;
+		const k = x.superficie === 'lavorata' ? r.lavorata : 1;
+		const lav = x.superficie === 'lavorata' ? ', superficie lavorata' : '';
+		let p;
+		let quantita;
+		if (x.tipo === 'porta') {
+			const lati = x.lati === 'uno' ? 1 : 2;
+			const pl = r.portaLato[ris];
+			const pt = x.telaio === 'telaio' ? r.portaTelaio[ris] : [0, 0];
+			p = [(pl[0] * lati + pt[0] + r.portaSmontaggio[0]) * k, (pl[1] * lati + pt[1] + r.portaSmontaggio[1]) * k];
+			quantita = `${pezzi(n, 'porta', 'porte')}, ${lati === 1 ? 'un lato' : 'due lati'}${x.telaio === 'telaio' ? ', anche telaio e coprifili' : ', sola anta'}`;
+			G.lavoro.push(voce('Lavoro', `Porta interna: ${RES_RISULTATO[ris]}, smontaggio e rimontaggio${lav}`, quantita, n * p[0], n * p[1]));
+		} else if (x.tipo === 'scuro') {
+			p = r.scuro[ris].map((y) => y * (x.superficie === 'lavorata' ? r.lavorata : 1));
+			G.lavoro.push(voce('Lavoro', `Scuro o finestra in legno: ${RES_RISULTATO[ris]}${x.superficie === 'lavorata' ? ', persiana lavorata' : ''}`, pezzi(n, 'anta', 'ante'), n * p[0], n * p[1]));
+		} else {
+			const misura = ['piccolo', 'medio', 'grande'].includes(x.misura) ? x.misura : 'medio';
+			if (x.tipo !== 'sedia' && misura !== x.misura) medie++;
+			const chiave = x.tipo === 'sedia' ? 'sedia' : `${x.tipo}${misura[0].toUpperCase()}${misura.slice(1)}`;
+			p = r[chiave][ris].map((y) => y * k);
+			const quale = x.tipo === 'sedia' ? '' : ` ${misura === 'piccolo' ? 'piccolo' : misura === 'grande' ? 'grande' : 'medio'}`;
+			G.lavoro.push(voce('Lavoro', `${nome}${quale}: ${RES_RISULTATO[ris]}${lav}`, `${pezzi(n, 'pezzo', 'pezzi')}, prodotti di finitura compresi`, n * p[0], n * p[1]));
+		}
+		stimati++;
+		if (stato.includes('staccate')) G.lavoro.push(voce('Lavoro', `${nome}: parti staccate da rincollare`, pezzi(n, 'pezzo', 'pezzi'), n * r.incollaggi[0], n * r.incollaggi[1], { verifica: true }));
+		if (stato.includes('mancanti')) daQuantificare.push(`${nome}: parti mancanti o rotte da ricostruire`);
+		if (stato.includes('impiallacciatura')) daQuantificare.push(`${nome}: impiallacciatura sollevata o danneggiata da ricostruire`);
+		if (stato.includes('tarli')) daQuantificare.push(`${nome}: tarli, trattamento da valutare (quanto sono estesi)`);
+		if (stato.includes('struttura')) daQuantificare.push(`${nome}: danni alla struttura`);
+		if (ris === 'ravvivare' && stato.includes('stacca')) daVerificare.push(`${nome}: con la vernice che si stacca può servire rifare la finitura, non solo ravvivarla`);
+	}
+	if (!stimati) return { valutazione: true, messaggio: 'Gli oggetti indicati vanno valutati prima del trattamento.', dettaglio: '', comprende: [], esclude: [], riepilogo: `Falegnameria (restauro): ${oggetti.length} ${oggetti.length === 1 ? 'oggetto' : 'oggetti'} da valutare.` };
+	const acqua = v.zona === 'venezia' || v.zona === 'isole';
+	if (v.lavorazione === 'laboratorio') {
+		if (acqua) daQuantificare.push('Ritiro e riconsegna a Venezia o nelle isole: il trasporto lo valutiamo sul percorso');
+		else G.altre.push(voce('Trasporto', 'Ritiro e riconsegna per il laboratorio', 'a corpo', r.ritiro[0], r.ritiro[1], { verifica: true }));
+	} else G.uscita.push(voce('Uscita', 'Uscita, conteggiata una sola volta', 'a corpo', t.uscita[0], t.uscita[1]));
+	if (v.lavorazione !== 'casa') daVerificare.push('Dove lavorare (a casa tua o in laboratorio) lo conferma Fabri dopo aver visto gli oggetti');
+	G.materiali.push(voce('Materiali', 'Materiali di consumo*', 'per il lavoro', r.consumo[0], r.consumo[1]));
+	ipotesi.push('Prezzo a pezzo con lavoro e prodotti di finitura compresi; le foto ci aiutano a confermarlo');
+	if (medie) ipotesi.push(`Misura media ipotizzata per ${medie === 1 ? 'un oggetto' : `${medie} oggetti`} di cui non hai indicato la grandezza`);
+	if (decidere) ipotesi.push('Risultato «da decidere»: abbiamo contato il rifacimento della finitura');
+	if (G.lavoro.some((x) => x.verifica) || G.altre.some((x) => x.verifica)) ipotesi.push('Le voci «da verificare» sono nel totale, calcolate sull’ipotesi indicata: Fabri le conferma dopo la verifica');
+	daVerificare.push('IVA al 22% ipotizzata per il restauro di mobili: Fabri la verifica prima del preventivo definitivo');
+	const completo = !daQuantificare.length;
+	return chiudiFalegnameria(t, G, {
+		ipotesi,
+		daVerificare,
+		daComprare: [],
+		daQuantificare,
+		consumo: 'abrasivi, stucco, teli, solventi',
+		titoloStima: completo ? 'Stima del restauro' : 'Subtotale delle lavorazioni stimabili',
+		dettaglio: `${pezzi(oggetti.length, 'oggetto indicato', 'oggetti indicati')}. Prima del lavoro confermiamo trattamenti e prezzo; nessun lavoro in più senza la tua approvazione.`,
+		riepilogo: `Falegnameria (restauro): ${oggetti.map((x) => `${RES_NOME[x.tipo].toLowerCase()} ×${fra(Math.round(num(x.n, 1)) || 1, 1, 30)}`).join(', ')}.`
+	});
+}
+
+const SER_NOME = { porta: 'Porta a battente', scorrevole: 'Porta scorrevole esterno muro', scomparsa: 'Porta a scomparsa', finestra: 'Finestra o portafinestra', scuri: 'Scuri in legno', portoncino: 'Portoncino d’ingresso' };
+function serramentiDettagliati(v, t) {
+	const r = t.serramenti;
+	const elementi = lista_(v.elementi).filter((x) => x && typeof x === 'object' && SER_NOME[x.tipo]).slice(0, 30);
+	if (!elementi.length) return { vuoto: true, messaggio: 'Aggiungi almeno una porta o finestra.', dettaglio: '', comprende: [], esclude: [], riepilogo: '' };
+	const G = { uscita: [], lavoro: [], altre: [], materiali: [] };
+	const ipotesi = [];
+	const daVerificare = [];
+	const daQuantificare = [];
+	let opere = false;
+	let esterni = false;
+	let stimati = 0;
+	for (const x of elementi) {
+		const n = fra(Math.round(num(x.n, 1)) || 1, 1, 30);
+		const nome = SER_NOME[x.tipo];
+		const qn = n > 1 ? ` (${n})` : '';
+		if (x.tipo === 'portoncino') {
+			daQuantificare.push(`${nome}${qn}: percorso a parte, lo valutiamo al sopralluogo`);
+			continue;
+		}
+		if (x.tipo === 'finestra' || x.tipo === 'scuri') esterni = true;
+		// fornitura: mai un prezzo inventato
+		if (x.comprato === 'si') ipotesi.push(`${nome}: la posa è di un prodotto che hai già, da verificare con il vano prima del lavoro`);
+		else daQuantificare.push(`${nome}${qn}: fornitura ${x.scelta === 'misura' ? 'su misura, realizzazione da valutare' : 'da scegliere insieme (modello, misure e accessori)'}`);
+		// posa
+		const l = fra(num(x.l, 0), 0, 400);
+		const h = fra(num(x.h, 0), 0, 400);
+		const misure = x.misure === 'so' && l && h;
+		if (x.tipo === 'scomparsa') {
+			daQuantificare.push(`${nome}${qn}: posa, controtelaio e opere murarie`);
+			opere = true;
+		} else if (x.tipo === 'finestra') {
+			if (misure) {
+				const mq = (l * h) / 10000;
+				const classe = mq <= 1.7 ? 'piccola' : mq <= 2.8 ? 'media' : mq <= 4 ? 'grande' : 'portafinestra';
+				const p = r.posaFinestra[classe];
+				G.lavoro.push(voce('Lavoro', `${nome}: posa (circa ${String(Math.round(mq * 10) / 10).replace('.', ',')} m²)`, pezzi(n, 'finestra', 'finestre'), n * p[0], n * p[1]));
+				stimati++;
+			} else daQuantificare.push(`${nome}${qn}: posa, dipende dalle misure`);
+		} else if (x.tipo === 'scuri') {
+			const ante = fra(Math.round(num(x.ante, 2)) || 2, 1, 6);
+			G.lavoro.push(voce('Lavoro', `Scuri in legno: posa${x.scuro === 'persiana' ? ' (persiana lavorata)' : ''}`, `${pezzi(n * ante, 'anta', 'ante')}`, n * ante * r.posaScuro[0], n * ante * r.posaScuro[1]));
+			stimati++;
+		} else {
+			const p = x.tipo === 'scorrevole' ? r.posaScorrevole : r.posaPorta;
+			G.lavoro.push(voce('Lavoro', `${nome}: posa${misure ? '' : ' (vano di misura normale, da confermare)'}`, pezzi(n, 'porta', 'porte'), n * p[0], n * p[1]));
+			stimati++;
+			if (!misure) ipotesi.push(`${nome}: senza misure abbiamo contato una porta di misura normale; lo confermiamo al rilievo`);
+		}
+		// la vecchia
+		if (x.vecchia === 'si') {
+			const ante = fra(Math.round(num(x.ante, 2)) || 2, 1, 6);
+			const [q, p] = x.tipo === 'finestra' ? [n, r.smaltFinestra] : x.tipo === 'scuri' ? [n * ante, r.smaltScuro] : [n, r.smaltPorta];
+			G.lavoro.push(voce('Lavoro', `${nome}: smontaggio e smaltimento di quella vecchia`, x.tipo === 'scuri' ? pezzi(q, 'anta', 'ante') : pezzi(q, 'pezzo', 'pezzi'), q * p[0], q * p[1]));
+			if (x.tipo === 'finestra') opere = true;
+		}
+		if (x.telaio === 'rifare') {
+			daQuantificare.push(`${nome}${qn}: telaio o controtelaio da rifare`);
+			opere = true;
+		}
+		if (x.telaio === 'nonso') daVerificare.push(`${nome}: lo stato del telaio lo vediamo al sopralluogo`);
+	}
+	if (opere) daQuantificare.push('Eventuali opere murarie, ripristini e tinteggiatura dopo la sostituzione');
+	if (!stimati && !G.lavoro.length) return { valutazione: true, messaggio: 'Per questi lavori servono scelta del prodotto e misure: ti diciamo il prezzo dopo il sopralluogo.', dettaglio: '', comprende: [], esclude: [], riepilogo: `Falegnameria (porte e finestre nuove): ${elementi.length} ${elementi.length === 1 ? 'elemento' : 'elementi'} da valutare.` };
+	G.uscita.push(voce('Uscita', 'Uscita, conteggiata una sola volta', 'a corpo', t.uscita[0], t.uscita[1]));
+	const piano = fra(Math.round(num(v.pianoN, 0)), 0, 30);
+	if (piano >= 2 && v.ascensore !== true) G.altre.push(voce('Trasporto', 'Porte e finestre ai piani, senza ascensore', `${piano}° piano`, (piano - 1) * r.piano[0], (piano - 1) * r.piano[1]));
+	if (v.zona === 'venezia' || v.zona === 'isole') daQuantificare.push('Trasporto a Venezia o nelle isole: lo valutiamo sul percorso concreto');
+	G.materiali.push(voce('Materiali', 'Materiali di consumo*', 'per il lavoro', t.consumo[0], t.consumo[1]));
+	if (esterni && v.vincoli !== 'no') daVerificare.push('Finestre e scuri esterni: eventuali vincoli e autorizzazioni li verifichiamo caso per caso');
+	daVerificare.push('Il sopralluogo per valutare e il rilievo definitivo delle misure per ordinare sono due cose: Fabri ti dice prima se il rilievo ha un costo');
+	daVerificare.push('Stima con IVA al 22%: per la posa in casa può valere il 10% (con regole particolari per infissi e scuri). Fabri la verifica prima del preventivo definitivo');
+	ipotesi.push('Possiamo stimare le lavorazioni già definite. Il prezzo della fornitura sarà completato dopo aver scelto modello, misure e accessori');
+	return chiudiFalegnameria(t, G, {
+		ipotesi,
+		daVerificare,
+		daComprare: [],
+		daQuantificare,
+		consumo: 'viti, tasselli, schiuma, silicone, cunei',
+		titoloStima: daQuantificare.length ? 'Subtotale delle lavorazioni stimabili' : 'Stima della posa',
+		dettaglio: `${pezzi(elementi.length, 'elemento indicato', 'elementi indicati')}. Restano da quantificare le voci elencate sotto: sono necessarie per completare il prezzo.`,
+		riepilogo: `Falegnameria (porte e finestre nuove): ${elementi.map((x) => `${SER_NOME[x.tipo].toLowerCase()} ×${fra(Math.round(num(x.n, 1)) || 1, 1, 30)}`).join(', ')}.`
 	});
 }
 
@@ -1402,7 +1621,7 @@ aPartireDa.ristrutturazioni.euro = prezzoDaBagno();
    Il server ricalcola ogni stima con i parametri della revisione pubblicata, usando queste stesse funzioni.
    versioneFormule: da aumentare quando si cambia il modo di calcolare (non quando cambiano i numeri).
 --------------------------------------------------------------------------- */
-export const versioneFormule = 6; // falegnameria gruppo A voce per voce; 15/10: imbiancatura voce per voce (le scelte vecchie come prima); esterni con l'attrezzatura per l'altezza; risanamento umidità voce per voce, poi con le voci in più (da verificare, lavori in più)
+export const versioneFormule = 7; // falegnameria gruppi A e B voce per voce; 15/10: imbiancatura voce per voce (le scelte vecchie come prima); esterni con l'attrezzatura per l'altezza; risanamento umidità voce per voce, poi con le voci in più (da verificare, lavori in più)
 
 const copia = (x) => JSON.parse(JSON.stringify(x));
 const tipoDi = (x) => (Array.isArray(x) ? 'lista' : x === null ? 'null' : typeof x);

@@ -5,7 +5,7 @@
 // con Esc o con il tasto indietro del telefono. L'ultimo «Avanti» porta alla stima (il riquadro nero sotto i passi,
 // a destra sul computer). I conti restano in app.js (calcola, calcolaBagno): qui si legge solo quello che mostrano.
 import { durata, finisciArrivo, tieniPosto, rigaChiusa, liberaPosti, fuocoDopoChiusura, daTastiera, ravviva } from './tendine.js?v=2026101214';
-import { ambientiManca, ambientiSintesi } from './ambienti.js?v=2026101504';
+import { ambientiManca, ambientiSintesi } from './ambienti.js?v=2026101505';
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
