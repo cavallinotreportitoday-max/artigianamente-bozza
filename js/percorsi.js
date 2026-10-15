@@ -101,16 +101,16 @@ function imbiancatura(a, et, l) {
 	if (cosa === 'esterni') {
 		const lrg = num(a.est_l);
 		const alt = num(a.est_h);
-		const descrizione = frase([et('est_tipo')[0] || 'superficie esterna', lrg && alt ? `${virgola(lrg)} × ${virgola(alt)} m` : a.est_nonso ? 'misure da prendere' : '', a.est_alto ? l('est_alto')[0] : '', lista(a.est_fondo).length ? elenco(l('est_fondo')) : '']);
+		const descrizione = frase([et('est_tipo')[0] || 'superficie esterna', lrg && alt ? `${virgola(lrg)} × ${virgola(alt)} m` : a.est_nonso ? 'misure da prendere' : '', lista(a.est_fondo).length ? elenco(l('est_fondo')) : '', a.est_davanti ? `davanti: ${l('est_davanti')[0]}` : '']);
 		const base = { titolo: 'La tua imbiancatura esterna', descrizione, iniziato: true };
 		if (a.est_nonso === true) return { ...base, esito: 'V', perche: 'Misuriamo noi la superficie al sopralluogo, poi ricevi il preventivo.' };
-		const manca = !lrg || !alt ? 'le misure' : !a.est_alto ? 'l’altezza da terra' : !lista(a.est_fondo).length ? 'com’è adesso' : '';
+		const manca = !lrg || !alt ? 'le misure' : !lista(a.est_fondo).length ? 'com’è adesso' : '';
 		if (manca) return { ...base, esito: 'V', perche: 'Con le risposte che mancano vedi la stima.', mancaPerStima: manca };
 		return {
 			...base,
 			esito: 'S',
-			motore: { tipo: 'imbiancatura', input: { versione: 2, lavoro: 'esterni', esterni: { tipo: a.est_tipo || 'altro', l: lrg, h: alt, alto: a.est_alto, fondo: lista(a.est_fondo).filter((x) => x !== 'buono'), colore: a.est_colore || 'bianco' } } },
-			stimaTitolo: a.est_alto === 'basso' && alt <= 3 ? 'Stima del lavoro' : 'Stima delle lavorazioni'
+			motore: { tipo: 'imbiancatura', input: { versione: 2, lavoro: 'esterni', esterni: { tipo: a.est_tipo || 'altro', l: lrg, h: alt, davanti: a.est_davanti || '', fondo: lista(a.est_fondo).filter((x) => x !== 'buono'), colore: a.est_colore || 'bianco' } } },
+			stimaTitolo: 'Stima del lavoro'
 		};
 	}
 	// stanze, alcune pareti, solo soffitti

@@ -1,5 +1,5 @@
 // Stime orientative per il preventivo guidato.
-import datiRevisione from './revisione-dati.js?r=56';
+import datiRevisione from './revisione-dati.js?r=57';
 // ATTENZIONE: tutte le tariffe sono PROVVISORIE (bozza ottobre 2026), da approvare con il titolare.
 // Lo stesso file serve sia alla pagina (prima visualizzazione) sia allo script nel browser.
 
@@ -65,7 +65,20 @@ export const tariffe = {
 			intonaco: [30, 50], // €/m² ripristino delle parti di intonaco che si staccano
 			crepe: [80, 150], // a corpo: crepe da aprire e sigillare
 			quotaIntonaco: 10, // parti da ripristinare: 10% della superficie (si verifica al sopralluogo)
-			minimo: 400
+			minimo: 400,
+			// 15/10 (Gian: «anche se è alta, il costo di piattaforma o impalcatura lo dobbiamo dare»): attrezzatura per
+			// lavorare in alto, scelta dall'altezza e dalla superficie. Fonti: studiomadera.it 2026 (ponteggio
+			// prefabbricato 17 €/m² montaggio e primo mese + 7 €/m² smontaggio; tubi e giunti 20 + 8; mesi dopo 3–4,5 €/m²),
+			// qualcherisposta.it (piattaforma 14 m 100–140 €/giorno, più alte fino a 300 €/giorno senza operatore).
+			resaGiorno: 25, // m² di superficie finiti al giorno (lavaggio, fondo e due mani), squadra di due
+			trabattello: [40, 70], // €/giorno noleggio, fino a 6 m
+			trabattelloPorto: [60, 100], // a corpo: trasporto, montaggio e smontaggio
+			piattaforma: [150, 300], // €/giorno noleggio piattaforma aerea, oltre 6 m
+			piattaformaPorto: [80, 150], // a corpo: consegna e ritiro
+			ponteggio: [24, 30], // €/m² di facciata: montaggio, smontaggio e primo mese
+			ponteggioMese: [3, 4.5], // €/m² per ogni mese in più
+			trabattelloFino: 6, // m: oltre serve piattaforma o ponteggio
+			terra: 3 // m: fin qui si lavora da terra con le scale
 		},
 		minimoLavoro: 250 // minimo del lavoro (soglia: non si somma)
 	},
@@ -564,7 +577,7 @@ function ritocchiDettagliati(v, t) {
 	});
 }
 
-/** Esterni: stima delle lavorazioni sulle superfici; l'accesso in altezza resta da quantificare */
+/** Esterni: lavorazioni sulle superfici e attrezzatura per lavorare in alto (trabattello, piattaforma o ponteggio) */
 function esterniDettagliati(v, t) {
 	const e = v.esterni && typeof v.esterni === 'object' ? v.esterni : {};
 	const te = t.esterni;
@@ -577,6 +590,7 @@ function esterniDettagliati(v, t) {
 	const daVerificare = [];
 	const ipotesi = [];
 	const lato = l || Math.sqrt(mq);
+	const giorni = Math.max(1, Math.ceil(mq / (te.resaGiorno || 25)));
 	voci.push(voce('Manodopera', 'Protezioni a terra e su infissi', `${euro(Math.round(lato))} m di muro`, lato * t.lavoro.protezioni[0], lato * t.lavoro.protezioni[1]));
 	if (fondo.includes('sporco')) voci.push(voce('Manodopera', 'Lavaggio della superficie', m2(Math.round(mq)), mq * te.lavaggio[0], mq * te.lavaggio[1]));
 	if (fondo.includes('alghe')) voci.push(voce('Manodopera', 'Trattamento di muffa e alghe', m2(Math.round(mq)), mq * te.alghe[0], mq * te.alghe[1]));
@@ -590,18 +604,42 @@ function esterniDettagliati(v, t) {
 	voci.push(voce('Manodopera', 'Tinteggiatura esterna, due mani', m2(Math.round(mq)), mq * te.lavoro[0], mq * te.lavoro[1]));
 	voci.push(voce('Materiali', `Pittura per esterni${e.colore === 'colorato' ? ' colorata' : ''}`, m2(Math.round(mq)), mq * te.pittura[0], mq * te.pittura[1]));
 	voci.push(voce('Materiali', 'Materiali di consumo*', m2(Math.round(mq)) + ' lavorati', Math.max(mq * t.consumo.mq[0], t.consumo.minimo[0]), Math.max(mq * t.consumo.mq[1], t.consumo.minimo[1])));
+	// lavorare in alto: fino a 3 m da terra con le scale; fino a 6 m trabattello; oltre, piattaforma aerea o ponteggio
+	// (il più conveniente per questa superficie e questi giorni)
+	let attrezzo = '';
+	if (h > te.terra) {
+		if (h <= te.trabattelloFino) {
+			voci.push(voce('Attrezzatura', 'Trabattello: noleggio', `${giorni} ${giorni === 1 ? 'giorno' : 'giorni'}`, giorni * te.trabattello[0], giorni * te.trabattello[1]));
+			voci.push(voce('Attrezzatura', 'Trabattello: trasporto, montaggio e smontaggio', 'a corpo', te.trabattelloPorto[0], te.trabattelloPorto[1]));
+			attrezzo = 'trabattello';
+		} else {
+			const mesiIn = Math.max(0, Math.ceil(giorni / 22) - 1);
+			const ponteggio = [mq * (te.ponteggio[0] + mesiIn * te.ponteggioMese[0]), mq * (te.ponteggio[1] + mesiIn * te.ponteggioMese[1])];
+			const piattaforma = [giorni * te.piattaforma[0] + te.piattaformaPorto[0], giorni * te.piattaforma[1] + te.piattaformaPorto[1]];
+			if (piattaforma[0] + piattaforma[1] <= ponteggio[0] + ponteggio[1]) {
+				voci.push(voce('Attrezzatura', 'Piattaforma aerea: noleggio', `${giorni} ${giorni === 1 ? 'giorno' : 'giorni'}`, giorni * te.piattaforma[0], giorni * te.piattaforma[1]));
+				voci.push(voce('Attrezzatura', 'Piattaforma aerea: consegna e ritiro', 'a corpo', te.piattaformaPorto[0], te.piattaformaPorto[1]));
+				attrezzo = 'piattaforma aerea';
+			} else {
+				voci.push(voce('Attrezzatura', `Ponteggio: montaggio, smontaggio e ${mesiIn ? `${mesiIn + 1} mesi` : 'primo mese'}`, m2(Math.round(mq)) + ' di facciata', ponteggio[0], ponteggio[1]));
+				attrezzo = 'ponteggio';
+			}
+		}
+		ipotesi.push(`Per lavorare fino a ${String(h).replace('.', ',')} m da terra: ${attrezzo}, circa ${giorni} ${giorni === 1 ? 'giorno' : 'giorni'} di lavoro. La scelta la confermiamo al sopralluogo`);
+	}
 	voci.push(voce('Extra', 'Pulizia di fine lavoro', 'compresa', 0, 0, { compresa: true }));
-	const inAlto = e.alto !== 'basso' || h > 3;
-	if (inAlto) daVerificare.push('Ponteggio, piattaforma o trabattello per lavorare in altezza: da quantificare (non compreso nella stima)');
+	if (e.davanti === 'pubblico' && attrezzo) daVerificare.push('Occupazione di suolo pubblico per l’attrezzatura: tassa e permesso del Comune, da verificare');
+	if (e.davanti === 'acqua') daVerificare.push('Lavoro dal lato dell’acqua: trasporto e attrezzatura da quantificare');
+	if (h > 20) daVerificare.push('Oltre 20 m d’altezza: attrezzatura e sicurezza da progettare al sopralluogo');
 	daVerificare.push('Supporto, umidità e meteo incidono sul lavoro: date e durata le concordiamo dopo il sopralluogo');
 	if (!l || !h) ipotesi.push('Superficie indicata da te in m²');
 	return chiudiVoci(voci, te.minimo, {
 		ipotesi,
 		daVerificare,
 		daComprare: [],
-		titoloStima: inAlto ? 'Stima delle lavorazioni (senza accesso in altezza)' : 'Stima del lavoro',
-		dettaglio: `Circa ${m2(Math.round(mq))} di superficie esterna.`,
-		riepilogo: `Imbiancatura (esterni): ${m2(Math.round(mq))}${inAlto ? ', accesso in altezza da quantificare' : ''}.`
+		titoloStima: 'Stima del lavoro',
+		dettaglio: `Circa ${m2(Math.round(mq))} di superficie esterna${attrezzo ? `, con ${attrezzo}` : ''}.`,
+		riepilogo: `Imbiancatura (esterni): ${m2(Math.round(mq))}, altezza ${String(h).replace('.', ',')} m${attrezzo ? `, ${attrezzo}` : ''}.`
 	});
 }
 
@@ -794,7 +832,7 @@ aPartireDa.ristrutturazioni.euro = prezzoDaBagno();
    Il server ricalcola ogni stima con i parametri della revisione pubblicata, usando queste stesse funzioni.
    versioneFormule: da aumentare quando si cambia il modo di calcolare (non quando cambiano i numeri).
 --------------------------------------------------------------------------- */
-export const versioneFormule = 2; // 15/10: imbiancatura voce per voce (le scelte vecchie si calcolano come prima)
+export const versioneFormule = 3; // 15/10: imbiancatura voce per voce (le scelte vecchie come prima); esterni con l'attrezzatura per l'altezza
 
 const copia = (x) => JSON.parse(JSON.stringify(x));
 const tipoDi = (x) => (Array.isArray(x) ? 'lista' : x === null ? 'null' : typeof x);

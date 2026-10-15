@@ -1,9 +1,9 @@
 // ArtigianaMente — interazioni della bozza (menu, ricerca in home, preventivo guidato, moduli, visore foto).
-import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101501-r56';
+import { calcola, euro, calcolaBagno } from './calcoli.js?v=2026101501-r57';
 import { percorso } from './percorsi.js?v=2026101501';
 import { avviaAmbienti, ambientiAggiorna, ambientiRighe } from './ambienti.js?v=2026101501';
-import { cerca } from './ricerca.js?v=2026100914-r56';
-import { attivaModuli } from './invio.js?v=2026101220-r56';
+import { cerca } from './ricerca.js?v=2026100914-r57';
+import { attivaModuli } from './invio.js?v=2026101220-r57';
 import { durata, ravviva, daTastiera } from './tendine.js?v=2026101214';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -1861,7 +1861,7 @@ const senzaTendine = () => {
 	window.amSenzaTendine = true;
 	document.documentElement.classList.remove('pv-foglio');
 };
-if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r56').catch(senzaTendine);
+if ($('[data-trasloco]')) import('./trasloco-ui.js?v=2026101220-r57').catch(senzaTendine);
 // gli altri calcolatori a passi, come Traslochi (11/10): tendine sul telefono
 if ($('[data-passi]')) import('./passi.js?v=2026101501').catch(senzaTendine);
 
