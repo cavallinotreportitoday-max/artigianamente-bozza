@@ -1157,6 +1157,58 @@ b.entra { color: var(--c-entra); } b.esce { color: var(--c-esce); }
 	.og-sett { grid-template-rows: 120px auto auto; padding: 6px 0; }
 	.og-v { font-size: 10px; }
 }
+
+/* imbiancatura: stanze, voci calcolate, fuori totale */
+.pv-stanze { margin: 4px 0 16px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--linea); display: grid; gap: 6px; justify-items: start; }
+.pv-stanze b { font-size: var(--t-nome); line-height: var(--lh-nome); }
+.v-fonte { grid-column: 1 / -1; justify-self: start; font-size: var(--t-mini); line-height: var(--lh-mini); padding: 1px 8px; border-radius: 999px; background: var(--chiaro); color: var(--grigio); }
+.v-fonte.f-misurato { background: #e7f0fb; color: #1d4f9a; }
+.v-fonte.f-stimato { background: #fff4e5; color: #8a4b00; }
+.v-fonte.f-da-verificare { background: var(--err-f); color: var(--err); }
+.voce.v2.calcolata { grid-template-areas: "f f f f f" "d d d d x" "q u p i ."; }
+.voce.v2.calcolata .v-fonte { grid-area: f; }
+.pv-cat.fuori .pv-cat-testa .nota { margin-left: auto; font-size: var(--t-mini); }
+.voce.fuori-riga { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linea); font-size: var(--t-piccolo); }
+.voce.fuori-riga > span { flex: 1; } .voce.fuori-riga small { display: block; color: var(--grigio); font-size: var(--t-mini); }
+.pv-ris-imb { margin: 8px 0; padding: 10px 12px; border-radius: 10px; background: var(--chiaro); display: grid; gap: 4px; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); }
+.pv-ris-imb p { display: flex; justify-content: space-between; gap: 8px; margin: 0; } .pv-ris-imb span { color: var(--grigio); }
+.pv-note-auto { margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: var(--chiaro); font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); }
+.pv-note-auto ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.pdf-fonte { font-size: 10px; color: #8a4b00; }
+.pdf-fuori { display: grid; gap: 2px; margin: 10px 0 0; font-size: 12px; color: var(--grigio); } .pdf-fuori b { color: var(--nero); }
+.stanza { margin-top: 24px; padding: 16px; border: 1px solid var(--linea); border-radius: 16px; }
+.stanza-testa { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.stanza-nome { flex: 1; font-weight: var(--w-nome); font-size: var(--t-nome); }
+.stanza-testa .v-fonte { grid-column: auto; }
+.stanza .scelte { margin-bottom: 4px; }
+.campi-box.tre { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.problemi { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.problemi label { display: grid; gap: 2px; font-size: var(--t-piccolo); color: var(--nero); }
+.stanza-mis { margin-top: 12px; padding: 8px 12px; border-radius: 10px; background: var(--chiaro); font-weight: var(--w-nome); font-size: var(--t-piccolo); }
+.stanza-azioni { margin-top: 8px; }
+.campo-check { display: flex; align-items: center; gap: 8px; font-size: var(--t-piccolo); }
+.lst-righe { display: grid; gap: 4px; margin-top: 8px; }
+.lst-r { display: grid; grid-template-columns: minmax(0, 1fr) 64px 80px 80px 80px; gap: 6px; align-items: center; font-size: var(--t-piccolo); line-height: var(--lh-piccolo-stretto); }
+.lst-r.lst-t { font-size: var(--t-mini); color: var(--grigio); }
+.lst-r input { padding: 6px 8px; min-height: 0; height: 34px; }
+@media (max-width: 743px) { .campi-box.tre { grid-template-columns: 1fr 1fr; } .lst-r { grid-template-columns: minmax(0, 1fr) 70px 70px; } .lst-r > :nth-child(2), .lst-r > :nth-child(5) { display: none; } .voce.v2.calcolata { grid-template-areas: "f f x" "d d x" "q u ." "p i ."; } }
+
+.v-traccia { grid-column: 1 / -1; margin: 2px 0 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: var(--t-mini); line-height: var(--lh-mini); color: #8a4b00; }
+.v-traccia input { flex: 1; min-width: 160px; height: 32px; padding: 4px 8px; font-size: var(--t-mini); }
+.v-sotto { grid-column: 1 / -1; margin: 2px 0 0; font-size: var(--t-mini); color: var(--err); font-weight: var(--w-nome); }
+.pv-kit summary, .pv-dett summary { cursor: pointer; font-size: var(--t-piccolo); color: var(--nero); text-decoration: underline; text-underline-offset: 3px; padding: 8px 0; }
+.pv-dett { margin-top: 4px; } .pv-dett p { display: flex; justify-content: space-between; gap: 8px; margin: 2px 0; }
+b.neg { color: var(--err); }
+.pv-approva { margin-top: 16px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--linea); }
+.pv-note-auto .campo-check { align-items: flex-start; margin-top: 6px; }
+
+.altezze { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; align-items: end; margin: 8px 0; font-size: var(--t-piccolo); }
+.altezze span { display: grid; gap: 2px; color: var(--grigio); } .altezze b { color: var(--nero); font-size: var(--t-nome); }
+.altezze label { display: grid; gap: 2px; color: var(--grigio); }
+.pdf-causa { grid-column: 1 / -1; margin-top: 6px; padding: 8px 10px; border-radius: 8px; background: #fff4e5; color: #6b3c00; font-size: 12px; font-weight: var(--w-testo); }
+@media (max-width: 743px) { .altezze { grid-template-columns: 1fr 1fr; } .altezze label { grid-column: 1 / -1; } }
+.pdf table.righe td.num { white-space: nowrap; }
+.scelte label { white-space: normal; max-width: 100%; text-align: left; }
 </style>
 
 <div class="proto" title="Prototipo: dati fittizi, nessun invio, niente va sul server"><b>PROTOTIPO</b> · dati finti, nessun invio</div>
@@ -1366,7 +1418,8 @@ const lunediDi = (s) => piuGiorni(s, -((d(s).getUTCDay() + 6) % 7));
 const giorniDa = (iso) => Math.round((d(OGGI) - d(iso)) / 86400000);
 const euro = (n) => n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 // totale voci − sconto = imponibile; poi IVA (lo sconto è facoltativo)
-const totali = (p) => { const voci = Math.round(p.righe.reduce((s, r) => s + r[3], 0) * 100) / 100, sconto = Math.min(+p.sconto || 0, voci), imp = Math.round((voci - sconto) * 100) / 100, iva = Math.round(imp * p.iva) / 100; return { voci, sconto, imp, iva, tot: Math.round((imp + iva) * 100) / 100 }; };
+const inTotale = (r) => !(r[5]?.opzione || r[5]?.cliente || r[5]?.daQuant || r[5]?.daVer);
+const totali = (p) => { const voci = Math.round(p.righe.filter(inTotale).reduce((s, r) => s + r[3], 0) * 100) / 100, sconto = Math.min(+p.sconto || 0, voci), imp = Math.round((voci - sconto) * 100) / 100, iva = Math.round(imp * p.iva) / 100; return { voci, sconto, imp, iva, tot: Math.round((imp + iva) * 100) / 100 }; };
 
 /* ===================== AZIONE SUGGERITA ===================== */
 // Solo lettura: guarda il preventivo corrente e gli appuntamenti, non cambia niente. Il motivo è sempre scritto.
@@ -1476,7 +1529,7 @@ let storicoAperto = null, vista = 'oggi', param = null, filtroPratiche = 'da_ges
 const SEZIONI = [['oggi', 'Oggi'], ['agenda', 'Agenda'], ['pratiche', 'Pratiche'], ['preventivi', 'Preventivi'], ['andamento', 'Andamento'], ['clienti', 'Clienti'], ['altro', 'Altro']];
 // Schermate solo per Fabri: prezzi, preventivi, clienti, impostazioni, Erica, avvisi.
 // Il controllo vale per ogni strada: menu, indirizzo scritto a mano, ricarica, indietro/avanti (guardia() in vai() e in render()).
-const SOLO_FABRI = ['p', 'prev', 'pdf', 'pratiche', 'preventivi', 'andamento', 'clienti', 'cliente', 'impostazioni', 'sito', 'erica', 'tutteOggi', 'avvisi', 'sistema'];
+const SOLO_FABRI = ['muri', 'stanze', 'p', 'prev', 'pdf', 'pratiche', 'preventivi', 'andamento', 'clienti', 'cliente', 'impostazioni', 'sito', 'erica', 'tutteOggi', 'avvisi', 'sistema'];
 function guardia(v, p) {
 	if (!D.utente) return ['login', null];
 	if (operatore()) {
@@ -1501,7 +1554,7 @@ function vai(v, p = null, { indietro = false } = {}) {
 /* POP-UP come Airbnb (Gian 14/10: «fallo dappertutto»): pratiche, impegni, clienti, avvisi, materiali, Erica, impostazioni…
    si aprono sopra la pagina invece di cambiarla. Dentro il pop-up si può andare avanti (freccia ‹ per tornare) e chiudere con la X, Esc o fuori.
    Le sezioni (Oggi, Agenda, Pratiche, Clienti, Altro) e il preventivo restano pagine. */
-const POP = ['p', 'imp', 'prev', 'cliente', 'lavoro', 'avvisi', 'erica', 'impostazioni', 'sito', 'sistema', 'crediti', 'pdf', 'materiali', 'tutteOggi'];
+const POP = ['muri', 'stanze', 'p', 'imp', 'prev', 'cliente', 'lavoro', 'avvisi', 'erica', 'impostazioni', 'sito', 'sistema', 'crediti', 'pdf', 'materiali', 'tutteOggi'];
 let pop = [], popNuovo = false;
 /* UNA SOLA PILA (come Airbnb, Gian 14/10): nella stessa pila delle schede ci sono anche i «fogli»:
    moduli (finestra media), conferme (piccola), elenchi «Mostra tutti» (lista) e fumetti attaccati al pulsante.
@@ -1538,7 +1591,7 @@ function tornaStoria(via) {
 	avantiStoria();
 }
 function togliFumetti() { while (eFumetto(pop.at(-1))) delete FOGLI[pop.pop()[1]]; }
-const BASE_DI = { p: 'pratiche', prev: 'preventivi', pdf: 'preventivi', imp: 'agenda', cliente: 'clienti', lavoro: 'lavori', avvisi: 'altro', erica: 'oggi', impostazioni: 'altro', sito: 'altro', sistema: 'altro', crediti: 'altro', tutteOggi: 'oggi', login: 'oggi' };
+const BASE_DI = { muri: 'preventivi', stanze: 'preventivi', p: 'pratiche', prev: 'preventivi', pdf: 'preventivi', imp: 'agenda', cliente: 'clienti', lavoro: 'lavori', avvisi: 'altro', erica: 'oggi', impostazioni: 'altro', sito: 'altro', sistema: 'altro', crediti: 'altro', tutteOggi: 'oggi', login: 'oggi' };
 function apri(v, p = null) {
 	// SOLO_PAGINE: usato solo dalle prove automatiche dei flussi (prova3), che controllano le pagine intere
 	if (window.SOLO_PAGINE || !POP.includes(v) || !D.utente || (operatore() && v === 'materiali')) return vai(v, p);
@@ -1565,7 +1618,7 @@ function apriFoglio(tipo, titolo, corpo, ancora = null) {
 		return;
 	}
 	const id = 'f' + ++nFoglio;
-	FOGLI[id] = { tipo, titolo, corpo, ancora };
+	FOGLI[id] = { tipo, titolo, corpo, ancora, aperto: Date.now() };
 	const nuovo = ['_f', id]; popNuovo = true; pop.push(nuovo);
 	if (tipo !== 'fumetto') pushStoria(nuovo);
 	disegnaPop(false);
@@ -1602,7 +1655,7 @@ function popIndietro(subito = false) {
 	if (eFoglio(x) && pop.length) disegnaPop(false); else render();
 }
 function chiudiTendina(subito = false) { if (eFoglio(pop.at(-1))) popIndietro(subito); }
-const POP_GRANDI = ['p', 'imp', 'lavoro', 'prev'];
+const POP_GRANDI = ['p', 'imp', 'lavoro', 'prev', 'stanze', 'muri'];
 // elenchi semplici: larghi come la finestra «lista» di Airbnb (780)
 const POP_LISTA = ['avvisi', 'crediti', 'sistema'];
 function disegnaPop(rifai = true) {
@@ -1660,7 +1713,7 @@ function posaFumetto(L, f) {
 	b.style.left = Math.round(left) + 'px'; b.style.top = Math.round(top) + 'px';
 }
 // il fumetto si chiude se la pagina scorre o cambia misura (come su Airbnb)
-addEventListener('scroll', (e) => { if (eFumetto(pop.at(-1)) && matchMedia('(min-width: 744px)').matches && !(e.target instanceof Element && e.target.closest('.rq'))) chiudiTendina(true); }, true);
+addEventListener('scroll', (e) => { if (eFumetto(pop.at(-1)) && Date.now() - (FOGLI[pop.at(-1)[1]]?.aperto ?? 0) > 450 && matchMedia('(min-width: 744px)').matches && !(e.target instanceof Element && e.target.closest('.rq'))) chiudiTendina(true); }, true);
 addEventListener('resize', () => { if (eFumetto(pop.at(-1)) && matchMedia('(min-width: 744px)').matches) chiudiTendina(true); });
 /* Piccolo riquadro sopra il pop-up (come «Dettagli del prezzo» di Airbnb) */
 function apriPiccolo(titolo, html) {
@@ -1700,7 +1753,7 @@ function render() {
 	return dopoRender();
 }
 function vistaDi(v) {
-	return { oggi: operatore() ? oggiOperatore : oggi, agenda, pratiche, preventivi, andamento, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: operatore() ? impegnoOp : (id) => { const a = D.appuntamenti.find((x) => x.id === id); return a?.praticaId && pratica(a.praticaId) ? schedaPratica(a.praticaId, id) : impegno(id); }, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti, lavori, lavoro, materiali, erica, login: operatore() ? oggiOperatore : oggi }[v] ?? (operatore() ? oggiOperatore : oggi);
+	return { muri: muriUmi, stanze: stanzeImb, oggi: operatore() ? oggiOperatore : oggi, agenda, pratiche, preventivi, andamento, clienti, altro, p: schedaPratica, cliente: schedaCliente, imp: operatore() ? impegnoOp : (id) => { const a = D.appuntamenti.find((x) => x.id === id); return a?.praticaId && pratica(a.praticaId) ? schedaPratica(a.praticaId, id) : impegno(id); }, prev: editorPreventivo, pdf: anteprimaPdf, avvisi, sistema, impostazioni, sito, tutteOggi, crediti, lavori, lavoro, materiali, erica, login: operatore() ? oggiOperatore : oggi }[v] ?? (operatore() ? oggiOperatore : oggi);
 }
 function dopoRender() {
 	const app = document.getElementById('app');
@@ -2313,7 +2366,8 @@ function sistema() {
 	return bottoneIndietro('Altro') + testa('Stato del sistema')
 		+ `<section class="riquadro"><dl class="coppia"><dt>Ultimo backup</dt><dd>13 ott, 03:10 · 9 ore fa · 4,2 MB</dd><dt>Esito</dt><dd><span class="tag ok">ok</span></dd><dt>Spazio</dt><dd>database 4,2 MB di 500 MB · foto 38 MB di 1 GB</dd></dl></section>`;
 }
-function impostazioni() {
+const impostazioni = () => impostazioniBase() + listinoImbHtml();
+function impostazioniBase() {
 	const st = D.impostazioni;
 	return bottoneIndietro('Altro') + testa('Impostazioni dei preventivi', 'Compaiono su ogni PDF')
 		+ `<div class="due"><div><section class="riquadro"><h2>Intestazione</h2><div class="campi-box"><label>Nome<input name="im-int" value="${esc(st.intestazione)}"></label><label>Sede<input name="im-sede" value="${esc(st.sede)}"></label></div><div class="campi-box"><label>Telefono<input name="im-tel" value="${esc(st.telefono)}" inputmode="tel"></label><label>Partita IVA<input name="im-piva" value="${esc(st.piva)}" placeholder="da inserire"></label></div></section>
@@ -2387,7 +2441,7 @@ function righeDaStima(p) {
 	const imp = Math.round((t.tot / (1 + iva / 100)) * 100), peso = voci.reduce((s, v) => s + v[2], 0);
 	let resto = imp;
 	const righe = voci.map(([n, q, w], i) => { const c = i === voci.length - 1 ? resto : Math.round((imp * w) / peso); resto -= c; const qn = parseFloat(String(q).replace(',', '.')) || 1; return [n, q, Math.round(c / qn) / 100, c / 100]; });
-	righe.forEach((r) => (r[4] = catDi(r)));
+	righe.forEach((r) => { r[4] = catDi(r); r[5] = { stima: true }; });
 	return { righe, iva, daStima: { stima: p.stima, ...t } };
 }
 function _vecchieRigheDaStima(p) {
@@ -2436,7 +2490,7 @@ function suggerimenti(p, cat) {
 	return [['Voce libera', 'forfait', 0]];
 }
 // cosa manca: i tipi da controllare senza voci e non segnati «non serve»
-const mancaPv = (pv) => CAT_CONTROLLO.filter((k) => !pv.righe.some((r) => catDi(r) === k) && !(pv.nonServe ?? []).includes(k));
+const mancaPv = (pv) => CAT_CONTROLLO.filter((k) => !pv.righe.some((r) => catDi(r) === k && inTotale(r)) && !(pv.nonServe ?? []).includes(k));
 /* ===================== CONTI DEI LAVORI (solo Fabri) =====================
    Prezzo concordato (senza IVA) · costi previsti · costi registrati · costi ancora da sostenere. Il risultato è PROVVISORIO finché il lavoro è aperto.
    Se manca un dato (ore non segnate, materiale senza costo) si dice «Dati incompleti»: mai contato come zero o come guadagno. */
@@ -2535,7 +2589,7 @@ function salvaSpesa(pid, id) {
 // costi previsti: proposta dal preventivo (ore di manodopera) e dall'agenda; li confermi tu
 function apriPrevisti(pid) {
 	const k = contiLavoro(pid), pv = k.pv, pr = k.pr;
-	const oreDaPv = pv ? somma(pv.righe.filter((r) => catDi(r) === 'lavoro'), (r) => { const { q, u } = qDi(r); return /^ore?$/i.test(u) ? q : /giorn/i.test(u) ? q * 8 : 0; }) : 0;
+	const oreDaPv = pv ? somma(pv.righe.filter((r) => catDi(r) === 'lavoro' && inTotale(r)), (r) => { if (r[5]?.ore != null) return r[5].ore; const { q, u } = qDi(r); return /^ore?$/i.test(u) ? q : /giorn/i.test(u) ? q * 8 : 0; }) : 0;
 	const oreProp = pr?.ore ?? (oreDaPv || somma([...k.svolti, ...k.futuri], oreProg));
 	apriTendina(`<p class="nota">Quanto pensi di spendere per questo lavoro (senza IVA). Si fissa all'inizio e serve a confrontare.</p>
 		<div class="campi-box"><label>Ore di squadra<input name="cp-ore" inputmode="decimal" value="${fmtQ(oreProp)}"></label><label>× costo orario<input value="${euro(k.co)}" disabled></label></div>
@@ -2547,6 +2601,400 @@ function salvaPrevisti(pid) {
 	const n = (k) => parseFloat(String(valore(k) ?? '').replace(',', '.')) || 0;
 	(D.previsti ??= {})[pid] = { ore: n('cp-ore'), materiali: n('cp-mat'), altro: n('cp-altro') };
 	salva(); chiudiTendina(); render(); toast('Costi previsti salvati.');
+}
+/* ===================== IMBIANCATURA: STANZE, MISURE, LISTINO =====================
+   (revisione ChatGPT + Claude, 15/10) La precisione viene da misure, superfici e lavorazioni: il cliente descrive, Fabri decide.
+   Pareti = perimetro × altezza; soffitto a parte. Problemi solo sulle superfici interessate. Litri dalla resa per mano, in confezioni vere.
+   Ogni quantità dice se è misurata, stimata o da verificare. Prezzi d'ESEMPIO: il listino vero lo dà Fabri. */
+// [nome, unità, prezzo al cliente, costo per Fabri, ore per unità, tipo]
+const LISTINO_IMB_ESEMPIO = {
+	prep: ['Preparazione del locale e posa delle protezioni (compresa la pulizia ordinaria di fine lavoro)', 'locale', 60, 30, 1.5, 'lavoro'],
+	lavaggio: ['Lavaggio e sgrassaggio delle superfici', 'm²', 2.5, 1.2, 0.04, 'lavoro'],
+	rimPittura: ['Rimozione della pittura che si stacca', 'm²', 6, 3, 0.12, 'lavoro'],
+	rimCarta: ['Rimozione della carta da parati', 'm²', 7, 3.5, 0.16, 'lavoro'],
+	buchi: ['Stuccatura di piccoli buchi', 'pz', 3, 1.5, 0.05, 'lavoro'],
+	crepe: ['Riparazione di crepe superficiali (rete e stucco)', 'ml', 9, 4.5, 0.25, 'lavoro'],
+	rasatura: ['Rasatura e carteggiatura', 'm²', 12, 6, 0.2, 'lavoro'],
+	fissativo: ['Applicazione di fissativo / fondo', 'm²', 1.8, 0.8, 0.025, 'lavoro'],
+	muffa: ['Trattamento superficiale della muffa', 'm²', 6, 3, 0.07, 'lavoro'],
+	isolante: ['Trattamento isolante delle macchie', 'm²', 4, 2, 0.05, 'lavoro'],
+	pareti: ['Tinteggiatura delle pareti, 2 mani', 'm²', 7, 3.5, 0.085, 'lavoro'],
+	soffitti: ['Tinteggiatura dei soffitti, 2 mani', 'm²', 8, 4, 0.1, 'lavoro'],
+	mano: ['Mano aggiuntiva (cambio di colore)', 'm²', 2.5, 1.2, 0.04, 'lavoro'],
+	esterno: ['Tinteggiatura del muro esterno, 2 mani', 'm²', 10, 5, 0.12, 'lavoro'],
+	ritocco: ['Riparazione e ritocco locale', 'zona', 35, 15, 0.75, 'lavoro'],
+	pitNormale: ['Pittura per interni, normale', 'l', 6, 4, 0, 'materiali'],
+	pitLavabile: ['Pittura lavabile', 'l', 9, 6, 0, 'materiali'],
+	pitAntimuffa: ['Pittura antimuffa', 'l', 11, 7.5, 0, 'materiali'],
+	pitEsterno: ['Pittura al quarzo per esterni', 'l', 8, 5, 0, 'materiali'],
+	fondo: ['Fissativo / primer', 'l', 5, 3.2, 0, 'materiali'],
+	stucco: ['Stucco in pasta', 'kg', 4, 2.5, 0, 'materiali'],
+	rasante: ['Rasante', 'kg', 1.8, 1.1, 0, 'materiali'],
+	prodMuffa: ['Prodotto per il trattamento della muffa', 'l', 12, 8, 0, 'materiali'],
+	prodIsolante: ['Fondo isolante per macchie', 'l', 10, 6.5, 0, 'materiali'],
+	rete: ['Rete di armatura per le crepe', 'ml', 1.5, 0.8, 0, 'materiali'],
+	teli: ['Teli protettivi', 'm²', 0.6, 0.3, 0, 'consumo'],
+	carta: ['Carta / cartone di protezione dei pavimenti', 'm²', 1.2, 0.6, 0, 'consumo'],
+	nastro: ['Nastro per mascheratura', 'ml', 0.12, 0.06, 0, 'consumo'],
+	abrasivi: ['Carta abrasiva e dischi', 'pz', 1, 0.5, 0, 'consumo'],
+	sacchi: ['Sacchi per i residui', 'pz', 0.8, 0.4, 0, 'consumo'],
+	mobili: ['Spostamento e riposizionamento dei mobili', 'locale', 40, 20, 1.5, 'lavoro'],
+	protMobili: ['Protezione dei mobili grandi che restano al loro posto', 'locale', 25, 12, 0.5, 'lavoro'],
+	trabattello: ['Trabattello per soffitti alti (noleggio)', 'giorni', 45, 35, 0, 'noleggi'],
+	barca: ['Trasporto in barca di materiali e attrezzature', 'viaggi', 80, 60, 0, 'trasporto'],
+	scale: ['Logistica: piano alto senza ascensore', 'a corpo', 60, 30, 1.5, 'trasporto'],
+	rifiuti: ['Gestione dei rifiuti (carta, residui)', 'a corpo', 40, 25, 0, 'smaltimento']
+};
+// rese e regole (esempio): resa per MANO, non per ciclo
+const REGOLE_IMB_ESEMPIO = { resa: { pitNormale: 10, pitLavabile: 9, pitAntimuffa: 8, pitEsterno: 6, fondo: 10, prodMuffa: 8, prodIsolante: 8 }, scarto: 10, confezioni: [14, 5, 2.5], sogliaAperture: 4, fattorePareti: 2.8, minimo: 250, minimoConsumi: 15, aggiornato: '2026-10-15' };
+const listinoImb = () => D.impostazioni.listinoImb ?? (D.impostazioni.listinoImb = JSON.parse(JSON.stringify({ voci: LISTINO_IMB_ESEMPIO, regole: REGOLE_IMB_ESEMPIO })));
+const TIPI_STANZA = { camera: ['Camera', 14], soggiorno: ['Soggiorno', 25], cucina: ['Cucina', 12], bagno: ['Bagno', 6], corridoio: ['Corridoio', 8], altro: ['Altro locale', 12], esterno: ['Muro esterno', 0], ritocchi: ['Ritocchi', 0] };
+const PROBLEMI = { buchi: 'Buchi', crepe: 'Crepe', distacco: 'Pittura che si stacca', irregolare: 'Superficie irregolare', muffa: 'Muffa', umidita: 'Macchie di umidità', macchie: 'Altre macchie' };
+const nuovaStanza = (tipo = 'camera', n = 1) => ({ id: 'st' + Date.now().toString(36) + n, tipo, nome: `${TIPI_STANZA[tipo][0]}${n > 1 ? ' ' + n : ''}`, cosa: 'tutto', modo: 'misure', l: '', p: '', h: 2.7, mq: '', largh: '', porte: 1, finestre: 1, vetrata: '', stato: 'pittura', problemi: {}, attuale: 'chiaro', risultato: 'bianco', colore: 'bianco', pittura: 'normale', mobili: 'vuota', altezzaTerra: '', zone: 2 });
+function nuovoImb(p) { const L = listinoImb(); return { immobile: 'abitazione', fornisce: 'fabri', accesso: {}, stanze: [nuovaStanza(/esterni|facciata/i.test(p.dettagli) ? 'esterno' : 'soggiorno', 1)], listino: JSON.parse(JSON.stringify(L)), prezziDel: OGGI }; }
+const num = (x) => parseFloat(String(x ?? '').replace(',', '.')) || 0;
+// superfici di una stanza: { pareti, soffitto, pav, per, fonte }
+function misureStanza(s, R) {
+	if (s.tipo === 'ritocchi') return { pareti: 0, pittura: 0, soffitto: 0, pav: 0, per: 0, fonte: 'stimato' };
+	if (s.tipo === 'esterno') { const a = num(s.largh) * num(s.h); return { pareti: a, pittura: a, soffitto: 0, pav: 0, per: num(s.largh), fonte: a ? 'misurato' : 'da verificare' }; }
+	let pav, per, pareti, fonte;
+	if (s.modo === 'misure' && num(s.l) && num(s.p)) { pav = num(s.l) * num(s.p); per = 2 * (num(s.l) + num(s.p)); pareti = per * (num(s.h) || 2.7); fonte = 'misurato'; }
+	else if (s.modo === 'pavimento' && num(s.mq)) { pav = num(s.mq); per = 4 * Math.sqrt(pav); pareti = pav * R.fattorePareti; fonte = 'stimato'; }
+	else { pav = TIPI_STANZA[s.tipo][1]; per = 4 * Math.sqrt(pav); pareti = pav * R.fattorePareti; fonte = 'da verificare'; }
+	// regola del preventivo (Fabri la può cambiare): «soglia» = porte e finestre normali non si tolgono, da una vetrata si toglie la parte oltre la soglia; «tutte» = si tolgono tutte
+	const im = R.im ?? {}, soglia = im.soglia ?? R.sogliaAperture, aperture = num(s.porte) * 1.7 + num(s.finestre) * 1.6 + num(s.vetrata);
+	const lordo = pareti;
+	pareti -= im.regolaAperture === 'tutte' ? aperture : Math.max(0, num(s.vetrata) - soglia);
+	// superficie che si pittura davvero (serve per i litri): sempre senza aperture
+	var pittura = Math.max(0, lordo - aperture);
+	if (s.cosa === 'alcune') { pareti = num(s.largh) * (num(s.h) || 2.7); pittura = pareti; fonte = pareti ? fonte : 'da verificare'; }
+	if (s.cosa === 'soffitto') { pareti = 0; pittura = 0; }
+	const soffitto = s.cosa === 'tutto' || s.cosa === 'soffitto' || (s.cosa === 'alcune' && s.conSoffitto) ? pav : 0;
+	return { pareti: Math.max(0, Math.round(pareti * 10) / 10), pittura: Math.round(pittura * 10) / 10, soffitto: Math.round(soffitto * 10) / 10, pav: Math.round(pav * 10) / 10, per: Math.round(per * 10) / 10, fonte };
+}
+// barattoli veri: la combinazione che spreca meno
+function confezioni(litri, conf) {
+	let best = null; const [a, b, c] = conf;
+	for (let x = 0; x <= Math.ceil(litri / a); x++) for (let y = 0; y <= Math.ceil(litri / b); y++) { const resto = litri - x * a - y * b, z = Math.max(0, Math.ceil(resto / c)), tot = x * a + y * b + z * c; if (tot + 1e-9 < litri) continue; const k = [tot, x + y + z]; if (!best || k[0] < best.k[0] || (k[0] === best.k[0] && k[1] < best.k[1])) best = { k, x, y, z, tot }; }
+	return { litri: best.tot, testo: [[best.x, a], [best.y, b], [best.z, c]].filter(([n]) => n).map(([n, v]) => `${n} × ${String(v).replace('.', ',')} l`).join(' + ') };
+}
+// tutte le voci dal sopralluogo
+function vociImbiancatura(pv) {
+	const im = pv.imb, V = im.listino.voci, R = { ...im.listino.regole, im }, out = [];
+	const riga = (k, q, opz = {}) => { if (!(q > 0) && !opz.daQuant) return; const [n, u, pr, co, ore, cat] = V[k], qq = Math.round(q * 100) / 100; out.push([opz.nome ?? n, `${fmtQ(qq)} ${opz.u ?? u}`, pr, Math.round(qq * pr * 100) / 100, cat, { imb: true, k, fonte: opz.fonte ?? 'calcolato', stanza: opz.stanza, costo: co, ore: Math.round(qq * ore * 100) / 100, ...(opz.daQuant ? { daQuant: true } : {}), ...(opz.cliente ? { cliente: true } : {}), ...(opz.opzione ? { opzione: true } : {}), ...(opz.daVer ? { daVer: true } : {}), ...(opz.alt ? { alt: opz.alt } : {}) }]); if (opz.daQuant || opz.opzione || opz.cliente) { const r = out.at(-1); if (opz.daQuant) { r[2] = 0; r[3] = 0; } } };
+	const somme = {}, add = (k, q) => (somme[k] = (somme[k] ?? 0) + q), pitture = {};
+	let alte = 0, conCarta = false, conResidui = false;
+	for (const s of im.stanze) {
+		const m = misureStanza(s, R), st = s.nome, f = m.fonte, pr = s.problemi ?? {}, quota = (k) => (pr[k] === 'estese' ? 0.6 : pr[k] === 'poche' ? 0.15 : 0);
+		if (s.tipo === 'ritocchi') { if (s.pareteIntera) riga('pareti', (num(s.zone) || 1) * 8, { stanza: st, fonte: 'stimato', nome: 'Riparazione e tinteggiatura dell\'intera parete (al posto del ritocco)' }); else { riga('ritocco', num(s.zone) || 1, { stanza: st, fonte: 'stimato' }); riga('pareti', (num(s.zone) || 1) * 8, { stanza: st, fonte: 'stimato', opzione: true, alt: { tipo: 'parete', stanza: s.id }, nome: 'In alternativa: tinteggiatura dell\'intera parete invece del ritocco' }); } continue; }
+		if (s.tipo === 'esterno') {
+			riga('esterno', m.pareti, { stanza: st, fonte: f });
+			if (quota('crepe')) riga('crepe', pr.crepe === 'estese' ? 8 : 2, { stanza: st, fonte: 'stimato' });
+			pitture.pitEsterno = pitture.pitEsterno ?? {}; pitture.pitEsterno[s.colore || 'colore da scegliere'] = (pitture.pitEsterno[s.colore || 'colore da scegliere'] ?? 0) + m.pareti * 2;
+			if (num(s.altezzaTerra) > 3 || !s.altezzaTerra) riga('trabattello', 0, { stanza: st, daQuant: true, nome: 'Accesso in altezza e attrezzature (ponteggio o piattaforma): da quantificare', u: 'da quantificare' });
+			continue;
+		}
+		riga('prep', 1, { stanza: st, fonte: 'calcolato' });
+		const sup = m.pareti + m.soffitto;
+		if (s.stato === 'carta') { riga('rimCarta', m.pareti, { stanza: st, fonte: f }); riga('rasatura', m.pareti * 0.3, { stanza: st, fonte: 'stimato' }); conCarta = true; }
+		if (s.tipo === 'cucina' || s.tipo === 'bagno' || pr.macchie) riga('lavaggio', sup, { stanza: st, fonte: f });
+		if (quota('distacco')) { riga('rimPittura', m.pareti * quota('distacco'), { stanza: st, fonte: 'stimato' }); conResidui = true; }
+		if (pr.buchi) { const n = pr.buchi === 'estese' ? 25 : 8; riga('buchi', n, { stanza: st, fonte: 'stimato' }); add('stucco', n * 0.05); }
+		if (pr.crepe) { const ml = pr.crepe === 'estese' ? 8 : 2; riga('crepe', ml, { stanza: st, fonte: 'stimato' }); add('stucco', ml * 0.3); add('rete', ml); }
+		if (quota('irregolare') && s.stato !== 'carta') { const mq = m.pareti * quota('irregolare'); riga('rasatura', mq, { stanza: st, fonte: 'stimato' }); add('rasante', mq * 1.5); conResidui = true; }
+		if (s.stato === 'carta') add('rasante', m.pareti * 0.3 * 1.5);
+		if (quota('muffa')) { const mq = sup * quota('muffa'); riga('muffa', mq, { stanza: st, fonte: 'da verificare', daVer: true, nome: 'Trattamento superficiale della muffa (da verificare: la causa va risolta a parte)' }); riga('prodMuffa', Math.ceil((mq / R.resa.prodMuffa) * 2) / 2, { stanza: st, fonte: 'da verificare', daVer: true }); }
+		const mac = Math.max(quota('umidita'), quota('macchie'));
+		if (mac) { const mq = sup * mac * 0.5; riga('isolante', mq, { stanza: st, fonte: 'stimato' }); add('prodIsolante', mq / R.resa.prodIsolante); }
+		riga('fissativo', sup, { stanza: st, fonte: f }); add('fondo', sup / R.resa.fondo);
+		riga('pareti', m.pareti, { stanza: st, fonte: f });
+		riga('soffitti', m.soffitto, { stanza: st, fonte: f });
+		const mani = 2 + ((s.attuale === 'scuro' && s.risultato !== 'intenso') || s.risultato === 'intenso' ? 1 : 0);
+		if (mani > 2) riga('mano', m.pareti, { stanza: st, fonte: f });
+		const kp = s.pittura === 'lavabile' ? 'pitLavabile' : s.pittura === 'antimuffa' ? 'pitAntimuffa' : 'pitNormale';
+		pitture[kp] = pitture[kp] ?? {}; const col = s.colore || 'bianco';
+		pitture[kp][col] = (pitture[kp][col] ?? 0) + m.pittura * mani + m.soffitto * 2;
+		// consumi: calcolati dall'impresa
+		add('teli', m.pav * 1.1); add('carta', m.pav); add('nastro', m.per * 2 + (num(s.porte) + num(s.finestre)) * 5); add('abrasivi', 2 + (quota('irregolare') || s.stato === 'carta' ? 4 : 0)); add('sacchi', 2 + (s.stato === 'carta' ? 3 : 0));
+		if (s.mobili === 'da_spostare') riga('mobili', 1, { stanza: st, fonte: 'calcolato' });
+		if (s.mobili === 'restano') riga('protMobili', 1, { stanza: st, fonte: 'calcolato' });
+		if (num(s.h) > 3.2) alte++;
+	}
+	// pittura per tipo e colore, in confezioni; se la fornisce il cliente resta fuori dal totale
+	for (const [kp, cols] of Object.entries(pitture)) for (const [col, mqMani] of Object.entries(cols)) {
+		const l = (mqMani / R.resa[kp]) * (1 + R.scarto / 100); if (!(l > 0)) continue;
+		const c = confezioni(l, R.confezioni), cl = im.fornisce === 'cliente_ha' || im.fornisce === 'cliente_compra';
+		riga(kp, c.litri, { fonte: 'calcolato', nome: `${V[kp][0]} · ${col} (${c.testo}, resa ${R.resa[kp]} m²/l per mano)${im.fornisce === 'cliente_ha' ? ' · già del cliente, da verificare' : im.fornisce === 'cliente_compra' ? ' · la compra il cliente' : im.fornisce === 'decidere' ? ' · da confermare' : ''}`, cliente: cl });
+		if (kp === 'pitNormale' && !cl) { const dl = c.litri * (V.pitLavabile[2] - V.pitNormale[2]); if (dl > 0) out.push([`In alternativa: pittura lavabile al posto della normale (${col}), differenza`, `${fmtQ(c.litri)} l`, V.pitLavabile[2] - V.pitNormale[2], Math.round(dl * 100) / 100, 'materiali', { imb: true, opzione: true, alt: { tipo: 'lavabile', colore: col }, fonte: 'calcolato' }]); }
+	}
+	for (const k of ['fondo', 'stucco', 'rasante', 'prodMuffa', 'prodIsolante', 'rete']) if (somme[k]) riga(k, k === 'stucco' || k === 'rasante' ? Math.ceil(somme[k]) : Math.ceil(somme[k] * 2) / 2, { fonte: 'calcolato' });
+	for (const k of ['teli', 'carta', 'nastro', 'abrasivi', 'sacchi']) if (somme[k]) riga(k, Math.ceil(somme[k]), { fonte: 'calcolato' });
+	const cons = somma(out.filter((r) => r[4] === 'consumo'), (r) => r[3]), minC = R.minimoConsumi ?? 15;
+	if (cons > 0 && cons < minC) out.push([`Integrazione al minimo dei consumi (${euro(minC)} per intervento)`, '1 a corpo', Math.round((minC - cons) * 100) / 100, Math.round((minC - cons) * 100) / 100, 'consumo', { imb: true, fonte: 'regola' }]);
+	if (alte) riga('trabattello', alte, { fonte: 'calcolato' });
+	if (im.accesso.acqua) riga('barca', 2, { fonte: 'stimato' });
+	if (im.accesso.scale) riga('scale', 1, { fonte: 'calcolato' });
+	if (conCarta || conResidui) riga('rifiuti', 1, { fonte: 'calcolato' });
+	// minimo d'intervento: è una soglia, non si somma
+	const tot = somma(out.filter(inTotale), (r) => r[3]);
+	if (tot > 0 && tot < R.minimo) out.push([`Adeguamento al minimo d'intervento (${euro(R.minimo)})`, '1 a corpo', Math.round((R.minimo - tot) * 100) / 100, Math.round((R.minimo - tot) * 100) / 100, 'altro', { imb: true, fonte: 'regola' }]);
+	return out;
+}
+// note automatiche per il PDF
+const noteAttive = (pv) => [...noteImb(pv), ...noteUmi(pv)].filter((x) => !(pv.noteOff ?? []).includes(x));
+function noteImb(pv) {
+	const im = pv.imb; if (!im) return [];
+	const st = im.stanze, n = [];
+	if (st.some((s) => s.problemi?.muffa || s.problemi?.umidita)) n.push('Muffa e macchie di umidità: il trattamento è superficiale e non elimina la causa dell\'umidità, che va verificata a parte.');
+	if (st.some((s) => s.tipo === 'esterno')) n.push('Esterni: l\'accesso in altezza e le attrezzature sono da quantificare; tempi e date dipendono dal meteo e dalle condizioni del muro.');
+	if (im.fornisce === 'cliente_ha' || im.fornisce === 'cliente_compra') n.push('Pittura fornita dal cliente: prodotto, quantità e compatibilità vanno verificati prima del lavoro; non è compresa nel totale.');
+	if (st.some((s) => s.tipo === 'ritocchi')) n.push('Ritocchi: il ritocco può restare visibile rispetto al resto della parete; in alternativa si può tinteggiare la parete intera.');
+	const stim = st.filter((s) => misureStanza(s, { ...im.listino.regole, im }).fonte !== 'misurato').map((s) => s.nome);
+	if (stim.length) n.push(`Misure stimate o da verificare (${stim.join(', ')}): le quantità si confermano al sopralluogo.`);
+	return n;
+}
+// riepilogo per Fabri: tempo, costo, margine (solo le voci calcolate)
+function riassuntoImb(pv) {
+	const c = pv.righe.filter((r) => r[5]?.imb && inTotale(r)); if (!c.length) return '';
+	const ore = somma(c, (r) => r[5].ore ?? 0), costo = somma(c, (r) => qDi(r).q * (r[5].costo ?? 0)), prezzo = somma(c, (r) => r[3]);
+	const sq = Math.max(1, num(pv.imb.squadra) || 2), pres = Math.ceil((ore / (8 * sq)) * 2) / 2, asc = pv.imb.stanze.some((s) => s.stato === 'carta' || s.problemi?.irregolare || s.problemi?.crepe) ? 1 : 0;
+	return `<div class="pv-ris-imb"><p><span>Ore di lavoro</span><b class="num">${oreTesto(ore)}</b></p><p><span>Squadra</span><b class="num">${sq} ${sq === 1 ? 'persona' : 'persone'}</b></p><p><span>Giornate di presenza</span><b class="num">${fmtQ(pres)}</b></p><p><span>Attese di asciugatura</span><b class="num">${asc ? '+ ' + asc + ' giorno' : 'nello stesso giorno'}</b></p><p><span>Durata complessiva</span><b class="num">circa ${fmtQ(pres + asc)} ${pres + asc === 1 ? 'giorno' : 'giorni'}</b></p>
+		<details class="pv-dett"><summary>Dettagli per te: costo e margine</summary><p><span>Costo stimato</span><b class="num">${euro(costo)}</b></p><p><span>Margine sulle voci calcolate</span><b class="num ${prezzo - costo < 0 ? 'neg' : ''}">${euro(prezzo - costo)}</b></p>${prezzo - costo < 0 ? '<p class="v-sotto">Il lavoro risulta sottocosto.</p>' : ''}</details></div>`;
+}
+// in cima al preventivo d'imbiancatura
+function bloccoStanze(pv, p) {
+	if (p.servizio !== 'Imbiancatura' && !pv.imb) return '';
+	const im = pv.imb, R = im ? { ...im.listino.regole, im } : null;
+	if (!im) return `<div class="pv-stanze"><b>Stanze e misure</b><p class="nota">Misura stanza per stanza (anche dal telefono, al sopralluogo): le voci, i litri e i consumi si calcolano da soli.</p><button type="button" class="btn piccolo" onclick="apri('stanze','${pv.id}')">${I.piu} Inizia dalle stanze</button></div>`;
+	const tot = im.stanze.reduce((t, s) => { const m = misureStanza(s, R); return [t[0] + m.pareti, t[1] + m.soffitto]; }, [0, 0]);
+	return `<div class="pv-stanze"><b>Stanze e misure</b><p class="nota">${im.stanze.length} ${im.stanze.length === 1 ? 'stanza' : 'stanze'} · pareti ${fmtQ(Math.round(tot[0]))} m² · soffitti ${fmtQ(Math.round(tot[1]))} m² · prezzi del ${giornoBreve(im.prezziDel)}</p><button type="button" class="btn piccolo linea" onclick="apri('stanze','${pv.id}')">Modifica le stanze</button></div>`;
+}
+// pop-up «Stanze e misure»
+function stanzeImb(pvId) {
+	const pv = D.preventivi.find((x) => x.id === pvId); if (!pv) return testa('Preventivo non trovato');
+	const p = pratica(pv.praticaId), im = (pv.imb ??= nuovoImb(p)), R = { ...im.listino.regole, im };
+	const radio = (nome, opzioni, val, fn) => `<div class="scelte">${opzioni.map(([k, n]) => `<label><input type="radio" name="${nome}" value="${k}" ${String(val) === String(k) ? 'checked' : ''} onchange="${fn}">${n}</label>`).join('')}</div>`;
+	const inp = (et, i, campo, val, extra = '') => `<label>${et}<input inputmode="decimal" value="${val === '' || val == null ? '' : fmtQ(num(val))}" onchange="imbStanza('${pvId}',${i},'${campo}',this.value)" ${extra}></label>`;
+	const card = (s, i) => { const m = misureStanza(s, R), fn = (c) => `imbStanza('${pvId}',${i},'${c}',this.value)`, es = s.tipo === 'esterno', rit = s.tipo === 'ritocchi';
+		return `<section class="stanza"><div class="stanza-testa"><input class="campo stanza-nome" value="${esc(s.nome)}" aria-label="Nome della stanza" onchange="${fn('nome')}"><span class="v-fonte f-${m.fonte.replace(/ /g, '-')}">${m.fonte}</span><button type="button" class="togli" aria-label="Togli la stanza" onclick="imbTogli('${pvId}',${i})">${I.cestino}</button></div>
+			<label class="campo">Che ambiente</label>${radio(`st${i}-tipo`, Object.entries(TIPI_STANZA).map(([k, [n]]) => [k, n]), s.tipo, `imbStanza('${pvId}',${i},'tipo',this.value)`)}
+			${rit ? `<div class="campi-box">${inp('Quante zone da ritoccare', i, 'zone', s.zone)}</div><p class="nota">Ritocco locale; in alternativa (fuori totale) la parete intera. Il ritocco può restare visibile.</p>`
+			: es ? `<div class="campi-box">${inp('Larghezza (m)', i, 'largh', s.largh)}${inp('Altezza (m)', i, 'h', s.h)}</div><div class="campi-box">${inp('Altezza da terra del punto più alto (m)', i, 'altezzaTerra', s.altezzaTerra)}<label>Colore<input value="${esc(s.colore)}" onchange="${fn('colore')}"></label></div>`
+			: `<label class="campo">Cosa pitturare</label>${radio(`st${i}-cosa`, [['tutto', 'Pareti e soffitto'], ['pareti', 'Solo pareti'], ['soffitto', 'Solo soffitto'], ['alcune', 'Alcune pareti']], s.cosa, fn('cosa'))}
+			<label class="campo">Misure</label>${radio(`st${i}-modo`, [['misure', 'Ho le misure'], ['pavimento', 'Solo i m² di pavimento'], ['nonso', 'Non lo so']], s.modo, fn('modo'))}
+			${s.modo === 'misure' ? `<div class="campi-box tre">${inp('Lunghezza (m)', i, 'l', s.l)}${inp('Larghezza (m)', i, 'p', s.p)}${inp('Altezza (m)', i, 'h', s.h)}</div>` : s.modo === 'pavimento' ? `<div class="campi-box">${inp('m² di pavimento', i, 'mq', s.mq)}${inp('Altezza (m)', i, 'h', s.h)}</div><p class="nota">Pareti stimate = m² × ${fmtQ(R.fattorePareti)}: meno preciso delle misure.</p>` : `<p class="nota">Uso una misura tipica (${TIPI_STANZA[s.tipo][1]} m²): da verificare al sopralluogo.</p>`}
+			${s.cosa === 'alcune' ? `<div class="campi-box">${inp('Larghezza delle pareti da fare (m, in tutto)', i, 'largh', s.largh)}<label class="campo-check"><input type="checkbox" ${s.conSoffitto ? 'checked' : ''} onchange="imbStanza('${pvId}',${i},'conSoffitto',this.checked)"> anche il soffitto</label></div>` : ''}
+			<div class="campi-box tre">${inp('Porte', i, 'porte', s.porte)}${inp('Finestre', i, 'finestre', s.finestre)}${inp('Vetrata grande (m²)', i, 'vetrata', s.vetrata)}</div><p class="nota">${(im.regolaAperture ?? 'soglia') === 'tutte' ? 'Porte, finestre e vetrate si tolgono dal conto.' : `Porte e finestre normali non si tolgono dal conto (bordi e rientranze le compensano); da una vetrata si toglie la parte oltre ${fmtQ(im.soglia ?? R.sogliaAperture)} m².`}</p>
+			<label class="campo">Cosa c'è adesso</label>${radio(`st${i}-stato`, [['pittura', 'Pittura'], ['nuovo', 'Intonaco o cartongesso nuovo'], ['carta', 'Carta da parati'], ['nonso', 'Non so']], s.stato, fn('stato'))}`}
+			${rit ? '' : `<label class="campo">Problemi che si vedono</label><div class="problemi">${Object.entries(PROBLEMI).filter(([k]) => !es || ['crepe', 'distacco', 'umidita'].includes(k)).map(([k, n]) => `<label><span>${n}</span><select class="campo" onchange="imbProb('${pvId}',${i},'${k}',this.value)"><option value="">No</option><option value="poche" ${s.problemi?.[k] === 'poche' ? 'selected' : ''}>Poche zone</option><option value="estese" ${s.problemi?.[k] === 'estese' ? 'selected' : ''}>Parte estesa</option></select></label>`).join('')}</div>`}
+			${rit || es ? '' : `<label class="campo">Colore</label>${radio(`st${i}-att`, [['chiaro', 'Adesso chiaro'], ['scuro', 'Adesso scuro']], s.attuale, fn('attuale'))}${radio(`st${i}-ris`, [['bianco', 'Voglio bianco'], ['chiaro', 'Chiaro'], ['intenso', 'Intenso o particolare']], s.risultato, fn('risultato'))}<div class="campi-box"><label>Nome o codice del colore (facoltativo)<input value="${esc(s.colore)}" onchange="${fn('colore')}"></label></div>
+			<label class="campo">Pittura</label>${radio(`st${i}-pit`, [['normale', 'Normale uso domestico'], ['lavabile', 'Pareti da pulire spesso'], ['antimuffa', 'Antimuffa']], s.pittura, fn('pittura'))}
+			<label class="campo">La stanza sarà</label>${radio(`st${i}-mob`, [['vuota', 'Vuota'], ['spostati_cliente', 'Mobili spostati dal cliente'], ['da_spostare', 'Mobili da spostare noi'], ['restano', 'Mobili grandi che restano']], s.mobili, fn('mobili'))}`}
+			<p class="stanza-mis num">${es ? `Muro ${fmtQ(m.pareti)} m²` : rit ? `${s.zone || 1} zone` : `Pareti ${fmtQ(m.pareti)} m² · soffitto ${fmtQ(m.soffitto)} m²`}</p>
+			<div class="stanza-azioni"><button type="button" class="link" onclick="imbTutte('${pvId}',${i})">Usa queste scelte per tutte le stanze</button></div></section>`; };
+	const tot = im.stanze.reduce((t, s) => { const m = misureStanza(s, R); return [t[0] + m.pareti, t[1] + m.soffitto]; }, [0, 0]);
+	const pagina = `<div class="pv-scelto"><span class="pv-scelto-icona">${I.rullo}</span><h1 class="pv-scelto-t">Stanze e misure</h1><span class="pv-scelto-p">· ${esc(p.nome)} · ${pv.numero ?? 'Bozza v' + pv.n}</span></div>
+		<section class="riquadro stanze-gen"><h2>Il lavoro</h2><label class="campo">Immobile</label>${radio('im-imm', [['abitazione', 'Abitazione'], ['comuni', 'Parti comuni del condominio'], ['negozio', 'Negozio o ufficio'], ['altro', 'Altro']], im.immobile, `imbSet('${pvId}','immobile',this.value)`)}
+		<label class="campo">Chi fornisce la pittura</label>${radio('im-forn', [['fabri', 'Noi'], ['cliente_ha', 'Il cliente ce l\'ha già'], ['cliente_compra', 'La compra il cliente'], ['decidere', 'Da decidere']], im.fornisce, `imbSet('${pvId}','fornisce',this.value)`)}
+		<p class="nota">Primer, stucco, rasante, trattamenti e consumi li sceglie e li conta l'impresa.</p>
+		<div class="campi-box"><label>Persone in squadra<input inputmode="numeric" value="${im.squadra ?? 2}" onchange="imbSet('${pvId}','squadra',this.value)"></label><label>Soglia porte e finestre (m²)<input inputmode="decimal" value="${fmtQ(im.soglia ?? R.sogliaAperture)}" onchange="imbSet('${pvId}','soglia',num(this.value))"></label></div>
+		<label class="campo">Porte e finestre nel conto</label>${radio('im-ap', [['soglia', `Non si tolgono sotto la soglia (i bordi compensano)`], ['tutte', 'Si tolgono sempre']], im.regolaAperture ?? 'soglia', `imbSet('${pvId}','regolaAperture',this.value)`)}<p class="nota">Vale solo per questo preventivo. I litri di pittura si calcolano sempre sulla superficie vera, senza aperture.</p>
+		<label class="campo">Accesso</label><div class="scelte">${[['scale', 'Piano alto senza ascensore'], ['acqua', 'Si arriva via acqua o il mezzo resta lontano']].map(([k, n]) => `<label><input type="checkbox" ${im.accesso[k] ? 'checked' : ''} onchange="imbAccesso('${pvId}','${k}',this.checked)">${n}</label>`).join('')}</div></section>
+		${im.stanze.map(card).join('')}<button type="button" class="pv-aggiungi" onclick="imbAggiungi('${pvId}')">${I.piu} Aggiungi stanza (copia le scelte dell'ultima)</button>`;
+	const cardL = latoCard({
+		grande: `<strong class="num">${fmtQ(Math.round(tot[0] + tot[1]))} m²</strong>`,
+		sotto: `${im.stanze.length} ${im.stanze.length === 1 ? 'ambiente' : 'ambienti'} · pareti ${fmtQ(Math.round(tot[0]))} m², soffitti ${fmtQ(Math.round(tot[1]))} m².`,
+		celle: [{ et: 'Misurate', val: im.stanze.filter((s) => misureStanza(s, R).fonte === 'misurato').length, click: '' }, { et: 'Stimate o da verificare', val: im.stanze.filter((s) => misureStanza(s, R).fonte !== 'misurato').length, click: '' }],
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="imbCrea('${pvId}')">Crea le voci del preventivo</button>`,
+		nota: `Prezzi del ${giornoBreve(im.prezziDel)} (listino d'esempio). Le voci calcolate sostituiscono quelle della stima e le precedenti calcolate; quelle aggiunte a mano restano.`
+	});
+	return conLato(pagina, cardL, 'Riepilogo delle stanze', 'lato-dopo');
+}
+const pvDi = (id) => D.preventivi.find((x) => x.id === id);
+function imbSet(id, k, v) { pvDi(id).imb[k] = v; salva(); render(); }
+function imbAccesso(id, k, v) { pvDi(id).imb.accesso[k] = v; salva(); render(); }
+function imbStanza(id, i, k, v) { const s = pvDi(id).imb.stanze[i]; s[k] = v; if (k === 'tipo' && TIPI_STANZA[v] && (!s.nome || Object.values(TIPI_STANZA).some(([n]) => s.nome.startsWith(n)))) s.nome = TIPI_STANZA[v][0]; salva(); render(); }
+function imbProb(id, i, k, v) { const s = pvDi(id).imb.stanze[i]; s.problemi = { ...(s.problemi ?? {}) }; if (v) s.problemi[k] = v; else delete s.problemi[k]; salva(); render(); }
+function imbAggiungi(id) { const im = pvDi(id).imb, ult = im.stanze.at(-1), n = im.stanze.length + 1; const s = ult ? { ...JSON.parse(JSON.stringify(ult)), id: 'st' + Date.now().toString(36), nome: `${TIPI_STANZA[ult.tipo][0]} ${n}`, l: '', p: '', mq: '', largh: '' } : nuovaStanza('camera', n); im.stanze.push(s); salva(); render(); toast('Stanza aggiunta con le scelte della precedente: metti le misure.'); }
+function imbTogli(id, i) { const im = pvDi(id).imb; if (im.stanze.length === 1) return toast('Serve almeno un ambiente.'); im.stanze.splice(i, 1); salva(); render(); }
+function imbTutte(id, i) { const im = pvDi(id).imb, m = im.stanze[i]; im.stanze.forEach((s, j) => { if (j !== i && !['esterno', 'ritocchi'].includes(s.tipo)) Object.assign(s, { cosa: m.cosa, stato: m.stato, problemi: { ...m.problemi }, attuale: m.attuale, risultato: m.risultato, colore: m.colore, pittura: m.pittura, mobili: m.mobili }); }); salva(); render(); toast('Scelte copiate in tutte le stanze (le misure restano).'); }
+function imbCrea(id) {
+	const pv = pvDi(id);
+	if (!vociImbiancatura(pv).some(inTotale)) return toast('Metti almeno una misura o una superficie da pitturare.');
+	imbRigenera(id, () => { popIndietro(); toast('Voci calcolate dalle stanze.'); });
+}
+function imbRigenera(id, poi) {
+	const pv = pvDi(id), corrette = pv.righe.filter((r) => r[5]?.imb && r[5].proposta).length;
+	if (corrette && !imbRigenera.ok) return apriConferma('Ricalcolare le voci?', `Hai corretto ${corrette} ${corrette === 1 ? 'voce calcolata' : 'voci calcolate'}: ricalcolando tornano come da proposta (le voci aggiunte a mano restano).`, 'Ricalcola', () => { imbRigenera.ok = true; imbRigenera(id, poi); imbRigenera.ok = false; });
+	imbScrivi(id); poi?.();
+}
+function imbScrivi(id) {
+	const pv = pvDi(id), nuove = vociImbiancatura(pv);
+	pv.righe = [...pv.righe.filter((r) => !r[5]?.imb && !r[5]?.stima && (String(r[0]).trim() || r[3])), ...nuove];
+	pv.daStima = null;
+	// trasporto normale e pulizia ordinaria sono già compresi (nella preparazione): non vanno segnalati come mancanti
+	pv.nonServe = [...new Set([...(pv.nonServe ?? []), ...['trasporto', 'smaltimento'].filter((k) => !pv.righe.some((r) => catDi(r) === k && inTotale(r)))])];
+	pv.approvato = false; salva(); render();
+}
+// listino d'esempio nelle Impostazioni: prezzo, costo, ore e data; i preventivi tengono i prezzi del giorno in cui sono stati fatti
+function listinoImbHtml() {
+	const L = listinoImb(), R = L.regole;
+	return `<section class="riquadro listino"><h2>Listino imbiancatura <span class="conta">esempio</span></h2><p class="nota">Prezzi, costi e tempi d'esempio: mettici quelli veri di Fabri. Aggiornato il ${giornoBreve(R.aggiornato)}. I preventivi già fatti tengono i loro prezzi.</p>
+		<div class="lst-righe"><div class="lst-r lst-t"><span>Voce</span><span>Unità</span><span>Prezzo €</span><span>Costo €</span><span>Ore/unità</span></div>${Object.entries(L.voci).map(([k, [n, u, pr, co, ore]]) => `<div class="lst-r"><span>${esc(n)}</span><span>${u}</span><input class="campo num" inputmode="decimal" value="${fmtQ(pr)}" aria-label="Prezzo ${esc(n)}" onchange="lstSet('${k}',2,this.value)"><input class="campo num" inputmode="decimal" value="${fmtQ(co)}" aria-label="Costo ${esc(n)}" onchange="lstSet('${k}',3,this.value)"><input class="campo num" inputmode="decimal" value="${fmtQ(ore)}" aria-label="Ore ${esc(n)}" onchange="lstSet('${k}',4,this.value)"></div>`).join('')}</div>
+		<div class="campi-box tre" style="margin-top:12px"><label>Scarto pittura (%)<input inputmode="decimal" value="${fmtQ(R.scarto)}" onchange="lstRegola('scarto',this.value)"></label><label>Soglia porte/finestre (m²)<input inputmode="decimal" value="${fmtQ(R.sogliaAperture)}" onchange="lstRegola('sogliaAperture',this.value)"></label><label>Minimo d'intervento (€)<input inputmode="decimal" value="${fmtQ(R.minimo)}" onchange="lstRegola('minimo',this.value)"></label></div>
+		<p class="nota" style="margin-top:6px">Rese per mano (m²/l): ${Object.entries(R.resa).map(([k, v]) => `${L.voci[k][0].split(',')[0].replace('Pittura ', '')} ${fmtQ(v)}`).join(' · ')}.</p></section>`;
+}
+function lstSet(k, i, v) { const L = listinoImb(); L.voci[k][i] = num(v); L.regole.aggiornato = OGGI; salva(); render(); toast('Listino aggiornato: vale per i prossimi preventivi.'); }
+function lstRegola(k, v) { const L = listinoImb(); L.regole[k] = num(v); L.regole.aggiornato = OGGI; salva(); render(); }
+/* ===================== UMIDITÀ: MURI E SCENARIO (revisione ChatGPT 15/10) =====================
+   Si stima il RIPRISTINO DELLE SUPERFICI; la causa (barriera, perdite, impermeabilizzazioni, ventilazione…) è sempre «da quantificare», mai 0 €.
+   Per ogni muro tre altezze separate: danno dichiarato dal cliente, intervento ipotizzato (danno + fascia del sistema), confermata da Fabri.
+   Le due facce si contano a parte; la barriera no. Edifici storici: niente demolizioni automatiche. Prezzi d'ESEMPIO. */
+const LISTINO_UMI_ESEMPIO = {
+	prep: ['Preparazione e protezione del locale (compresa la pulizia ordinaria di fine lavoro)', 'locale', 80, 40, 2, 'lavoro'],
+	mobili: ['Spostamento dei mobili', 'locale', 40, 20, 1.5, 'lavoro'],
+	rimRiv: ['Rimozione di piastrelle, carta o contropareti', 'm²', 15, 7, 0.4, 'lavoro'],
+	rimIntonaco: ['Rimozione dell\'intonaco ammalorato', 'm²', 18, 9, 0.5, 'lavoro'],
+	pulizia: ['Pulizia e preparazione della muratura', 'm²', 6, 3, 0.15, 'lavoro'],
+	giunti: ['Ripristino dei giunti o di parti deteriorate', 'a corpo', 120, 60, 3, 'lavoro'],
+	antisale: ['Trattamento antisale', 'm²', 8, 4, 0.1, 'lavoro'],
+	rinzaffo: ['Rinzaffo', 'm²', 12, 6, 0.25, 'lavoro'],
+	intonaco: ['Intonaco risanante, spessore 2 cm', 'm²', 38, 19, 0.6, 'lavoro'],
+	spessore: ['Maggiore spessore dell\'intonaco', 'm²·cm', 9, 4.5, 0.12, 'lavoro'],
+	rasatura: ['Rasatura compatibile', 'm²', 12, 6, 0.2, 'lavoro'],
+	pittura: ['Pittura compatibile (fondo + 2 mani)', 'm²', 9, 4.5, 0.12, 'lavoro'],
+	muffa: ['Trattamento superficiale della muffa', 'm²', 6, 3, 0.07, 'lavoro'],
+	batRim: ['Rimozione del battiscopa', 'ml', 4, 2, 0.08, 'lavoro'],
+	batPosa: ['Posa del battiscopa', 'ml', 8, 4, 0.15, 'lavoro'],
+	termo: ['Smontaggio e rimontaggio termosifoni (da verificare con l\'idraulico)', 'pz', 45, 25, 1, 'lavoro'],
+	macerie: ['Movimentazione e carico delle macerie', 'a corpo', 60, 30, 2, 'smaltimento'],
+	conferimento: ['Trasporto e conferimento dei rifiuti', 'kg', 0.15, 0.1, 0, 'smaltimento'],
+	barca: ['Trasporto via acqua e movimentazione a mano', 'viaggi', 90, 70, 1, 'trasporto'],
+	matRinzaffo: ['Rinzaffo (materiale)', 'kg', 0.6, 0.35, 0, 'materiali'],
+	matIntonaco: ['Intonaco risanante (materiale)', 'kg', 0.9, 0.55, 0, 'materiali'],
+	matRasante: ['Rasante compatibile', 'kg', 1.8, 1.1, 0, 'materiali'],
+	matAntisale: ['Prodotto antisale', 'l', 9, 5.5, 0, 'materiali'],
+	matPittura: ['Pittura traspirante compatibile', 'l', 9, 6, 0, 'materiali'],
+	matFondo: ['Fondo compatibile', 'l', 6, 3.8, 0, 'materiali'],
+	matMuffa: ['Prodotto per il trattamento della muffa', 'l', 12, 8, 0, 'materiali'],
+	matBattiscopa: ['Battiscopa nuovo', 'ml', 6, 3.5, 0, 'materiali'],
+	consumi: ['Materiali di consumo (per m² di superficie lavorata)', 'm²', 1.5, 0.8, 0, 'consumo']
+};
+const REGOLE_UMI_ESEMPIO = { consumoIntonaco: 12, consumoRinzaffo: 5, consumoRasante: 1.5, antisale: 0.3, resaPittura: 8, resaFondo: 10, kgMacerie: 15, minimoConsumi: 25, fasce: { mapei: [0.5, 'Sistema tipo A: circa 50 cm oltre il degrado'], fassa: [1, 'Sistema tipo B: almeno 1 m oltre la fascia umida'], manuale: [0, 'Decido io'] } };
+const nuovoMuro = (n = 1) => ({ id: 'mu' + Date.now().toString(36) + n, nome: `Parete ${n}`, dove: 'interno', lung: '', hDanno: '', fascia: 'mapei', fasciaMan: '', hConf: '', facce: 1, rivestimento: 'intonaco', spRim: 2, spNuovo: 2, muratura: 'nonso', battiscopa: 'nessuno', termo: 0, muffa: false, barriera: false });
+function nuovoUmi(p) { return { scenario: 'ripristino', alternativa: '', finitura: 'pitturato', storico: 'nonso', antisale: true, rinzaffo: true, rasatura: false, mobili: false, accesso: { acqua: /venezia|burano|murano|lido|pellestrina|giudecca/i.test(p.indirizzoLavoro) }, muri: [nuovoMuro(1)], listino: JSON.parse(JSON.stringify({ voci: LISTINO_UMI_ESEMPIO, regole: REGOLE_UMI_ESEMPIO })), prezziDel: OGGI }; }
+// tre altezze separate: quella che si usa è la confermata, se c'è
+function altezzeMuro(m, R) {
+	const danno = num(m.hDanno), fascia = m.fascia === 'manuale' ? num(m.fasciaMan) : R.fasce[m.fascia]?.[0] ?? 0.5, ipot = danno ? Math.round((danno + fascia) * 100) / 100 : 0, conf = num(m.hConf);
+	return { danno, ipot, conf, usata: conf || ipot, fonte: conf ? 'confermato' : danno ? 'ipotizzato' : 'da verificare' };
+}
+function vociUmidita(pv) {
+	const u = pv.umi, V = u.listino.voci, R = u.listino.regole, out = [], storico = u.storico === 'si';
+	const riga = (k, q, o = {}) => { if (!(q > 0) && !o.daQuant) return; const [n, un, pr, co, ore, cat] = V[k], qq = Math.round(q * 100) / 100; out.push([o.nome ?? n, o.daQuant ? 'da quantificare' : `${fmtQ(qq)} ${un}`, o.daQuant ? 0 : pr, o.daQuant ? 0 : Math.round(qq * pr * 100) / 100, cat, { umi: true, k, fonte: o.fonte ?? 'calcolato', stanza: o.muro, costo: co, ore: Math.round(qq * ore * 100) / 100, ...(o.daQuant ? { daQuant: true } : {}), ...(o.daVer ? { daVer: true } : {}), ...(o.opzione ? { opzione: true } : {}) }]); };
+	const sc = u.scenario; let sup = 0, kg = 0, mat = {}; const add = (k, q) => (mat[k] = (mat[k] ?? 0) + q);
+	riga('prep', 1);
+	if (u.mobili) riga('mobili', 1);
+	for (const m of u.muri) {
+		const a = altezzeMuro(m, R), L = num(m.lung), area = L * a.usata * Math.max(1, num(m.facce)), f = a.fonte, mu = m.nome;
+		if (!area) continue;
+		sup += area;
+		if (sc === 'superfici') {
+			riga('muffa', area, { muro: mu, fonte: f, nome: 'Pulizia e trattamento superficiale (intonaco da conservare)' }); add('matMuffa', area / 8);
+		} else {
+			if (m.rivestimento !== 'intonaco') riga('rimRiv', area, { muro: mu, fonte: f, nome: `Rimozione ${m.rivestimento === 'piastrelle' ? 'delle piastrelle' : m.rivestimento === 'carta' ? 'della carta da parati' : 'della controparete'}` });
+			// edificio storico: la rimozione dell'intonaco va verificata (conservazione prima del ciclo standard)
+			riga('rimIntonaco', area, { muro: mu, fonte: storico ? 'da verificare' : f, daVer: storico, nome: `Rimozione dell'intonaco ammalorato, spessore ${fmtQ(num(m.spRim) || 2)} cm${storico ? ' (edificio storico: da verificare)' : ''}` });
+			kg += area * (num(m.spRim) || 2) * R.kgMacerie;
+			riga('pulizia', area, { muro: mu, fonte: f });
+			if (u.antisale) { riga('antisale', area, { muro: mu, fonte: f }); add('matAntisale', area * R.antisale); }
+			if (u.rinzaffo) { riga('rinzaffo', area, { muro: mu, fonte: f }); add('matRinzaffo', area * R.consumoRinzaffo); }
+			riga('intonaco', area, { muro: mu, fonte: f }); const sp = num(m.spNuovo) || 2; add('matIntonaco', area * sp * R.consumoIntonaco);
+			if (sp > 2) riga('spessore', area * (sp - 2), { muro: mu, fonte: f, nome: `Maggiore spessore dell'intonaco (+${fmtQ(sp - 2)} cm)` });
+			if (m.battiscopa === 'riuso') { riga('batRim', L, { muro: mu, fonte: 'misurato' }); riga('batPosa', L, { muro: mu, fonte: 'misurato', nome: 'Rimontaggio del battiscopa esistente' }); }
+			if (m.battiscopa === 'nuovo') { riga('batRim', L, { muro: mu, fonte: 'misurato' }); riga('batPosa', L, { muro: mu, fonte: 'misurato' }); add('matBattiscopa', L); }
+			if (num(m.termo)) riga('termo', num(m.termo), { muro: mu, fonte: 'da verificare', daVer: true });
+		}
+		if (m.muffa && sc !== 'superfici') { riga('muffa', area * 0.3, { muro: mu, fonte: 'da verificare', daVer: true }); }
+		// la causa: mai calcolata, mai 0 €; la barriera non si raddoppia con due facce
+		if (m.barriera) riga('giunti', 0, { muro: mu, daQuant: true, nome: `Barriera chimica, ${fmtQ(L)} m: fattibilità e consumo da verificare (spessore e vuoti del muro)` });
+	}
+	if (sc !== 'superfici' && sup) riga('giunti', 1, { fonte: 'da verificare', daVer: true });
+	if (u.rasatura && sc !== 'superfici') { riga('rasatura', sup); add('matRasante', sup * R.consumoRasante); }
+	if (u.finitura === 'pitturato' || sc === 'superfici') { riga('pittura', sup); add('matPittura', (sup * 2) / R.resaPittura); add('matFondo', sup / R.resaFondo); }
+	for (const [k, q] of Object.entries(mat)) riga(k, k.startsWith('matPittura') || k === 'matFondo' || k === 'matAntisale' || k === 'matMuffa' ? Math.ceil(q * 2) / 2 : Math.ceil(q), { fonte: 'calcolato' });
+	const cons = Math.max(sup * V.consumi[2], R.minimoConsumi); if (sup) out.push([V.consumi[0], `${fmtQ(Math.round(sup * 10) / 10)} m²${sup * V.consumi[2] < R.minimoConsumi ? ` (minimo ${euro(R.minimoConsumi)} per intervento)` : ''}`, Math.round((cons / sup) * 100) / 100, Math.round(cons * 100) / 100, 'consumo', { umi: true, fonte: 'calcolato', costo: V.consumi[3] * (cons / sup) / V.consumi[2], ore: 0 }]);
+	if (kg) { riga('macerie', 1); riga('conferimento', Math.ceil(kg / 10) * 10, { fonte: 'stimato' }); }
+	if (u.accesso.acqua) riga('barca', kg > 300 ? 3 : 2, { fonte: 'stimato' });
+	// sempre visibile accanto al totale
+	out.push(['Eventuale intervento sulla causa dell\'umidità (perdite, infiltrazioni, impermeabilizzazioni, ventilazione, barriera): verrà proposto dopo la verifica', 'da quantificare', 0, 0, 'altro', { umi: true, daQuant: true, fonte: 'da verificare' }]);
+	// seconda alternativa (non sommata)
+	if (u.alternativa && u.alternativa !== sc) { const alt = vociUmidita({ ...pv, umi: { ...u, scenario: u.alternativa, alternativa: '' } }).filter(inTotale), tot = somma(alt, (r) => r[3]); out.push([`In alternativa: ${u.alternativa === 'superfici' ? 'solo trattamento delle superfici' : 'ripristino dell\'intonaco'} (stima complessiva)`, '1 a corpo', tot, tot, 'altro', { umi: true, opzione: true, fonte: 'calcolato' }]); }
+	return out;
+}
+function noteUmi(pv) {
+	const u = pv.umi; if (!u) return [];
+	const n = ['La durata del ripristino dipende dalla quantità di sali e dalle condizioni del muro: non si promettono risultati «per sempre».', 'Al sopralluogo esaminiamo il problema e facciamo le prime verifiche. Se servono indagini aggiuntive, ti spieghiamo quali e concordiamo prima gli eventuali costi.'];
+	if (u.scenario === 'superfici') n.push('Trattamento delle superfici: non risolve la causa della muffa o dell\'umidità.');
+	if (u.storico !== 'no') n.push('Edificio storico o con possibili vincoli: conservazione e compatibilità vengono prima del ciclo standard; eventuali autorizzazioni sono da verificare per questo immobile.');
+	if (u.accesso.acqua) n.push('Laguna: acqua alta e sali vanno valutati a parte; approdo, distanza a piedi, deposito e ritiro delle macerie sono compresi solo come indicato nelle voci.');
+	if (u.muri.some((m) => m.muffa)) n.push('Muffa e condensa: possono concorrere uso della casa, ventilazione, riscaldamento e caratteristiche dell\'edificio.');
+	return n;
+}
+function bloccoMuri(pv, p) {
+	if (p.servizio !== 'Risanamento umidità' && !pv.umi) return '';
+	const u = pv.umi;
+	if (!u) return `<div class="pv-stanze"><b>Muri e scenario</b><p class="nota">Misura muro per muro e scegli lo scenario: si stima il ripristino delle superfici; la causa resta da quantificare.</p><button type="button" class="btn piccolo" onclick="apri('muri','${pv.id}')">${I.piu} Inizia dai muri</button></div>`;
+	const R = u.listino.regole, sup = u.muri.reduce((t, m) => t + num(m.lung) * altezzeMuro(m, R).usata * Math.max(1, num(m.facce)), 0);
+	return `<div class="pv-stanze"><b>Muri e scenario</b><p class="nota">${u.scenario === 'superfici' ? 'Trattamento delle superfici' : 'Ripristino dell\'intonaco'} · ${u.muri.length} ${u.muri.length === 1 ? 'muro' : 'muri'} · ${fmtQ(Math.round(sup * 10) / 10)} m² · prezzi del ${giornoBreve(u.prezziDel)}</p><button type="button" class="btn piccolo linea" onclick="apri('muri','${pv.id}')">Modifica i muri</button></div>`;
+}
+function muriUmi(pvId) {
+	const pv = pvDi(pvId); if (!pv) return testa('Preventivo non trovato');
+	const p = pratica(pv.praticaId), u = (pv.umi ??= nuovoUmi(p)), R = u.listino.regole;
+	const radio = (nome, opz, val, fn) => `<div class="scelte">${opz.map(([k, n]) => `<label><input type="radio" name="${nome}" value="${k}" ${String(val) === String(k) ? 'checked' : ''} onchange="${fn}">${n}</label>`).join('')}</div>`;
+	const inp = (et, i, c, v) => `<label>${et}<input inputmode="decimal" value="${v === '' || v == null ? '' : fmtQ(num(v))}" onchange="umiMuro('${pvId}',${i},'${c}',this.value)"></label>`;
+	const chk = (et, k) => `<label><input type="checkbox" ${u[k] ? 'checked' : ''} onchange="umiSet('${pvId}','${k}',this.checked)">${et}</label>`;
+	const card = (m, i) => { const a = altezzeMuro(m, R), fn = (c) => `umiMuro('${pvId}',${i},'${c}',this.value)`;
+		return `<section class="stanza"><div class="stanza-testa"><input class="campo stanza-nome" value="${esc(m.nome)}" aria-label="Nome del muro" onchange="${fn('nome')}"><span class="v-fonte f-${a.fonte.replace(/ /g, '-')}">${a.fonte}</span><button type="button" class="togli" aria-label="Togli il muro" onclick="umiTogli('${pvId}',${i})">${I.cestino}</button></div>
+			${radio(`mu${i}-dove`, [['interno', 'Interno'], ['esterno', 'Esterno']], m.dove, fn('dove'))}
+			<div class="campi-box tre">${inp('Lunghezza del danno (m)', i, 'lung', m.lung)}${inp('Altezza del danno, detta dal cliente (m)', i, 'hDanno', m.hDanno)}${inp('Facce da lavorare (1 o 2)', i, 'facce', m.facce)}</div>
+			<label class="campo">Fascia oltre il danno (dipende dal sistema)</label>${radio(`mu${i}-fascia`, Object.entries(R.fasce).map(([k, [, n]]) => [k, n]), m.fascia, fn('fascia'))}${m.fascia === 'manuale' ? `<div class="campi-box">${inp('Fascia oltre il danno (m)', i, 'fasciaMan', m.fasciaMan)}</div>` : ''}
+			<div class="altezze num"><span>Danno dichiarato <b>${a.danno ? fmtQ(a.danno) + ' m' : '—'}</b></span><span>Intervento ipotizzato <b>${a.ipot ? fmtQ(a.ipot) + ' m' : '—'}</b></span><label>Confermata da te (m)<input inputmode="decimal" value="${m.hConf ? fmtQ(num(m.hConf)) : ''}" placeholder="dopo il sopralluogo" onchange="${fn('hConf')}"></label></div>
+			<label class="campo">Cosa riveste il muro</label>${radio(`mu${i}-riv`, [['intonaco', 'Intonaco'], ['piastrelle', 'Piastrelle'], ['carta', 'Carta da parati'], ['cartongesso', 'Controparete / cartongesso']], m.rivestimento, fn('rivestimento'))}
+			<label class="campo">Com'è fatto il muro</label>${radio(`mu${i}-mur`, [['mattoni', 'Mattoni'], ['pietra', 'Pietra'], ['misto', 'Misto'], ['calcestruzzo', 'Calcestruzzo'], ['nonso', 'Non so']], m.muratura, fn('muratura'))}
+			${u.scenario === 'superfici' ? '' : `<div class="campi-box tre">${inp('Spessore da togliere (cm)', i, 'spRim', m.spRim)}${inp('Spessore nuovo intonaco (cm)', i, 'spNuovo', m.spNuovo)}${inp('Termosifoni su questo muro', i, 'termo', m.termo)}</div>
+			<label class="campo">Battiscopa</label>${radio(`mu${i}-bat`, [['nessuno', 'Non c\'è'], ['riuso', 'Si toglie e si rimette'], ['nuovo', 'Si mette nuovo']], m.battiscopa, fn('battiscopa'))}`}
+			<div class="scelte"><label><input type="checkbox" ${m.muffa ? 'checked' : ''} onchange="umiMuro('${pvId}',${i},'muffa',this.checked)">C'è anche muffa</label><label><input type="checkbox" ${m.barriera ? 'checked' : ''} onchange="umiMuro('${pvId}',${i},'barriera',this.checked)">Ipotesi barriera (da quantificare)</label></div>
+			<p class="stanza-mis num">${fmtQ(Math.round(num(m.lung) * a.usata * Math.max(1, num(m.facce)) * 10) / 10)} m² da lavorare${num(m.facce) > 1 ? ' (2 facce: la barriera non si raddoppia)' : ''}</p></section>`; };
+	const sup = u.muri.reduce((t, m) => t + num(m.lung) * altezzeMuro(m, R).usata * Math.max(1, num(m.facce)), 0);
+	const pagina = `<div class="pv-scelto"><span class="pv-scelto-icona">${I.goccia}</span><h1 class="pv-scelto-t">Muri e scenario</h1><span class="pv-scelto-p">· ${esc(p.nome)} · ${pv.numero ?? 'Bozza v' + pv.n}</span></div>
+		<section class="riquadro stanze-gen"><h2>Scenario</h2>${radio('um-sc', [['superfici', 'Trattamento delle superfici (intonaco da conservare)'], ['ripristino', 'Ripristino dell\'intonaco deteriorato']], u.scenario, `umiSet('${pvId}','scenario',this.value)`)}
+		<p class="nota">L'intervento sulla causa (barriera, perdite, impermeabilizzazione, ventilazione) non si sceglie dai sintomi: resta «da quantificare» dopo la verifica.</p>
+		<label class="campo">Seconda alternativa (facoltativa, fuori totale)</label>${radio('um-alt', [['', 'Nessuna'], ['superfici', 'Solo superfici'], ['ripristino', 'Ripristino intonaco']], u.alternativa, `umiSet('${pvId}','alternativa',this.value)`)}
+		${u.scenario === 'superfici' ? '' : `<label class="campo">Sistema (lo decidi tu: non tutto serve sempre)</label><div class="scelte">${chk('Trattamento antisale', 'antisale')}${chk('Rinzaffo', 'rinzaffo')}${chk('Rasatura', 'rasatura')}</div>`}
+		<label class="campo">Finitura</label>${radio('um-fin', [['pronto', 'Pronto per la pittura'], ['pitturato', 'Finito e pitturato'], ['decidere', 'Da decidere']], u.finitura, `umiSet('${pvId}','finitura',this.value)`)}
+		<label class="campo">Edificio antico o con vincoli?</label>${radio('um-st', [['no', 'No'], ['si', 'Sì'], ['nonso', 'Non so']], u.storico, `umiSet('${pvId}','storico',this.value)`)}
+		<div class="scelte">${chk('Mobili da spostare', 'mobili')}<label><input type="checkbox" ${u.accesso.acqua ? 'checked' : ''} onchange="pvDi('${pvId}').umi.accesso.acqua=this.checked;salva();render()">Si arriva via acqua / movimentazione a mano</label></div></section>
+		${u.muri.map(card).join('')}<button type="button" class="pv-aggiungi" onclick="umiAggiungi('${pvId}')">${I.piu} Aggiungi un muro</button>`;
+	const cardL = latoCard({
+		grande: `<strong class="num">${fmtQ(Math.round(sup * 10) / 10)} m²</strong>`,
+		sotto: `${u.muri.length} ${u.muri.length === 1 ? 'muro' : 'muri'} · ${u.scenario === 'superfici' ? 'trattamento delle superfici' : 'ripristino dell\'intonaco'}.`,
+		celle: [{ et: 'Altezze confermate', val: `${u.muri.filter((m) => num(m.hConf)).length} di ${u.muri.length}`, click: '' }, { et: 'Causa', val: 'Da quantificare', click: '' }],
+		azione: `<button type="button" class="btn pieno pr-azione" onclick="umiCrea('${pvId}')">Crea le voci del preventivo</button>`,
+		nota: `Prezzi del ${giornoBreve(u.prezziDel)} (listino d'esempio). Si chiamerà «Stima del ripristino delle superfici», non «totale del risanamento».`
+	});
+	return conLato(pagina, cardL, 'Riepilogo dei muri', 'lato-dopo');
+}
+function umiSet(id, k, v) { pvDi(id).umi[k] = v; salva(); render(); }
+function umiMuro(id, i, k, v) { pvDi(id).umi.muri[i][k] = v; salva(); render(); }
+function umiAggiungi(id) { const u = pvDi(id).umi; u.muri.push(nuovoMuro(u.muri.length + 1)); salva(); render(); }
+function umiTogli(id, i) { const u = pvDi(id).umi; if (u.muri.length === 1) return toast('Serve almeno un muro.'); u.muri.splice(i, 1); salva(); render(); }
+function umiCrea(id) {
+	const pv = pvDi(id), nuove = vociUmidita(pv);
+	if (!nuove.some((r) => inTotale(r) && r[5].k !== 'prep')) return toast('Metti almeno la lunghezza e l\'altezza del danno di un muro.');
+	const corrette = pv.righe.filter((r) => r[5]?.umi && r[5].proposta).length;
+	const fai = () => { pv.righe = [...pv.righe.filter((r) => !r[5]?.umi && !r[5]?.stima && (String(r[0]).trim() || r[3])), ...vociUmidita(pv)]; pv.daStima = null; pv.approvato = false; pv.nonServe = [...new Set([...(pv.nonServe ?? []), ...['trasporto'].filter((k) => !pv.righe.some((r) => catDi(r) === k && inTotale(r)))])]; salva(); popIndietro(); toast('Voci calcolate dai muri.'); };
+	if (corrette) return apriConferma('Ricalcolare le voci?', `Hai corretto ${corrette} voci calcolate: ricalcolando tornano come da proposta.`, 'Ricalcola', fai);
+	fai();
 }
 // Preventivo: stessa struttura e misure della pagina Preventivo del sito (preventivo.html: passi tr2-passo, scelte pv-carta, riquadro «risultato»;
 // sul telefono foglio a tutto schermo pv-foglio con la barra dei passi in fondo tr2-avanti).
@@ -2561,17 +3009,17 @@ function editorPreventivo(id) {
 	const scelto = `<div class="pv-scelto"><span class="pv-scelto-icona">${icoServ}</span><h1 class="pv-scelto-t">${bozza ? `Bozza v${pv.n}` : pv.numero}</h1><span class="pv-scelto-p">· ${esc(p.nome)} · ${esc(titoloLavoro(p))}</span></div>`;
 	// riquadro a destra (come «Il tuo progetto»)
 	const ris = `<aside class="pv-ris ${pvPasso === 3 ? 'su-tel' : ''}"><div class="pv-ris-in"><span class="pv-ris-label">Il tuo preventivo</span><p class="pv-ris-titolo">${esc(titoloLavoro(p))}</p><p class="pv-ris-sotto">${esc(p.nome)} · ${esc(p.indirizzoLavoro)}</p>
-		<ul class="pv-ris-voci">${CAT_PV.map(([k, n]) => { const l = pv.righe.filter((r) => catDi(r) === k); return l.length ? `<li><span>${n} <small>${l.length} ${l.length === 1 ? 'voce' : 'voci'}</small></span><b class="num">${euro(l.reduce((x, r) => x + r[3], 0))}</b></li>` : ''; }).join('')}</ul>
-		${bozza && mancaPv(pv).length ? `<p class="pv-ris-manca">Manca: ${mancaPv(pv).map((k) => nomeCat(k).toLowerCase()).join(', ')}</p>` : ''}
+		<ul class="pv-ris-voci">${CAT_PV.map(([k, n]) => { const l = pv.righe.filter((r) => catDi(r) === k && inTotale(r)); return l.length ? `<li><span>${n} <small>${l.length} ${l.length === 1 ? 'voce' : 'voci'}</small></span><b class="num">${euro(l.reduce((x, r) => x + r[3], 0))}</b></li>` : ''; }).join('')}</ul>
+		${bozza && mancaPv(pv).length ? `<p class="pv-ris-manca">Manca: ${mancaPv(pv).map((k) => nomeCat(k).toLowerCase()).join(', ')}</p>` : ''}${riassuntoImb(pv)}
 		<div class="pv-ris-tot num">${t.sconto ? `<span>Totale voci</span><span>${euro(t.voci)}</span><span>Sconto</span><span>− ${euro(t.sconto)}</span>` : ''}<span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span></div>
 		<p class="pv-ris-cifra num"><span>Totale</span><b>${euro(t.tot)}</b></p>${notaStima(pv, t)}
 		${bozza ? `<ul class="passi-pdf" id="passi-pdf" hidden><li>Numero assegnato</li><li>PDF creato</li><li>PDF controllato</li></ul><button type="button" class="btn pieno" id="btn-genera" onclick="generaPdf('${id}')">Genera PDF</button><p class="pv-ris-tel">Il PDF non parte da solo: lo mandi tu (WhatsApp o email), poi «Segna inviato».</p>`
 		: `<div class="azioni" style="margin-top:4px"><button type="button" class="btn linea pieno" onclick="apri('pdf','${id}')">Vedi il PDF</button>${pv.stato === 'pronta' ? `<button type="button" class="btn pieno" onclick="apriRegistra('${id}','inviata')">Segna inviato</button>` : ''}</div><p class="pv-ris-tel">${NOMI_PREV[pv.stato]}${pv.generato ? ' · generato ' + quando(pv.generato) : ''}</p>`}</div></aside>`;
 	if (!bozza) return bottoneIndietro('Pratica') + scelto + `<div class="pv-griglia"><div class="pv-passi"><section class="pv-passo aperto"><div class="pv-passo-testa"><span class="pv-num">${I.spunta}</span><span class="pv-passo-titolo">Voci del preventivo</span></div><div class="pv-passo-corpo">${CAT_PV.map(([k, n, ico]) => { const l = pv.righe.filter((r) => catDi(r) === k); return l.length ? `<div class="pv-cat-testa sola">${I[ico]}<b>${n}</b><span class="num">${euro(l.reduce((x, r) => x + r[3], 0))}</span></div>${l.map((r) => `<div class="voce sola-lettura"><span>${esc(r[0])}</span><span class="q num">${esc(r[1])}${r[2] ? ' × ' + euro(r[2]) : ''}</span><span class="num">${euro(r[3])}</span></div>`).join('')}` : ''; }).join('')}</div></section></div>${ris.replace('su-tel', '')}</div>`;
 	const corpo = [
-		`${pv.daStima ? `<p class="pv-stima-nota">Voci create dalla richiesta del cliente. Totale preso da ${pv.daStima.regola} (${esc(pv.daStima.stima)}, IVA inclusa): imponibile ${euro(t.imp)} + IVA ${pv.iva}%. Se cambi un importo, sotto vedi di quanto ti sposti dalla stima.</p>` : ''}${controlloPv(pv)}<p class="pv-aiuto">Ogni voce: quantità × prezzo. Importi senza IVA. Aggiungi per tipo:</p><div class="pv-tipi">${CAT_PV.map(([k, n, ico]) => `<button type="button" onclick="pv_menu('${id}','${k}')">${I.piu}${n}</button>`).join('')}</div>${vociPerTipo(pv, id)}<label class="pv-sconto">Sconto (facoltativo)<span class="pv-importo"><input class="campo num" value="${pv.sconto ? fmtQ(pv.sconto) : ''}" inputmode="decimal" placeholder="0" aria-label="Sconto in euro" onchange="pv_sconto('${id}',this.value)"><span>€</span></span></label><datalist id="unita">${UNITA.map((u) => `<option value="${u}">`).join('')}</datalist>`,
-		`<p class="pv-aiuto">Scegli l'aliquota per questo cliente.</p><div class="pv-carte">${[[10, 'casa', 'Lavori sulla casa', 'Ristrutturazioni, imbiancatura, umidità, parquet'], [22, 'martello', 'Servizi', 'Falegnameria, montaggio mobili, traslochi']].map(([v, ico, n, x]) => `<label class="pv-carta ${pv.iva === v ? 'scelta' : ''}"><input type="radio" name="pv-iva" value="${v}" ${pv.iva === v ? 'checked' : ''} onchange="pv_iva('${id}',${v})">${I[ico]}<b>IVA ${v}% · ${n}</b><small>${x}</small><span class="pv-segno">${I.spunta}</span></label>`).join('')}</div>`,
-		`<p class="pv-aiuto">Queste condizioni vanno su ogni PDF. Si cambiano in Altro → Impostazioni dei preventivi.</p><dl class="coppia"><dt>Validità</dt><dd>${st.validita} giorni</dd><dt>Acconto</dt><dd>${st.acconto}% all'accettazione, saldo a fine lavori</dd><dt>Tempi</dt><dd>${esc(st.tempi)}</dd></dl><label class="campo" style="margin-top:16px">Cosa non è compreso<textarea class="campo" rows="2" onchange="pv_testo('${id}','esclusi',this.value)">${esc(pv.esclusi ?? st.esclusioni)}</textarea></label><label class="campo">Note per il cliente (facoltative)<textarea class="campo" rows="2" placeholder="es. il colore lo scegliamo insieme al sopralluogo" onchange="pv_testo('${id}','note',this.value)">${esc(pv.note ?? '')}</textarea></label>`
+		`${pv.daStima ? `<p class="pv-stima-nota">Voci create dalla richiesta del cliente. Totale preso da ${pv.daStima.regola} (${esc(pv.daStima.stima)}, IVA inclusa): imponibile ${euro(t.imp)} + IVA ${pv.iva}%. Se cambi un importo, sotto vedi di quanto ti sposti dalla stima.</p>` : ''}${bloccoStanze(pv, p)}${bloccoMuri(pv, p)}${controlloPv(pv)}<p class="pv-aiuto">Ogni voce: quantità × prezzo. Importi senza IVA. Aggiungi per tipo:</p><div class="pv-tipi">${CAT_PV.map(([k, n, ico]) => `<button type="button" onclick="pv_menu('${id}','${k}')">${I.piu}${n}</button>`).join('')}</div>${vociPerTipo(pv, id)}<label class="pv-sconto">Sconto (facoltativo)<span class="pv-importo"><input class="campo num" value="${pv.sconto ? fmtQ(pv.sconto) : ''}" inputmode="decimal" placeholder="0" aria-label="Sconto in euro" onchange="pv_sconto('${id}',this.value)"><span>€</span></span></label><datalist id="unita">${UNITA.map((u) => `<option value="${u}">`).join('')}</datalist>`,
+		`<p class="pv-aiuto">Scegli l'aliquota per questo cliente.</p><div class="pv-carte">${[[10, 'casa', 'Lavori sulla casa', 'Ristrutturazioni, imbiancatura, umidità, parquet'], [22, 'martello', 'Servizi', 'Falegnameria, montaggio mobili, traslochi']].map(([v, ico, n, x]) => `<label class="pv-carta ${pv.iva === v ? 'scelta' : ''}"><input type="radio" name="pv-iva" value="${v}" ${pv.iva === v ? 'checked' : ''} onchange="pv_iva('${id}',${v})">${I[ico]}<b>IVA ${v}% · ${n}</b><small>${x}</small><span class="pv-segno">${I.spunta}</span></label>`).join('')}</div><p class="pv-stima-nota" style="margin-top:12px">Attenzione: l'aliquota dipende dal tipo di intervento, dall'immobile e da come si forniscono i materiali (quelli comprati dal cliente non hanno la stessa agevolazione). Prima di usarla davvero, la regola va confermata dal commercialista.</p>`,
+		`<p class="pv-aiuto">Queste condizioni vanno su ogni PDF. Si cambiano in Altro → Impostazioni dei preventivi.</p><dl class="coppia"><dt>Validità</dt><dd>${st.validita} giorni</dd><dt>Acconto</dt><dd>${st.acconto}% all'accettazione, saldo a fine lavori</dd><dt>Tempi</dt><dd>${esc(st.tempi)}</dd></dl>${[...noteImb(pv), ...noteUmi(pv)].length ? `<div class="pv-note-auto"><b>Note proposte per il PDF</b><span class="nota">Togli la spunta a quelle che non servono; aggiungine altre nelle note qui sotto.</span>${[...noteImb(pv), ...noteUmi(pv)].map((x, j) => `<label class="campo-check"><input type="checkbox" ${(pv.noteOff ?? []).includes(x) ? '' : 'checked'} onchange="pv_nota('${id}',${j},this.checked)"> ${esc(x)}</label>`).join('')}</div>` : ''}${pv.imb || pv.umi ? `<label class="campo-check pv-approva"><input type="checkbox" ${pv.approvato ? 'checked' : ''} onchange="pvDi('${id}').approvato=this.checked;salva();render()"> <b>Ho controllato prezzi, quantità, inclusioni e tempi</b> (serve per generare il PDF)</label>` : ''}<label class="campo" style="margin-top:16px">Cosa non è compreso<textarea class="campo" rows="2" onchange="pv_testo('${id}','esclusi',this.value)">${esc(pv.esclusi ?? st.esclusioni)}</textarea></label><label class="campo">Note per il cliente (facoltative)<textarea class="campo" rows="2" placeholder="es. il colore lo scegliamo insieme al sopralluogo" onchange="pv_testo('${id}','note',this.value)">${esc(pv.note ?? '')}</textarea></label>`
 	];
 	const passo = (n) => { const aperto = pvPasso === n, fatto = pvPasso > n; return `<section class="pv-passo ${aperto ? 'aperto' : ''} ${fatto ? 'fatto' : ''}"><div class="pv-passo-testa" ${!aperto ? `onclick="pvVai(${n})" role="button" tabindex="0"` : ''}><span class="pv-num">${n}</span><span class="pv-passo-titolo">${PASSI_PV[n - 1][0]}${fatto ? `<small>${n === 1 ? `${pv.righe.length} voci · ${euro(t.imp)}${mancaPv(pv).length ? ' · manca ' + mancaPv(pv).length : ''}` : n === 2 ? `IVA ${pv.iva}%` : ''}</small>` : ''}</span>${fatto ? '<span class="pv-modifica">Modifica</span>' : ''}</div>${aperto ? `<div class="pv-passo-corpo">${corpo[n - 1]}<div class="pv-avanti"><p class="pv-avanti-nota"><b>Passo ${n} di 3</b>${n < 3 ? `<span>Poi: ${PASSI_PV[n][1]}</span>` : '<span>Ultimo passo</span>'}</p>${n < 3 ? `<button type="button" class="btn" onclick="pvVai(${n + 1})">Avanti</button>` : ''}</div></div>` : ''}</section>`; };
 	// telefono: barra in alto con la X e barra dei passi in fondo
@@ -2589,12 +3037,26 @@ function notaStima(pv, t) {
 // le voci raggruppate per tipo, con il subtotale; l'indice resta quello della riga (per togliere quella giusta)
 function vociPerTipo(pv, id) {
 	return CAT_PV.map(([k, n, ico]) => {
-		const righe = pv.righe.map((r, i) => [r, i]).filter(([r]) => catDi(r) === k);
+		const righe = pv.righe.map((r, i) => [r, i]).filter(([r]) => catDi(r) === k && inTotale(r));
 		if (!righe.length) return '';
-		const sub = righe.reduce((x, [r]) => x + r[3], 0);
-		return `<section class="pv-cat"><div class="pv-cat-testa">${I[ico]}<b>${n}</b><span class="num">${euro(sub)}</span></div>${righe.map(([r, i]) => { const { q, u } = qDi(r); return `<div class="voce v2"><input class="campo v-d" value="${esc(r[0])}" placeholder="Descrizione" aria-label="Descrizione voce ${i + 1}" onchange="pv_campo('${id}',${i},'d',this.value)"><label class="v-q"><small>Quantità</small><input class="campo num" value="${fmtQ(q)}" inputmode="decimal" aria-label="Quantità" onchange="pv_campo('${id}',${i},'q',this.value)"></label><label class="v-u"><small>Unità</small><input class="campo" list="unita" value="${esc(u)}" aria-label="Unità" onchange="pv_campo('${id}',${i},'u',this.value)"></label><label class="v-p"><small>Prezzo €</small><input class="campo num" value="${r[2] ? fmtQ(r[2]) : ''}" inputmode="decimal" placeholder="0" aria-label="Prezzo unitario" onchange="pv_campo('${id}',${i},'p',this.value)"></label><label class="v-i"><small>Importo €</small><input class="campo num" value="${r[3] ? fmtQ(r[3]) : ''}" inputmode="decimal" placeholder="0" aria-label="Importo in euro" onchange="pv_riga('${id}',${i},3,this.value)"></label><button type="button" class="togli" aria-label="Togli la voce ${i + 1}" title="Togli questa voce" onclick="pv_togli('${id}',${i})">${I.cestino}</button></div>`; }).join('')}<button type="button" class="pv-aggiungi" onclick="pv_menu('${id}','${k}')">${I.piu} ${n === 'Altre voci' ? 'Altra voce' : n === 'Manodopera' ? 'Altra manodopera' : 'Aggiungi ' + n.toLowerCase()}</button></section>`;
-	}).join('');
+		const sub = righe.reduce((x, [r]) => x + r[3], 0), chiuso = k === 'consumo' && pv.imb && righe.length > 1;
+		return `<section class="pv-cat"><div class="pv-cat-testa">${I[ico]}<b>${n}</b><span class="num">${euro(sub)}</span></div>${chiuso ? `<details class="pv-kit"><summary>Kit protezioni e consumi · ${righe.length} voci calcolate (apri il dettaglio)</summary>` : ''}${righe.map(([r, i]) => { const { q, u } = qDi(r); return `<div class="voce v2 ${r[5]?.fonte ? 'calcolata' : ''}">${r[5]?.fonte ? `<span class="v-fonte f-${r[5].fonte.replace(/ /g, '-')}">${r[5].fonte}${r[5].stanza ? ' · ' + esc(r[5].stanza) : ''}</span>` : ''}<input class="campo v-d" value="${esc(r[0])}" placeholder="Descrizione" aria-label="Descrizione voce ${i + 1}" onchange="pv_campo('${id}',${i},'d',this.value)"><label class="v-q"><small>Quantità</small><input class="campo num" value="${fmtQ(q)}" inputmode="decimal" aria-label="Quantità" onchange="pv_campo('${id}',${i},'q',this.value)"></label><label class="v-u"><small>Unità</small><input class="campo" list="unita" value="${esc(u)}" aria-label="Unità" onchange="pv_campo('${id}',${i},'u',this.value)"></label><label class="v-p"><small>Prezzo €</small><input class="campo num" value="${r[2] ? fmtQ(r[2]) : ''}" inputmode="decimal" placeholder="0" aria-label="Prezzo unitario" onchange="pv_campo('${id}',${i},'p',this.value)"></label><label class="v-i"><small>Importo €</small><input class="campo num" value="${r[3] ? fmtQ(r[3]) : ''}" inputmode="decimal" placeholder="0" aria-label="Importo in euro" onchange="pv_riga('${id}',${i},3,this.value)"></label><button type="button" class="togli" aria-label="Togli la voce ${i + 1}" title="Togli questa voce" onclick="pv_togli('${id}',${i})">${I.cestino}</button>${r[5]?.proposta ? `<p class="v-traccia">Proposta: ${esc(r[5].proposta)} → corretta da te. <input class="campo" placeholder="perché? (facoltativo)" value="${esc(r[5].motivo ?? '')}" onchange="pvDi('${id}').righe[${i}][5].motivo=this.value;salva()"></p>` : ''}${r[5]?.costo != null && r[2] < r[5].costo ? '<p class="v-sotto">Sottocosto: il prezzo è più basso del tuo costo (lo vedi solo tu).</p>' : ''}</div>`; }).join('')}${chiuso ? '</details>' : ''}<button type="button" class="pv-aggiungi" onclick="pv_menu('${id}','${k}')">${I.piu} ${n === 'Altre voci' ? 'Altra voce' : n === 'Manodopera' ? 'Altra manodopera' : 'Aggiungi ' + n.toLowerCase()}</button></section>`;
+	}).join('') + fuoriTotale(pv, id);
 }
+// opzioni per il cliente, materiali che compra lui, cose da quantificare: si vedono, ma non entrano nel totale
+function fuoriTotale(pv, id) {
+	const gr = [['daVer', 'Da verificare', 'servono una verifica al sopralluogo prima di entrare nel totale'], ['opzione', 'Opzioni per il cliente', 'non comprese nel totale: sceglie il cliente'], ['cliente', 'A carico del cliente', 'materiali che fornisce lui, fuori dal totale'], ['daQuant', 'Da quantificare', 'costi che ora non si possono calcolare: non sono nel totale']];
+	return gr.map(([k, n, nota]) => { const l = pv.righe.map((r, i) => [r, i]).filter(([r]) => r[5]?.[k]); return l.length ? `<section class="pv-cat fuori"><div class="pv-cat-testa">${I.avviso}<b>${n}</b><span class="nota">${nota}</span></div>${l.map(([r, i]) => `<div class="voce fuori-riga"><span>${esc(r[0])}<small>${esc(r[1])}${r[3] ? ' · ' + euro(r[3]) : ''}</small></span>${k === 'daVer' ? `<button type="button" class="link" onclick="pv_verificata('${id}',${i})">Verificata: metti nel totale</button>` : k === 'opzione' && r[5]?.alt ? `<button type="button" class="link" onclick="pv_alternativa('${id}',${i})">Scegli questa</button>` : k === 'opzione' ? `<button type="button" class="link" onclick="pv_opzione('${id}',${i},false)">Metti nel totale</button>` : ''}<button type="button" class="togli" aria-label="Togli" onclick="pv_togli('${id}',${i})">${I.cestino}</button></div>`).join('')}</section>` : ''; }).join('');
+}
+function pv_verificata(id, i) { const pv = pvDi(id), r = pv.righe[i]; r[5] = { ...r[5], daVer: false, fonte: 'verificato' }; pv.approvato = false; salva(); render(); toast('Verificata: ora è nel totale.'); }
+// un'alternativa scelta SOSTITUISCE la voce di prima (es. pittura lavabile al posto della normale, parete intera al posto del ritocco)
+function pv_alternativa(id, i) {
+	const pv = pvDi(id), a = pv.righe[i][5].alt;
+	if (a.tipo === 'lavabile') pv.imb.stanze.forEach((s) => { if (s.pittura === 'normale' && (s.colore || 'bianco') === a.colore) s.pittura = 'lavabile'; });
+	if (a.tipo === 'parete') { const s = pv.imb.stanze.find((x) => x.id === a.stanza); if (s) s.pareteIntera = true; }
+	imbRigenera(id, () => toast('Alternativa scelta: ha preso il posto della voce di prima.'));
+}
+function pv_opzione(id, i, si) { const pv = D.preventivi.find((x) => x.id === id), r = pv.righe[i]; r[5] = { ...(r[5] ?? {}), opzione: si }; salva(); render(); toast(si ? 'Diventa un\'opzione, fuori dal totale.' : 'Messa nel totale.'); }
 // «Hai messo tutto?»: un pallino per tipo; quello che manca si aggiunge con un tocco o si segna «non serve»
 function controlloPv(pv) {
 	const m = mancaPv(pv);
@@ -2622,6 +3084,8 @@ function pv_serve(id, cat, serve) { const pv = D.preventivi.find((x) => x.id ===
 // quantità, unità, prezzo → importo (quantità × prezzo)
 function pv_campo(id, i, k, v) {
 	const pv = D.preventivi.find((x) => x.id === id), r = pv.righe[i], { q, u } = qDi(r), num = (x) => parseFloat(String(x).replace(',', '.')) || 0;
+	if ((r[5]?.imb || r[5]?.umi) && k !== 'd' && !r[5].proposta) r[5].proposta = `${r[1]} × ${euro(r[2])}`;
+	pv.approvato = false;
 	if (k === 'd') r[0] = v;
 	else {
 		const nq = k === 'q' ? num(v) : q, nu = k === 'u' ? v.trim() : u, np = k === 'p' ? num(v) : r[2];
@@ -2630,19 +3094,21 @@ function pv_campo(id, i, k, v) {
 	r[4] = catDi(r); salva(); render();
 }
 function pv_sconto(id, v) { const pv = D.preventivi.find((x) => x.id === id); pv.sconto = Math.max(0, Math.round((parseFloat(String(v).replace(',', '.')) || 0) * 100) / 100); salva(); render(); }
+function pv_nota(id, j, si) { const pv = pvDi(id), x = [...noteImb(pv), ...noteUmi(pv)][j]; pv.noteOff = (pv.noteOff ?? []).filter((y) => y !== x); if (!si) pv.noteOff.push(x); salva(); }
 function pv_testo(id, k, v) { D.preventivi.find((x) => x.id === id)[k] = v; salva(); }
 function pvVai(n) { pvPasso = n; render(); }
-function pv_riga(id, i, k, v) { const pv = D.preventivi.find((x) => x.id === id), r = pv.righe[i]; if (k === 3) { const n = parseFloat(String(v).replace(',', '.')) || 0, q = qDi(r).q || 1; r[3] = Math.round(n * 100) / 100; r[2] = Math.round((r[3] / q) * 100) / 100; } else r[k] = v; r[4] = catDi(r); salva(); render(); }
+function pv_riga(id, i, k, v) { const pv = D.preventivi.find((x) => x.id === id), r = pv.righe[i]; if ((r[5]?.imb || r[5]?.umi) && k === 3 && !r[5].proposta) r[5].proposta = `${r[1]} × ${euro(r[2])}`; pv.approvato = false; if (k === 3) { const n = parseFloat(String(v).replace(',', '.')) || 0, q = qDi(r).q || 1; r[3] = Math.round(n * 100) / 100; r[2] = Math.round((r[3] / q) * 100) / 100; } else r[k] = v; r[4] = catDi(r); salva(); render(); }
 function pv_aggiungi(id, cat = 'altro') { const u = (CAT_PV.find((c) => c[0] === cat) ?? CAT_PV[6])[3], pv = D.preventivi.find((x) => x.id === id); pv.righe.push(['', `1 ${u}`, cat === 'lavoro' ? D.impostazioni.tariffaOra ?? 0 : 0, cat === 'lavoro' ? D.impostazioni.tariffaOra ?? 0 : 0, cat]); pv.nonServe = (pv.nonServe ?? []).filter((x) => x !== cat); salva(); render(); }
 function pv_togli(id, i) { const pv = D.preventivi.find((x) => x.id === id); if (pv.righe.length === 1) return toast('Serve almeno una voce: cambiala invece di toglierla.'); pv.righe.splice(i, 1); salva(); render(); toast('Voce tolta.'); }
 function pv_iva(id, v) { D.preventivi.find((x) => x.id === id).iva = +v; salva(); render(); }
 function generaPdf(id, forza = false) {
 	if (bloccoRete()) return;
 	const pv = D.preventivi.find((x) => x.id === id);
+	if ((pv.imb || pv.umi) && !pv.approvato) { pvVai(3); return toast('Prima di generare: controlla prezzi, quantità, inclusioni e tempi e spunta la conferma.'); }
 	const manca = mancaPv(pv);
 	if (manca.length && !forza) return apriConferma('Manca qualcosa?', `Nel preventivo non ci sono: <b>${manca.map((k) => nomeCat(k).toLowerCase()).join(', ')}</b>. Se non servono va bene così; se servono, aggiungili prima di mandarlo.`, 'Genera lo stesso', () => generaPdf(id, true));
 	if (pv.righe.some((r) => !r[0].trim())) return toast('Ogni voce ha bisogno di una descrizione.');
-	if (pv.righe.some((r) => !(r[3] > 0))) return toast('Ogni voce ha bisogno di un importo.');
+	if (pv.righe.some((r) => !(r[3] > 0) && !r[5]?.daQuant && !r[5]?.cliente)) return toast('Ogni voce ha bisogno di un importo.');
 	const ul = document.getElementById('passi-pdf'); ul.hidden = false;
 	['btn-genera', 'btn-genera-2'].forEach((k) => { const b = document.getElementById(k); if (b) b.disabled = true; });
 	const li = ul.querySelectorAll('li');
@@ -2660,7 +3126,10 @@ function generaPdf(id, forza = false) {
 function anteprimaPdf(id) {
 	const pv = D.preventivi.find((x) => x.id === id), p = pratica(pv.praticaId), t = totali(pv);
 	return bottoneIndietro() + `<span class="filigrana">Anteprima dimostrativa del PDF</span>
-	<article class="pdf"><p class="marchio">ARTIGIANA<span>MENTE</span></p><p class="nota">${esc(D.impostazioni.sede)} · ${esc(D.impostazioni.telefono)} · P. IVA ${esc(D.impostazioni.piva) || '…'}</p><hr><h3>Preventivo ${pv.numero ?? '(bozza)'}</h3><p class="nota">del ${quando(pv.generato ?? OGGI)} · valido ${D.impostazioni.validita} giorni</p><p style="margin-top:10px"><b>${p.nome}</b><br>${p.indirizzoCliente || p.indirizzoLavoro}<br>Lavoro: ${p.servizio} · ${p.indirizzoLavoro}</p><hr><table class="righe"><thead><tr><th>Descrizione</th><th>Q.tà</th><th class="num">Prezzo</th><th class="num">Importo</th></tr></thead><tbody>${CAT_PV.map(([k, n]) => { const l = pv.righe.filter((r) => catDi(r) === k); return l.length ? `<tr class="cat"><td colspan="3">${n}</td><td class="num">${euro(l.reduce((x, r) => x + r[3], 0))}</td></tr>${l.map((r) => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td class="num">${r[2] ? euro(r[2]) : ''}</td><td class="num">${euro(r[3])}</td></tr>`).join('')}` : ''; }).join('')}</tbody></table><div class="totali num">${t.sconto ? `<span>Totale voci</span><span>${euro(t.voci)}</span><span>Sconto</span><span>− ${euro(t.sconto)}</span>` : ''}<span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span><span><b>Totale</b></span><span><b>${euro(t.tot)}</b></span><span>Acconto ${D.impostazioni.acconto}% all'accettazione</span><span>${euro(Math.round(t.tot * D.impostazioni.acconto) / 100)}</span></div><hr>${pv.note ? `<p class="nota"><b>Note:</b> ${esc(pv.note)}</p>` : ''}<p class="nota"><b>Non compreso:</b> ${esc(pv.esclusi ?? D.impostazioni.esclusioni)}</p><p class="nota">Saldo a fine lavori. ${esc(D.impostazioni.tempi)} Prezzi validi ${D.impostazioni.validita} giorni.</p></article>`;
+	<article class="pdf"><p class="marchio">ARTIGIANA<span>MENTE</span></p><p class="nota">${esc(D.impostazioni.sede)} · ${esc(D.impostazioni.telefono)} · P. IVA ${esc(D.impostazioni.piva) || '…'}</p><hr><h3>${pv.umi ? 'Stima del ripristino delle superfici' : 'Preventivo'} ${pv.numero ?? '(bozza)'}</h3>${pv.umi ? '<p class="nota">Calcolata sulle misure indicate e sulle lavorazioni descritte. Gli eventuali interventi sulla causa dell\'umidità sono da definire e non sono compresi.</p>' : ''}<p class="nota">del ${quando(pv.generato ?? OGGI)} · valido ${D.impostazioni.validita} giorni</p><p style="margin-top:10px"><b>${p.nome}</b><br>${p.indirizzoCliente || p.indirizzoLavoro}<br>Lavoro: ${p.servizio} · ${p.indirizzoLavoro}</p><hr><table class="righe"><thead><tr><th>Descrizione</th><th>Q.tà</th><th class="num">Prezzo</th><th class="num">Importo</th></tr></thead><tbody>${CAT_PV.map(([k, n]) => { let l = pv.righe.filter((r) => catDi(r) === k && inTotale(r)); if (!l.length) return ''; const sub = l.reduce((x, r) => x + r[3], 0);
+			// i piccoli consumi sul PDF vanno in un «kit»: il dettaglio resta nella Gestione
+			if (k === 'consumo' && pv.imb && l.length > 1) l = [[`Kit protezioni e consumi (${l.map((r) => r[0].split(' (')[0].toLowerCase()).join(', ')})`, 'a corpo', 0, sub, k, {}]];
+			return `<tr class="cat"><td colspan="3">${n}</td><td class="num">${euro(sub)}</td></tr>${l.map((r) => `<tr><td>${esc(r[0])}${['stimato', 'ipotizzato', 'da verificare'].includes(r[5]?.fonte) ? ` <small class="pdf-fonte">${r[5].fonte}</small>` : ''}</td><td>${esc(r[1])}</td><td class="num">${r[2] ? euro(r[2]) : ''}</td><td class="num">${euro(r[3])}</td></tr>`).join('')}`; }).join('')}</tbody></table>${[['opzione', 'Opzioni (non comprese nel totale)'], ['cliente', 'A carico del cliente (fuori dal totale)'], ['daQuant', 'Da quantificare (non compreso nel totale)']].map(([k, n]) => { const l = pv.righe.filter((r) => r[5]?.[k]); return l.length ? `<p class="pdf-fuori"><b>${n}</b>${l.map((r) => `<span>${esc(r[0])} · ${esc(r[1])}${r[3] ? ' · ' + euro(r[3]) : ''}</span>`).join('')}</p>` : ''; }).join('')}<div class="totali num">${t.sconto ? `<span>Totale voci</span><span>${euro(t.voci)}</span><span>Sconto</span><span>− ${euro(t.sconto)}</span>` : ''}<span>Imponibile</span><span>${euro(t.imp)}</span><span>IVA ${pv.iva}%</span><span>${euro(t.iva)}</span><span><b>${pv.umi ? 'Totale del ripristino' : 'Totale'}</b></span><span><b>${euro(t.tot)}</b></span>${pv.umi ? '<span class="pdf-causa">Da quantificare e non compreso: eventuale intervento sulla causa dell\'umidità. Verrà proposto dopo la verifica e richiederà la tua approvazione.</span>' : ''}<span>Acconto ${D.impostazioni.acconto}% all'accettazione</span><span>${euro(Math.round(t.tot * D.impostazioni.acconto) / 100)}</span></div><hr>${noteAttive(pv).map((x) => `<p class="nota">${esc(x)}</p>`).join('')}${pv.note ? `<p class="nota"><b>Note:</b> ${esc(pv.note)}</p>` : ''}<p class="nota"><b>Non compreso:</b> ${esc(pv.esclusi ?? D.impostazioni.esclusioni)}</p><p class="nota">Saldo a fine lavori. ${esc(D.impostazioni.tempi)} Prezzi validi ${D.impostazioni.validita} giorni.</p></article>`;
 }
 
 /* ===================== TENDINE (moduli) ===================== */
