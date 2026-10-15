@@ -2869,7 +2869,32 @@ const LISTINO_UMI_ESEMPIO = {
 	termo: ['Smontaggio e rimontaggio termosifoni (da verificare con l\'idraulico)', 'pz', 45, 25, 1, 'lavoro'],
 	macerie: ['Movimentazione e carico delle macerie', 'a corpo', 60, 30, 2, 'smaltimento'],
 	conferimento: ['Trasporto e conferimento dei rifiuti', 'kg', 0.15, 0.1, 0, 'smaltimento'],
-	barca: ['Trasporto via acqua e movimentazione a mano', 'viaggi', 90, 70, 1, 'trasporto'],
+	barca: ['Trasporto via acqua (barca)', 'viaggi', 90, 70, 1, 'trasporto'],
+	sali: ['Spazzolatura dei sali superficiali (depositi bianchi)', 'm²', 4, 2, 0.08, 'lavoro'],
+	crepe: ['Stuccatura e risarcitura delle crepe', 'ml', 12, 6, 0.25, 'lavoro'],
+	scuci: ['Scuci-cuci e ripristino dei mattoni deteriorati (da verificare)', 'm²', 90, 45, 2.5, 'lavoro'],
+	consolid: ['Fondo consolidante sulla muratura debole', 'm²', 5, 2.5, 0.08, 'lavoro'],
+	rete: ['Posa della rete porta intonaco', 'm²', 8, 4, 0.15, 'lavoro'],
+	spigoli: ['Posa dei paraspigoli', 'ml', 6, 3, 0.1, 'lavoro'],
+	prese: ['Smontaggio e rimontaggio di prese e placche', 'pz', 8, 4, 0.2, 'lavoro'],
+	fissi: ['Smontaggio e rimontaggio di cucina, mobili fissi o sanitari (da verificare)', 'a corpo', 150, 75, 4, 'lavoro'],
+	piastrelle: ['Ritocco di piastrelle o fughe vicine (da verificare)', 'a corpo', 80, 40, 2, 'lavoro'],
+	zoccolo: ['Zoccolatura intonacata', 'm²', 30, 15, 0.5, 'lavoro'],
+	uniforme: ['Pittura del resto della parete, materiali compresi', 'm²', 11, 6, 0.1, 'lavoro'],
+	calce: ['Intonaco a base di calce compatibile (edifici storici), materiali compresi', 'm²', 44, 22, 0.7, 'lavoro'],
+	trabMont: ['Montaggio e smontaggio del trabattello', 'a corpo', 60, 30, 2, 'lavoro'],
+	trabNol: ['Noleggio del trabattello', 'giorni', 25, 18, 0, 'noleggi'],
+	protezione: ['Protezione di scale e passaggi comuni', 'a corpo', 60, 30, 1.5, 'lavoro'],
+	approdo: ['Approdo e scarico dalla barca', 'viaggi', 40, 20, 1, 'trasporto'],
+	aMano: ['Trasporto a mano fino al cantiere', 'ore', 30, 24, 1, 'trasporto'],
+	piani: ['Supplemento per piani senza ascensore', 'piani', 20, 10, 0.5, 'trasporto'],
+	deposito: ['Deposito del materiale', 'a corpo', 50, 30, 0, 'trasporto'],
+	bigbag: ['Big bag e sacchi per le macerie', 'pz', 12, 7, 0, 'smaltimento'],
+	deumid: ['Noleggio del deumidificatore', 'giorni', 15, 10, 0, 'noleggi'],
+	misure: ['Misure dell\'umidità prima e dopo il lavoro (da concordare prima)', 'a corpo', 0, 0, 0, 'altro'],
+	analisi: ['Analisi dei sali in laboratorio (da concordare prima)', 'a corpo', 0, 0, 0, 'altro'],
+	saggio: ['Piccolo saggio per vedere com\'è fatto il muro (da concordare prima)', 'pz', 0, 0, 0, 'altro'],
+	barriera: ['Barriera chimica: prodotto e fori', 'ml', 0, 0, 0, 'altro'],
 	matRinzaffo: ['Rinzaffo (materiale)', 'kg', 0.6, 0.35, 0, 'materiali'],
 	matIntonaco: ['Intonaco risanante (materiale)', 'kg', 0.9, 0.55, 0, 'materiali'],
 	matRasante: ['Rasante compatibile', 'kg', 1.8, 1.1, 0, 'materiali'],
@@ -2878,27 +2903,39 @@ const LISTINO_UMI_ESEMPIO = {
 	matFondo: ['Fondo compatibile', 'l', 6, 3.8, 0, 'materiali'],
 	matMuffa: ['Prodotto per il trattamento della muffa', 'l', 12, 8, 0, 'materiali'],
 	matBattiscopa: ['Battiscopa nuovo', 'ml', 6, 3.5, 0, 'materiali'],
-	consumi: ['Materiali di consumo (per m² di superficie lavorata)', 'm²', 1.5, 0.8, 0, 'consumo']
+	matMalta: ['Malta per ripristini', 'kg', 0.5, 0.3, 0, 'materiali'],
+	matStucco: ['Stucco per crepe', 'kg', 3, 1.8, 0, 'materiali'],
+	matConsolid: ['Fondo consolidante', 'l', 8, 5, 0, 'materiali'],
+	matRete: ['Rete porta intonaco', 'm²', 3, 1.8, 0, 'materiali'],
+	matSpigoli: ['Paraspigoli', 'ml', 2.5, 1.5, 0, 'materiali'],
+	consumi: ['Materiali di consumo: teli, nastri, cartone, dischi, sacchi piccoli (per m² lavorato)', 'm²', 1.5, 0.8, 0, 'consumo']
 };
-const REGOLE_UMI_ESEMPIO = { consumoIntonaco: 12, consumoRinzaffo: 5, consumoRasante: 1.5, antisale: 0.3, resaPittura: 8, resaFondo: 10, kgMacerie: 15, minimoConsumi: 25, fasce: { mapei: [0.5, 'Sistema tipo A: circa 50 cm oltre il degrado'], fassa: [1, 'Sistema tipo B: almeno 1 m oltre la fascia umida'], manuale: [0, 'Decido io'] } };
-const nuovoMuro = (n = 1) => ({ id: 'mu' + Date.now().toString(36) + n, nome: `Parete ${n}`, dove: 'interno', lung: '', hDanno: '', fascia: 'mapei', fasciaMan: '', hConf: '', facce: 1, rivestimento: 'intonaco', spRim: 2, spNuovo: 2, muratura: 'nonso', battiscopa: 'nessuno', termo: 0, muffa: false, barriera: false });
-function nuovoUmi(p) { return { scenario: 'ripristino', alternativa: '', finitura: 'pitturato', storico: 'nonso', antisale: true, rinzaffo: true, rasatura: false, mobili: false, accesso: { acqua: /venezia|burano|murano|lido|pellestrina|giudecca/i.test(p.indirizzoLavoro) }, muri: [nuovoMuro(1)], listino: JSON.parse(JSON.stringify({ voci: LISTINO_UMI_ESEMPIO, regole: REGOLE_UMI_ESEMPIO })), prezziDel: OGGI }; }
+const REGOLE_UMI_ESEMPIO = { consumoIntonaco: 12, consumoRinzaffo: 5, consumoRasante: 1.5, antisale: 0.3, resaPittura: 8, resaFondo: 10, kgMacerie: 15, minimoConsumi: 25, consumoMalta: 25, stucco: 1, resaConsolid: 6, kgBigBag: 800, giorniDeumid: 14, fasce: { mapei: [0.5, 'Sistema tipo A: circa 50 cm oltre il degrado'], fassa: [1, 'Sistema tipo B: almeno 1 m oltre la fascia umida'], manuale: [0, 'Decido io'] } };
+const nuovoMuro = (n = 1) => ({ id: 'mu' + Date.now().toString(36) + n, nome: `Parete ${n}`, dove: 'interno', lung: '', hDanno: '', fascia: 'mapei', fasciaMan: '', hConf: '', facce: 1, rivestimento: 'intonaco', spRim: 2, spNuovo: 2, muratura: 'nonso', battiscopa: 'nessuno', termo: 0, muffa: false, barriera: false, crepe: '', scuci: '', prese: '', spigoli: '', hParete: '', sali: false, debole: false, rete: false, fissi: false, piastrelle: false });
+function nuovoUmi(p) { return { scenario: 'ripristino', alternativa: '', finitura: 'pitturato', storico: 'nonso', antisale: true, rinzaffo: true, rasatura: false, mobili: false, zoccolo: false, zoccoloH: 0.3, uniforme: false, calce: false, trabattello: false, deumid: false, giorniDeumid: 14, misure: false, analisi: false, saggio: false, accesso: { acqua: /venezia|burano|murano|lido|pellestrina|giudecca/i.test(p.indirizzoLavoro), distanza: '', piani: '', deposito: false, passaggi: false }, muri: [nuovoMuro(1)], listino: JSON.parse(JSON.stringify({ voci: LISTINO_UMI_ESEMPIO, regole: REGOLE_UMI_ESEMPIO })), prezziDel: OGGI }; }
 // tre altezze separate: quella che si usa è la confermata, se c'è
 function altezzeMuro(m, R) {
 	const danno = num(m.hDanno), fascia = m.fascia === 'manuale' ? num(m.fasciaMan) : R.fasce[m.fascia]?.[0] ?? 0.5, ipot = danno ? Math.round((danno + fascia) * 100) / 100 : 0, conf = num(m.hConf);
 	return { danno, ipot, conf, usata: conf || ipot, fonte: conf ? 'confermato' : danno ? 'ipotizzato' : 'da verificare' };
 }
 function vociUmidita(pv) {
-	const u = pv.umi, V = u.listino.voci, R = u.listino.regole, out = [], storico = u.storico === 'si';
-	const riga = (k, q, o = {}) => { if (!(q > 0) && !o.daQuant) return; const [n, un, pr, co, ore, cat] = V[k], qq = Math.round(q * 100) / 100; out.push([o.nome ?? n, o.daQuant ? 'da quantificare' : `${fmtQ(qq)} ${un}`, o.daQuant ? 0 : pr, o.daQuant ? 0 : Math.round(qq * pr * 100) / 100, cat, { umi: true, k, fonte: o.fonte ?? 'calcolato', stanza: o.muro, costo: co, ore: Math.round(qq * ore * 100) / 100, ...(o.daQuant ? { daQuant: true } : {}), ...(o.daVer ? { daVer: true } : {}), ...(o.opzione ? { opzione: true } : {}) }]); };
-	const sc = u.scenario; let sup = 0, kg = 0, mat = {}; const add = (k, q) => (mat[k] = (mat[k] ?? 0) + q);
+	// le voci nuove valgono anche per i preventivi fatti prima (listino salvato nel preventivo + voci d'esempio mancanti)
+	const u = pv.umi, V = { ...LISTINO_UMI_ESEMPIO, ...u.listino.voci }, R = { ...REGOLE_UMI_ESEMPIO, ...u.listino.regole }, A = u.accesso ?? {}, out = [], storico = u.storico === 'si';
+	const riga = (k, q, o = {}) => { if (!(q > 0) && !o.daQuant) return; const [n, un, pr, co, ore, cat] = V[k], qq = Math.round(q * 100) / 100; out.push([o.nome ?? n, o.daQuant ? 'da quantificare' : `${fmtQ(qq)} ${un}`, o.daQuant ? 0 : pr, o.daQuant ? 0 : Math.round(qq * pr * 100) / 100, cat, { umi: true, k, fonte: o.fonte ?? (o.daQuant ? 'da verificare' : 'calcolato'), stanza: o.muro, costo: co, ore: o.daQuant ? 0 : Math.round(qq * ore * 100) / 100, ...(o.daQuant ? { daQuant: true } : {}), ...(o.daVer ? { daVer: true } : {}), ...(o.opzione ? { opzione: true } : {}) }]); };
+	const sc = u.scenario, rip = sc !== 'superfici'; let sup = 0, kg = 0, zoc = 0, unif = 0, unifStima = false; const mat = {}, add = (k, q) => (mat[k] = (mat[k] ?? 0) + q);
 	riga('prep', 1);
 	if (u.mobili) riga('mobili', 1);
+	if (A.passaggi) riga('protezione', 1, { fonte: 'stimato' });
 	for (const m of u.muri) {
-		const a = altezzeMuro(m, R), L = num(m.lung), area = L * a.usata * Math.max(1, num(m.facce)), f = a.fonte, mu = m.nome;
+		const a = altezzeMuro(m, R), L = num(m.lung), facce = Math.max(1, num(m.facce)), area = L * a.usata * facce, f = a.fonte, mu = m.nome, hP = num(m.hParete);
 		if (!area) continue;
 		sup += area;
-		if (sc === 'superfici') {
+		// valgono in tutti e due gli scenari
+		if (m.sali) riga('sali', area, { muro: mu, fonte: f });
+		if (num(m.crepe)) { riga('crepe', num(m.crepe), { muro: mu, fonte: 'misurato' }); add('matStucco', num(m.crepe) * R.stucco); }
+		if (num(m.prese)) riga('prese', num(m.prese), { muro: mu, fonte: 'misurato' });
+		if (m.fissi) riga('fissi', 1, { muro: mu, fonte: 'da verificare', daVer: true });
+		if (!rip) {
 			riga('muffa', area, { muro: mu, fonte: f, nome: 'Pulizia e trattamento superficiale (intonaco da conservare)' }); add('matMuffa', area / 8);
 		} else {
 			if (m.rivestimento !== 'intonaco') riga('rimRiv', area, { muro: mu, fonte: f, nome: `Rimozione ${m.rivestimento === 'piastrelle' ? 'delle piastrelle' : m.rivestimento === 'carta' ? 'della carta da parati' : 'della controparete'}` });
@@ -2906,25 +2943,49 @@ function vociUmidita(pv) {
 			riga('rimIntonaco', area, { muro: mu, fonte: storico ? 'da verificare' : f, daVer: storico, nome: `Rimozione dell'intonaco ammalorato, spessore ${fmtQ(num(m.spRim) || 2)} cm${storico ? ' (edificio storico: da verificare)' : ''}` });
 			kg += area * (num(m.spRim) || 2) * R.kgMacerie;
 			riga('pulizia', area, { muro: mu, fonte: f });
+			if (num(m.scuci)) { riga('scuci', num(m.scuci), { muro: mu, fonte: 'da verificare', daVer: true }); add('matMalta', num(m.scuci) * R.consumoMalta); kg += num(m.scuci) * 100; }
+			if (m.debole) { riga('consolid', area, { muro: mu, fonte: f }); add('matConsolid', area / R.resaConsolid); }
 			if (u.antisale) { riga('antisale', area, { muro: mu, fonte: f }); add('matAntisale', area * R.antisale); }
 			if (u.rinzaffo) { riga('rinzaffo', area, { muro: mu, fonte: f }); add('matRinzaffo', area * R.consumoRinzaffo); }
+			if (m.rete) { riga('rete', area, { muro: mu, fonte: f }); add('matRete', area * 1.1); }
 			riga('intonaco', area, { muro: mu, fonte: f }); const sp = num(m.spNuovo) || 2; add('matIntonaco', area * sp * R.consumoIntonaco);
 			if (sp > 2) riga('spessore', area * (sp - 2), { muro: mu, fonte: f, nome: `Maggiore spessore dell'intonaco (+${fmtQ(sp - 2)} cm)` });
+			if (num(m.spigoli)) { const ml = num(m.spigoli) * a.usata; riga('spigoli', ml, { muro: mu, fonte: f, nome: `Posa dei paraspigoli (${fmtQ(num(m.spigoli))} ${num(m.spigoli) === 1 ? 'angolo' : 'angoli'})` }); add('matSpigoli', ml); }
 			if (m.battiscopa === 'riuso') { riga('batRim', L, { muro: mu, fonte: 'misurato' }); riga('batPosa', L, { muro: mu, fonte: 'misurato', nome: 'Rimontaggio del battiscopa esistente' }); }
 			if (m.battiscopa === 'nuovo') { riga('batRim', L, { muro: mu, fonte: 'misurato' }); riga('batPosa', L, { muro: mu, fonte: 'misurato' }); add('matBattiscopa', L); }
 			if (num(m.termo)) riga('termo', num(m.termo), { muro: mu, fonte: 'da verificare', daVer: true });
+			if (m.piastrelle) riga('piastrelle', 1, { muro: mu, fonte: 'da verificare', daVer: true });
+			zoc += L * (num(u.zoccoloH) || 0.3);
 		}
-		if (m.muffa && sc !== 'superfici') { riga('muffa', area * 0.3, { muro: mu, fonte: 'da verificare', daVer: true }); }
+		if (u.uniforme) { if (!hP) unifStima = true; unif += L * Math.max(0, (hP || 2.7) - a.usata) * facce; }
+		if (m.muffa && rip) { riga('muffa', area * 0.3, { muro: mu, fonte: 'da verificare', daVer: true }); }
 		// la causa: mai calcolata, mai 0 €; la barriera non si raddoppia con due facce
-		if (m.barriera) riga('giunti', 0, { muro: mu, daQuant: true, nome: `Barriera chimica, ${fmtQ(L)} m: fattibilità e consumo da verificare (spessore e vuoti del muro)` });
+		if (m.barriera) riga('barriera', 0, { muro: mu, daQuant: true, nome: `Barriera chimica, ${fmtQ(L)} m: prodotto, fori e fattibilità da verificare (spessore e vuoti del muro)` });
 	}
-	if (sc !== 'superfici' && sup) riga('giunti', 1, { fonte: 'da verificare', daVer: true });
-	if (u.rasatura && sc !== 'superfici') { riga('rasatura', sup); add('matRasante', sup * R.consumoRasante); }
-	if (u.finitura === 'pitturato' || sc === 'superfici') { riga('pittura', sup); add('matPittura', (sup * 2) / R.resaPittura); add('matFondo', sup / R.resaFondo); }
-	for (const [k, q] of Object.entries(mat)) riga(k, k.startsWith('matPittura') || k === 'matFondo' || k === 'matAntisale' || k === 'matMuffa' ? Math.ceil(q * 2) / 2 : Math.ceil(q), { fonte: 'calcolato' });
+	if (rip && sup) riga('giunti', 1, { fonte: 'da verificare', daVer: true });
+	if (u.rasatura && rip) { riga('rasatura', sup); add('matRasante', sup * R.consumoRasante); }
+	if (u.finitura === 'pitturato' || !rip) { riga('pittura', sup); add('matPittura', (sup * 2) / R.resaPittura); add('matFondo', sup / R.resaFondo); }
+	// opzioni: fuori dal totale, le sceglie il cliente
+	if (u.uniforme && unif) riga('uniforme', unif, { fonte: unifStima ? 'stimato' : 'misurato', opzione: true, nome: `Pittura del resto della parete, per non vedere stacchi${unifStima ? ' (altezza della parete stimata 2,7 m)' : ''}` });
+	if (rip && u.zoccolo && zoc) riga('zoccolo', zoc, { opzione: true, nome: `Zoccolatura intonacata, altezza ${fmtQ(Math.round((num(u.zoccoloH) || 0.3) * 100))} cm (da valutare: non è una protezione automatica)` });
+	if (rip && u.calce && sup) riga('calce', sup, { opzione: true, nome: 'In alternativa all\'intonaco risanante: intonaco a base di calce compatibile con l\'edificio storico (materiali compresi)' });
+	let kgMat = 0;
+	for (const [k, q] of Object.entries(mat)) { const qq = V[k][1] === 'l' ? Math.ceil(q * 2) / 2 : Math.ceil(q); if (V[k][1] === 'kg') kgMat += qq; riga(k, qq, { fonte: 'calcolato' }); }
 	const cons = Math.max(sup * V.consumi[2], R.minimoConsumi); if (sup) out.push([V.consumi[0], `${fmtQ(Math.round(sup * 10) / 10)} m²${sup * V.consumi[2] < R.minimoConsumi ? ` (minimo ${euro(R.minimoConsumi)} per intervento)` : ''}`, Math.round((cons / sup) * 100) / 100, Math.round(cons * 100) / 100, 'consumo', { umi: true, fonte: 'calcolato', costo: V.consumi[3] * (cons / sup) / V.consumi[2], ore: 0 }]);
-	if (kg) { riga('macerie', 1); riga('conferimento', Math.ceil(kg / 10) * 10, { fonte: 'stimato' }); }
-	if (u.accesso.acqua) riga('barca', kg > 300 ? 3 : 2, { fonte: 'stimato' });
+	if (kg) { riga('macerie', 1); riga('conferimento', Math.ceil(kg / 10) * 10, { fonte: 'stimato' }); riga('bigbag', Math.max(1, Math.ceil(kg / R.kgBigBag)), { fonte: 'stimato' }); }
+	// logistica separata: barca, approdo, trasporto a mano, piani, deposito
+	const viaggi = kg > 300 ? 3 : 2, dist = num(A.distanza);
+	if (A.acqua) { riga('barca', viaggi, { fonte: 'stimato' }); riga('approdo', viaggi, { fonte: 'stimato' }); }
+	if (A.acqua || dist) riga('aMano', Math.max(1, Math.ceil(((kg + kgMat) / 400) * (1 + dist / 100))), { fonte: 'stimato', nome: `Trasporto a mano fino al cantiere${dist ? ` (circa ${fmtQ(dist)} m a piedi)` : ''}` });
+	if (num(A.piani)) riga('piani', num(A.piani), { fonte: 'misurato' });
+	if (A.deposito) riga('deposito', 1, { fonte: 'stimato' });
+	// attrezzature e asciugatura
+	if (u.trabattello) { const ore = somma(out.filter(inTotale), (r) => r[5]?.ore ?? 0), gg = Math.max(1, Math.ceil(ore / 16)); riga('trabMont', 1, { fonte: 'stimato' }); riga('trabNol', gg, { fonte: 'stimato' }); }
+	if (u.deumid) riga('deumid', num(u.giorniDeumid) || R.giorniDeumid, { fonte: 'stimato', nome: 'Noleggio del deumidificatore (aiuta l\'asciugatura: i tempi non sono garantiti)' });
+	// controlli: si concordano prima, mai 0 €
+	if (u.misure) riga('misure', 0, { daQuant: true });
+	if (u.analisi) riga('analisi', 0, { daQuant: true });
+	if (u.saggio) riga('saggio', 0, { daQuant: true });
 	// sempre visibile accanto al totale
 	out.push(['Eventuale intervento sulla causa dell\'umidità (perdite, infiltrazioni, impermeabilizzazioni, ventilazione, barriera): verrà proposto dopo la verifica', 'da quantificare', 0, 0, 'altro', { umi: true, daQuant: true, fonte: 'da verificare' }]);
 	// seconda alternativa (non sommata)
@@ -2938,6 +2999,8 @@ function noteUmi(pv) {
 	if (u.storico !== 'no') n.push('Edificio storico o con possibili vincoli: conservazione e compatibilità vengono prima del ciclo standard; eventuali autorizzazioni sono da verificare per questo immobile.');
 	if (u.accesso.acqua) n.push('Laguna: acqua alta e sali vanno valutati a parte; approdo, distanza a piedi, deposito e ritiro delle macerie sono compresi solo come indicato nelle voci.');
 	if (u.muri.some((m) => m.muffa)) n.push('Muffa e condensa: possono concorrere uso della casa, ventilazione, riscaldamento e caratteristiche dell\'edificio.');
+	if (u.deumid) n.push('Il deumidificatore aiuta l\'asciugatura, ma i tempi dipendono dal muro e dalla stagione: non sono garantiti.');
+	if (u.misure || u.analisi || u.saggio) n.push('Misure, analisi e saggi sul muro si concordano con te prima di farli, con il loro costo.');
 	return n;
 }
 function bloccoMuri(pv, p) {
@@ -2949,11 +3012,13 @@ function bloccoMuri(pv, p) {
 }
 function muriUmi(pvId) {
 	const pv = pvDi(pvId); if (!pv) return testa('Preventivo non trovato');
-	const p = pratica(pv.praticaId), u = (pv.umi ??= nuovoUmi(p)), R = u.listino.regole;
+	const p = pratica(pv.praticaId), u = (pv.umi ??= nuovoUmi(p)), R = { ...REGOLE_UMI_ESEMPIO, ...u.listino.regole }, A = (u.accesso ??= {}), rip = u.scenario !== 'superfici';
 	const radio = (nome, opz, val, fn) => `<div class="scelte">${opz.map(([k, n]) => `<label><input type="radio" name="${nome}" value="${k}" ${String(val) === String(k) ? 'checked' : ''} onchange="${fn}">${n}</label>`).join('')}</div>`;
 	const inp = (et, i, c, v) => `<label>${et}<input inputmode="decimal" value="${v === '' || v == null ? '' : fmtQ(num(v))}" onchange="umiMuro('${pvId}',${i},'${c}',this.value)"></label>`;
 	const chk = (et, k) => `<label><input type="checkbox" ${u[k] ? 'checked' : ''} onchange="umiSet('${pvId}','${k}',this.checked)">${et}</label>`;
-	const card = (m, i) => { const a = altezzeMuro(m, R), fn = (c) => `umiMuro('${pvId}',${i},'${c}',this.value)`;
+	const acc = (et, k) => `<label><input type="checkbox" ${A[k] ? 'checked' : ''} onchange="umiAcc('${pvId}','${k}',this.checked)">${et}</label>`;
+	const accInp = (et, k) => `<label>${et}<input inputmode="decimal" value="${num(A[k]) ? fmtQ(num(A[k])) : ''}" onchange="umiAcc('${pvId}','${k}',this.value)"></label>`;
+	const card = (m, i) => { const a = altezzeMuro(m, R), fn = (c) => `umiMuro('${pvId}',${i},'${c}',this.value)`, mchk = (et, c) => `<label><input type="checkbox" ${m[c] ? 'checked' : ''} onchange="umiMuro('${pvId}',${i},'${c}',this.checked)">${et}</label>`;
 		return `<section class="stanza"><div class="stanza-testa"><input class="campo stanza-nome" value="${esc(m.nome)}" aria-label="Nome del muro" onchange="${fn('nome')}"><span class="v-fonte f-${a.fonte.replace(/ /g, '-')}">${a.fonte}</span><button type="button" class="togli" aria-label="Togli il muro" onclick="umiTogli('${pvId}',${i})">${I.cestino}</button></div>
 			${radio(`mu${i}-dove`, [['interno', 'Interno'], ['esterno', 'Esterno']], m.dove, fn('dove'))}
 			<div class="campi-box tre">${inp('Lunghezza del danno (m)', i, 'lung', m.lung)}${inp('Altezza del danno, detta dal cliente (m)', i, 'hDanno', m.hDanno)}${inp('Facce da lavorare (1 o 2)', i, 'facce', m.facce)}</div>
@@ -2961,9 +3026,11 @@ function muriUmi(pvId) {
 			<div class="altezze num"><span>Danno dichiarato <b>${a.danno ? fmtQ(a.danno) + ' m' : '—'}</b></span><span>Intervento ipotizzato <b>${a.ipot ? fmtQ(a.ipot) + ' m' : '—'}</b></span><label>Confermata da te (m)<input inputmode="decimal" value="${m.hConf ? fmtQ(num(m.hConf)) : ''}" placeholder="dopo il sopralluogo" onchange="${fn('hConf')}"></label></div>
 			<label class="campo">Cosa riveste il muro</label>${radio(`mu${i}-riv`, [['intonaco', 'Intonaco'], ['piastrelle', 'Piastrelle'], ['carta', 'Carta da parati'], ['cartongesso', 'Controparete / cartongesso']], m.rivestimento, fn('rivestimento'))}
 			<label class="campo">Com'è fatto il muro</label>${radio(`mu${i}-mur`, [['mattoni', 'Mattoni'], ['pietra', 'Pietra'], ['misto', 'Misto'], ['calcestruzzo', 'Calcestruzzo'], ['nonso', 'Non so']], m.muratura, fn('muratura'))}
+			<div class="campi-box tre">${inp('Crepe da stuccare (m)', i, 'crepe', m.crepe)}${inp('Prese e placche (pezzi)', i, 'prese', m.prese)}${inp('Altezza della parete (m, facoltativa)', i, 'hParete', m.hParete)}</div>
 			${u.scenario === 'superfici' ? '' : `<div class="campi-box tre">${inp('Spessore da togliere (cm)', i, 'spRim', m.spRim)}${inp('Spessore nuovo intonaco (cm)', i, 'spNuovo', m.spNuovo)}${inp('Termosifoni su questo muro', i, 'termo', m.termo)}</div>
+			<div class="campi-box">${inp('Mattoni da ripristinare (m²)', i, 'scuci', m.scuci)}${inp('Angoli con paraspigolo', i, 'spigoli', m.spigoli)}</div>
 			<label class="campo">Battiscopa</label>${radio(`mu${i}-bat`, [['nessuno', 'Non c\'è'], ['riuso', 'Si toglie e si rimette'], ['nuovo', 'Si mette nuovo']], m.battiscopa, fn('battiscopa'))}`}
-			<div class="scelte"><label><input type="checkbox" ${m.muffa ? 'checked' : ''} onchange="umiMuro('${pvId}',${i},'muffa',this.checked)">C'è anche muffa</label><label><input type="checkbox" ${m.barriera ? 'checked' : ''} onchange="umiMuro('${pvId}',${i},'barriera',this.checked)">Ipotesi barriera (da quantificare)</label></div>
+			<label class="campo">Cosa c'è su questo muro</label><div class="scelte">${mchk('C\'è anche muffa', 'muffa')}${mchk('Depositi bianchi (sali)', 'sali')}${mchk('Cucina, mobili fissi o sanitari da smontare', 'fissi')}${rip ? mchk('Muro debole (fondo consolidante)', 'debole') + mchk('Serve la rete porta intonaco', 'rete') + mchk('Piastrelle o fughe vicine da ritoccare', 'piastrelle') : ''}${mchk('Ipotesi barriera (da quantificare)', 'barriera')}</div>
 			<p class="stanza-mis num">${fmtQ(Math.round(num(m.lung) * a.usata * Math.max(1, num(m.facce)) * 10) / 10)} m² da lavorare${num(m.facce) > 1 ? ' (2 facce: la barriera non si raddoppia)' : ''}</p></section>`; };
 	const sup = u.muri.reduce((t, m) => t + num(m.lung) * altezzeMuro(m, R).usata * Math.max(1, num(m.facce)), 0);
 	const pagina = `<div class="pv-scelto"><span class="pv-scelto-icona">${I.goccia}</span><h1 class="pv-scelto-t">Muri e scenario</h1><span class="pv-scelto-p">· ${esc(p.nome)} · ${pv.numero ?? 'Bozza v' + pv.n}</span></div>
@@ -2973,7 +3040,10 @@ function muriUmi(pvId) {
 		${u.scenario === 'superfici' ? '' : `<label class="campo">Sistema (lo decidi tu: non tutto serve sempre)</label><div class="scelte">${chk('Trattamento antisale', 'antisale')}${chk('Rinzaffo', 'rinzaffo')}${chk('Rasatura', 'rasatura')}</div>`}
 		<label class="campo">Finitura</label>${radio('um-fin', [['pronto', 'Pronto per la pittura'], ['pitturato', 'Finito e pitturato'], ['decidere', 'Da decidere']], u.finitura, `umiSet('${pvId}','finitura',this.value)`)}
 		<label class="campo">Edificio antico o con vincoli?</label>${radio('um-st', [['no', 'No'], ['si', 'Sì'], ['nonso', 'Non so']], u.storico, `umiSet('${pvId}','storico',this.value)`)}
-		<div class="scelte">${chk('Mobili da spostare', 'mobili')}<label><input type="checkbox" ${u.accesso.acqua ? 'checked' : ''} onchange="pvDi('${pvId}').umi.accesso.acqua=this.checked;salva();render()">Si arriva via acqua / movimentazione a mano</label></div></section>
+		<div class="scelte">${chk('Mobili da spostare', 'mobili')}</div></section>
+		<section class="riquadro stanze-gen"><h2>Lavori in più</h2><p class="nota">Le opzioni restano fuori dal totale: le sceglie il cliente.</p><div class="scelte">${chk('Trabattello (lavori in alto)', 'trabattello')}${chk('Pittura del resto della parete (opzione)', 'uniforme')}${rip ? chk('Zoccolatura intonacata (opzione, da valutare)', 'zoccolo') + chk('Alternativa a calce per edifici storici (opzione)', 'calce') : ''}</div>${rip && u.zoccolo ? `<div class="campi-box"><label>Altezza della zoccolatura (m)<input inputmode="decimal" value="${fmtQ(num(u.zoccoloH) || 0.3)}" onchange="umiSet('${pvId}','zoccoloH',this.value)"></label></div>` : ''}</section>
+		<section class="riquadro stanze-gen"><h2>Accesso e logistica</h2><div class="scelte">${acc('Si arriva via acqua (barca e approdo)', 'acqua')}${acc('Serve un deposito per il materiale', 'deposito')}${acc('Scale e passaggi comuni da proteggere', 'passaggi')}</div><div class="campi-box">${accInp('Distanza a piedi dal mezzo (m)', 'distanza')}${accInp('Piani senza ascensore', 'piani')}</div></section>
+		<section class="riquadro stanze-gen"><h2>Asciugatura e controlli</h2><p class="nota">Misure, analisi e saggi restano «da quantificare»: si concordano prima con il cliente.</p><div class="scelte">${chk('Deumidificatore a noleggio', 'deumid')}${chk('Misure dell\'umidità prima e dopo', 'misure')}${chk('Analisi dei sali', 'analisi')}${chk('Piccolo saggio sul muro', 'saggio')}</div>${u.deumid ? `<div class="campi-box"><label>Giorni di deumidificatore<input inputmode="decimal" value="${fmtQ(num(u.giorniDeumid) || R.giorniDeumid)}" onchange="umiSet('${pvId}','giorniDeumid',this.value)"></label></div>` : ''}</section>
 		${u.muri.map(card).join('')}<button type="button" class="pv-aggiungi" onclick="umiAggiungi('${pvId}')">${I.piu} Aggiungi un muro</button>`;
 	const cardL = latoCard({
 		grande: `<strong class="num">${fmtQ(Math.round(sup * 10) / 10)} m²</strong>`,
@@ -2985,6 +3055,7 @@ function muriUmi(pvId) {
 	return conLato(pagina, cardL, 'Riepilogo dei muri', 'lato-dopo');
 }
 function umiSet(id, k, v) { pvDi(id).umi[k] = v; salva(); render(); }
+function umiAcc(id, k, v) { const u = pvDi(id).umi; (u.accesso ??= {})[k] = v; salva(); render(); }
 function umiMuro(id, i, k, v) { pvDi(id).umi.muri[i][k] = v; salva(); render(); }
 function umiAggiungi(id) { const u = pvDi(id).umi; u.muri.push(nuovoMuro(u.muri.length + 1)); salva(); render(); }
 function umiTogli(id, i) { const u = pvDi(id).umi; if (u.muri.length === 1) return toast('Serve almeno un muro.'); u.muri.splice(i, 1); salva(); render(); }
